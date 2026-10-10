@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Mystere } from './src/data/mysteres';
 import { cleDuJour, mystereAleatoire, mystereDuJour, numeroDuJour } from './src/game/engine';
@@ -118,6 +118,11 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  racine: { flex: 1, backgroundColor: couleurs.fond },
+  // SafeAreaView ne protège que iOS : sur Android, on laisse la place de la barre d'état (heure, batterie).
+  racine: {
+    flex: 1,
+    backgroundColor: couleurs.fond,
+    paddingTop: Platform.OS === 'android' ? (BarreAndroid.currentHeight ?? 24) : 0,
+  },
   centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
