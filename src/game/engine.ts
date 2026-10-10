@@ -2,6 +2,9 @@ import { Mystere, MYSTERES } from '../data/mysteres';
 
 export const MAX_ESSAIS = 6;
 
+/** Entrée enregistrée quand le joueur demande l'indice suivant sans proposer de réponse (compte comme un essai). */
+export const PASSE = '__passe__';
+
 /** Minuscules, sans accents ni ponctuation, sans articles : « Le Mont-Saint-Michel » → « mont saint michel ». */
 export function normaliser(texte: string): string {
   return texte
@@ -15,6 +18,7 @@ export function normaliser(texte: string): string {
 }
 
 export function estCorrect(mystere: Mystere, proposition: string): boolean {
+  if (proposition === PASSE) return false;
   const p = normaliser(proposition);
   if (!p) return false;
   return [mystere.reponse, ...mystere.alias].some((a) => normaliser(a) === p);

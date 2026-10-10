@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Mystere } from '../data/mysteres';
-import { MAX_ESSAIS, estCorrect, normaliser } from '../game/engine';
+import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
 import { couleurs, rayon } from '../theme';
 
 interface Props {
@@ -49,7 +49,7 @@ export default function Game({
   function valider() {
     const texte = saisie.trim();
     if (!texte || termine) return;
-    if (propositions.some((p) => normaliser(p) === normaliser(texte))) {
+    if (propositions.some((p) => p !== PASSE && normaliser(p) === normaliser(texte))) {
       setMessage('Vous avez déjà essayé cette réponse.');
       return;
     }
@@ -65,9 +65,20 @@ export default function Game({
     }
   }
 
+  // Le dernier indice est déjà visible après MAX_ESSAIS - 1 essais : il n'y a plus rien à débloquer.
+  const peutDemanderIndice = !termine && propositions.length < MAX_ESSAIS - 1;
+
+  function indiceSuivant() {
+    if (!peutDemanderIndice) return;
+    const suivantes = [...propositions, PASSE];
+    setPropositions(suivantes);
+    setMessage('');
+    onProgression?.(suivantes);
+  }
+
   async function partager() {
     const carres =
-      propositions.map((p) => (estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
+      propositions.map((p) => (p === PASSE ? '🟨' : estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
       '⬛'.repeat(MAX_ESSAIS - propositions.length);
     const entete = numero ? `Mot Mystère n°${numero}` : 'Mot Mystère';
     const resultat = gagne ? `${score}/${MAX_ESSAIS}` : `X/${MAX_ESSAIS}`;
@@ -108,14 +119,20 @@ export default function Game({
 
         {propositions.length > 0 && (
           <View style={styles.pastilles}>
-            {propositions.map((p, i) => (
-              <View key={i} style={[styles.pastille, estCorrect(mystere, p) && styles.pastilleOk]}>
-                <Text style={styles.pastilleTexte}>
-                  {estCorrect(mystere, p) ? '✓ ' : '✗ '}
-                  {p}
-                </Text>
-              </View>
-            ))}
+            {propositions.map((p, i) =>
+              p === PASSE ? (
+                <View key={i} style={[styles.pastille, styles.pastillePasse]}>
+                  <Text style={styles.pastilleTexte}>⏭ Indice demandé</Text>
+                </View>
+              ) : (
+                <View key={i} style={[styles.pastille, estCorrect(mystere, p) && styles.pastilleOk]}>
+                  <Text style={styles.pastilleTexte}>
+                    {estCorrect(mystere, p) ? '✓ ' : '✗ '}
+                    {p}
+                  </Text>
+                </View>
+              ),
+            )}
           </View>
         )}
 
@@ -145,6 +162,12 @@ export default function Game({
       {!termine && (
         <View style={styles.saisieBarre}>
           {message !== '' && <Text style={styles.message}>{message}</Text>}
+          {peutDemanderIndice && (
+            <TouchableOpacity style={styles.boutonIndice} onPress={indiceSuivant} activeOpacity={0.85}>
+              <Text style={styles.boutonIndiceTexte}>💡 Indice suivant</Text>
+              <Text style={styles.boutonIndiceNote}>compte comme un essai</Text>
+            </TouchableOpacity>
+          )}
           <View style={styles.saisieLigne}>
             <TextInput
               style={styles.input}
@@ -211,6 +234,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   pastilleOk: { backgroundColor: 'rgba(61,220,151,0.15)', borderColor: couleurs.succes },
+  pastillePasse: { backgroundColor: 'rgba(245,185,66,0.12)', borderColor: couleurs.accent },
+  boutonIndice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: rayon,
+    borderWidth: 1.5,
+    borderColor: couleurs.accent,
+    paddingVertical: 11,
+    marginBottom: 10,
+  },
+  boutonIndiceTexte: { color: couleurs.accent, fontSize: 15, fontWeight: '700' },
+  boutonIndiceNote: { color: couleurs.texteSecondaire, fontSize: 12, marginLeft: 8 },
   pastilleTexte: { color: couleurs.texte, fontSize: 14 },
   resultat: { borderRadius: rayon, padding: 18, marginTop: 14, borderWidth: 1.5 },
   resultatGagne: { backgroundColor: 'rgba(61,220,151,0.10)', borderColor: couleurs.succes },
