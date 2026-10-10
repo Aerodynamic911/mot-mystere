@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Mot Mystère",
+    "name": "Cluebox",
     "slug": "mot-mystere",
     "owner": "solauw-sound",
     "version": "1.0.0",
@@ -18,6 +18,9 @@
       "eas": {
         "projectId": "357f3305-7873-4b12-8218-dbaaa1c053e9"
       }
-    }
+    },
+    "plugins": [
+      "expo-audio"
+    ]
   }
 }

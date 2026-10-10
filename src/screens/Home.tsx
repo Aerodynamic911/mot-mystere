@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { MAX_ESSAIS } from '../game/engine';
 import { Stats } from '../game/storage';
 import { couleurs, rayon } from '../theme';
+import FondAnime from '../ui/FondAnime';
+import TitreArc from '../ui/TitreArc';
 
 interface Props {
   numero: number;
@@ -10,17 +12,41 @@ interface Props {
   stats: Stats;
   jourTermine: boolean;
   jourGagne: boolean;
+  musiqueActive: boolean;
+  onToggleMusique: () => void;
   onJouerDuJour: () => void;
   onPartieLibre: () => void;
 }
 
-export default function Home({ numero, serie, stats, jourTermine, jourGagne, onJouerDuJour, onPartieLibre }: Props) {
+export default function Home({
+  numero,
+  serie,
+  stats,
+  jourTermine,
+  jourGagne,
+  musiqueActive,
+  onToggleMusique,
+  onJouerDuJour,
+  onPartieLibre,
+}: Props) {
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
 
   return (
-    <ScrollView contentContainerStyle={styles.conteneur}>
-      <Text style={styles.titre}>Mot Mystère</Text>
+    <View style={styles.racine}>
+      <FondAnime />
+      <TouchableOpacity
+        style={styles.boutonSon}
+        onPress={onToggleMusique}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={musiqueActive ? 'Couper la musique' : 'Activer la musique'}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.boutonSonTexte}>{musiqueActive ? '🔊' : '🔇'}</Text>
+      </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.conteneur}>
+      <TitreArc texte="CLUEBOX" />
       <Text style={styles.sousTitre}>Un personnage, un lieu ou un monument à deviner chaque jour.</Text>
 
       <View style={styles.serieCarte}>
@@ -57,7 +83,8 @@ export default function Home({ numero, serie, stats, jourTermine, jourGagne, onJ
           </View>
         ))}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -71,11 +98,26 @@ function Stat({ valeur, label }: { valeur: number | string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  conteneur: { padding: 20, paddingTop: 36, alignItems: 'stretch' },
-  titre: { color: couleurs.accent, fontSize: 38, fontWeight: '800', textAlign: 'center' },
-  sousTitre: { color: couleurs.texteSecondaire, fontSize: 15, textAlign: 'center', marginTop: 6, marginBottom: 24 },
+  racine: { flex: 1, backgroundColor: couleurs.fond },
+  conteneur: { padding: 20, paddingTop: 28, alignItems: 'stretch' },
+  boutonSon: {
+    position: 'absolute',
+    top: 10,
+    right: 16,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(26,31,58,0.75)',
+    borderWidth: 1,
+    borderColor: couleurs.bordure,
+  },
+  boutonSonTexte: { fontSize: 18 },
+  sousTitre: { color: couleurs.texteSecondaire, fontSize: 15, textAlign: 'center', marginTop: 10, marginBottom: 24 },
   serieCarte: {
-    backgroundColor: couleurs.carte,
+    backgroundColor: 'rgba(26,31,58,0.82)',
     borderRadius: rayon,
     paddingVertical: 18,
     alignItems: 'center',
@@ -94,11 +136,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: couleurs.bordure,
-    backgroundColor: couleurs.carte,
+    backgroundColor: 'rgba(26,31,58,0.82)',
   },
   boutonSecondaireTexte: { color: couleurs.texte, fontSize: 16, fontWeight: '600' },
   statsCarte: {
-    backgroundColor: couleurs.carte,
+    backgroundColor: 'rgba(26,31,58,0.82)',
     borderRadius: rayon,
     padding: 18,
     marginTop: 24,

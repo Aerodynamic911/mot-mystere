@@ -15,6 +15,7 @@ import {
   serieAffichee,
 } from './src/game/storage';
 import Game from './src/screens/Game';
+import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
 import Splash from './src/screens/Splash';
 import { couleurs } from './src/theme';
@@ -28,6 +29,7 @@ export default function App() {
   const [stats, setStats] = useState<Stats>(STATS_VIDES);
   const [jour, setJour] = useState<EtatDuJour | null>(null);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
+  const musique = useMusique();
 
   const cle = cleDuJour();
   const mystereJour = mystereDuJour(cle);
@@ -89,6 +91,8 @@ export default function App() {
           stats={stats}
           jourTermine={!!jourCourant?.terminee}
           jourGagne={!!jourCourant?.gagnee}
+          musiqueActive={musique.actif}
+          onToggleMusique={musique.basculer}
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
           onPartieLibre={() => lancerPartieLibre()}
         />

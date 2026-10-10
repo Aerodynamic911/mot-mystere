@@ -1,4 +1,4 @@
-# Mot Mystère
+# Cluebox
 
 Jeu quotidien de culture générale (Expo / React Native, TypeScript).
 
