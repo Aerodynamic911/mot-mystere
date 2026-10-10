@@ -2,6 +2,7 @@
   "expo": {
     "name": "Mot Mystère",
     "slug": "mot-mystere",
+    "owner": "solauw-sound",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
@@ -12,6 +13,11 @@
     },
     "android": {
       "package": "com.example.motmystere"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "357f3305-7873-4b12-8218-dbaaa1c053e9"
+      }
     }
   }
 }
