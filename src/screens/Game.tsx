@@ -12,9 +12,11 @@ import {
 } from 'react-native';
 import { Mystere } from '../data/mysteres';
 import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
+import { Difficulte, INDICES_DE_BASE } from '../game/preferences';
 import { couleurs, rayon } from '../theme';
 
 interface Props {
+  difficulte: Difficulte;
   mystere: Mystere;
   titre: string;
   /** Numéro du mystère du jour (pour le partage). Absent en partie libre. */
@@ -28,6 +30,7 @@ interface Props {
 }
 
 export default function Game({
+  difficulte,
   mystere,
   titre,
   numero,
@@ -43,7 +46,7 @@ export default function Game({
 
   const gagne = propositions.some((p) => estCorrect(mystere, p));
   const termine = gagne || propositions.length >= MAX_ESSAIS;
-  const indicesVisibles = termine ? MAX_ESSAIS : Math.min(propositions.length + 1, MAX_ESSAIS);
+  const indicesVisibles = termine ? MAX_ESSAIS : Math.min(propositions.length + INDICES_DE_BASE[difficulte], MAX_ESSAIS);
   const score = gagne ? MAX_ESSAIS + 1 - propositions.length : 0;
 
   function valider() {
@@ -65,8 +68,8 @@ export default function Game({
     }
   }
 
-  // Le dernier indice est déjà visible après MAX_ESSAIS - 1 essais : il n'y a plus rien à débloquer.
-  const peutDemanderIndice = !termine && propositions.length < MAX_ESSAIS - 1;
+  // Pas de bouton en mode difficile, ni quand tous les indices sont déjà visibles.
+  const peutDemanderIndice = !termine && difficulte !== 'difficile' && indicesVisibles < MAX_ESSAIS;
 
   function indiceSuivant() {
     if (!peutDemanderIndice) return;

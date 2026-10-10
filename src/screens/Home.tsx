@@ -16,6 +16,7 @@ interface Props {
   onToggleMusique: () => void;
   onJouerDuJour: () => void;
   onPartieLibre: () => void;
+  onPreferences: () => void;
 }
 
 export default function Home({
@@ -28,6 +29,7 @@ export default function Home({
   onToggleMusique,
   onJouerDuJour,
   onPartieLibre,
+  onPreferences,
 }: Props) {
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
@@ -52,13 +54,10 @@ export default function Home({
       <View style={styles.serieCarte}>
         <Text style={styles.serieNombre}>🔥 {serie}</Text>
         <Text style={styles.serieLabel}>{serie > 1 ? 'jours de suite' : 'jour de suite'}</Text>
-      </View>
-
-      <TouchableOpacity style={styles.boutonPrincipal} onPress={onJouerDuJour} activeOpacity={0.85}>
-        <Text style={styles.boutonPrincipalTexte}>
-          {jourTermine ? (jourGagne ? '✅ Revoir le mystère du jour' : 'Revoir le mystère du jour') : `Jouer le mystère n°${numero}`}
+        <Text style={styles.serieJour}>
+          Mystère du jour n°{numero} · {jourTermine ? (jourGagne ? 'trouvé ✅' : 'terminé') : 'à découvrir'}
         </Text>
-      </TouchableOpacity>
+      </View>
 
       <TouchableOpacity style={styles.boutonSecondaire} onPress={onPartieLibre} activeOpacity={0.85}>
         <Text style={styles.boutonSecondaireTexte}>🎲 Partie libre (sans limite)</Text>
@@ -84,6 +83,15 @@ export default function Home({
         ))}
       </View>
       </ScrollView>
+
+      <View style={styles.pied}>
+        <TouchableOpacity style={styles.boutonPrincipal} onPress={onJouerDuJour} activeOpacity={0.85}>
+          <Text style={styles.boutonPrincipalTexte}>▶  Jouer</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.boutonPreferences} onPress={onPreferences} activeOpacity={0.85}>
+          <Text style={styles.boutonPreferencesTexte}>⚙️  Préférences</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -127,8 +135,29 @@ const styles = StyleSheet.create({
   },
   serieNombre: { color: couleurs.texte, fontSize: 40, fontWeight: '800' },
   serieLabel: { color: couleurs.texteSecondaire, fontSize: 14, marginTop: 2 },
-  boutonPrincipal: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 16, alignItems: 'center' },
-  boutonPrincipalTexte: { color: '#1B1B1B', fontSize: 17, fontWeight: '700' },
+  serieJour: { color: couleurs.texte, fontSize: 13, marginTop: 10 },
+  pied: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 18,
+    backgroundColor: 'rgba(15,18,36,0.88)',
+    borderTopWidth: 1,
+    borderTopColor: couleurs.bordure,
+  },
+  boutonPrincipal: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 18, alignItems: 'center' },
+  boutonPrincipalTexte: { color: '#1B1B1B', fontSize: 20, fontWeight: '800', letterSpacing: 0.5 },
+  boutonPreferences: {
+    marginTop: 10,
+    alignSelf: 'center',
+    width: '78%',
+    borderRadius: rayon,
+    paddingVertical: 11,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: couleurs.bordure,
+    backgroundColor: 'rgba(26,31,58,0.82)',
+  },
+  boutonPreferencesTexte: { color: couleurs.texte, fontSize: 15, fontWeight: '600' },
   boutonSecondaire: {
     marginTop: 12,
     borderRadius: rayon,

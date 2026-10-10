@@ -14,13 +14,15 @@ import {
   sauverStats,
   serieAffichee,
 } from './src/game/storage';
+import { PREFERENCES_PAR_DEFAUT, Preferences, chargerPreferences, sauverPreferences } from './src/game/preferences';
 import Game from './src/screens/Game';
+import PreferencesEcran from './src/screens/Preferences';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
 import Splash from './src/screens/Splash';
 import { couleurs } from './src/theme';
 
-type Ecran = { nom: 'accueil' } | { nom: 'jour' } | { nom: 'libre'; mystere: Mystere; run: number };
+type Ecran = { nom: 'accueil' } | { nom: 'preferences' } | { nom: 'jour' } | { nom: 'libre'; mystere: Mystere; run: number };
 
 export default function App() {
   const [pret, setPret] = useState(false);
@@ -28,6 +30,7 @@ export default function App() {
   const [delaiEcoule, setDelaiEcoule] = useState(false);
   const [stats, setStats] = useState<Stats>(STATS_VIDES);
   const [jour, setJour] = useState<EtatDuJour | null>(null);
+  const [prefs, setPrefs] = useState<Preferences>(PREFERENCES_PAR_DEFAUT);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const musique = useMusique();
 
@@ -37,9 +40,10 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      const [s, j] = await Promise.all([chargerStats(), chargerJour()]);
+      const [s, j, p] = await Promise.all([chargerStats(), chargerJour(), chargerPreferences()]);
       setStats(s);
       setJour(j);
+      setPrefs(p);
       setPret(true);
     })();
     const minuteur = setTimeout(() => setDelaiEcoule(true), 2200);
@@ -62,6 +66,11 @@ export default function App() {
     setStats(nouvellesStats);
     sauverJour(etat);
     sauverStats(nouvellesStats);
+  }
+
+  function changerPreferences(p: Preferences) {
+    setPrefs(p);
+    sauverPreferences(p);
   }
 
   function lancerPartieLibre(precedent?: Mystere) {
@@ -95,12 +104,18 @@ export default function App() {
           onToggleMusique={musique.basculer}
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
           onPartieLibre={() => lancerPartieLibre()}
+          onPreferences={() => setEcran({ nom: 'preferences' })}
         />
+      )}
+
+      {ecran.nom === 'preferences' && (
+        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} />
       )}
 
       {ecran.nom === 'jour' && (
         <Game
           key={`jour-${cle}`}
+          difficulte={prefs.difficulte}
           mystere={mystereJour}
           titre={`Mystère n°${numero}`}
           numero={numero}
@@ -114,6 +129,7 @@ export default function App() {
       {ecran.nom === 'libre' && (
         <Game
           key={`libre-${ecran.run}`}
+          difficulte={prefs.difficulte}
           mystere={ecran.mystere}
           titre="Partie libre"
           propositionsInitiales={[]}
