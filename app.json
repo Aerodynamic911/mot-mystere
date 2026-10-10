@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Mot Mystère",
+    "slug": "mot-mystere",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0F1224",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.motmystere"
+    },
+    "android": {
+      "package": "com.example.motmystere"
+    }
+  }
+}
