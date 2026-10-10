@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet, View } from 'react-native';
+import { Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Mystere } from './src/data/mysteres';
 import { cleDuJour, mystereAleatoire, mystereDuJour, numeroDuJour } from './src/game/engine';
@@ -16,12 +16,15 @@ import {
 } from './src/game/storage';
 import Game from './src/screens/Game';
 import Home from './src/screens/Home';
+import Splash from './src/screens/Splash';
 import { couleurs } from './src/theme';
 
 type Ecran = { nom: 'accueil' } | { nom: 'jour' } | { nom: 'libre'; mystere: Mystere; run: number };
 
 export default function App() {
   const [pret, setPret] = useState(false);
+  // L'écran de chargement reste affiché au moins ce temps, même si les données sont prêtes plus tôt.
+  const [delaiEcoule, setDelaiEcoule] = useState(false);
   const [stats, setStats] = useState<Stats>(STATS_VIDES);
   const [jour, setJour] = useState<EtatDuJour | null>(null);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
@@ -37,6 +40,8 @@ export default function App() {
       setJour(j);
       setPret(true);
     })();
+    const minuteur = setTimeout(() => setDelaiEcoule(true), 2200);
+    return () => clearTimeout(minuteur);
   }, []);
 
   // L'état du jour n'est valable que pour la date courante.
@@ -65,12 +70,11 @@ export default function App() {
     }));
   }
 
-  if (!pret) {
+  if (!pret || !delaiEcoule) {
     return (
       <SafeAreaView style={styles.racine}>
-        <View style={styles.centre}>
-          <ActivityIndicator color={couleurs.accent} size="large" />
-        </View>
+        <StatusBar style="light" />
+        <Splash />
       </SafeAreaView>
     );
   }
@@ -124,5 +128,4 @@ const styles = StyleSheet.create({
     backgroundColor: couleurs.fond,
     paddingTop: Platform.OS === 'android' ? (BarreAndroid.currentHeight ?? 24) : 0,
   },
-  centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
