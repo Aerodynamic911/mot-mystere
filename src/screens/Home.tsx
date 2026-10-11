@@ -52,7 +52,7 @@ export default function Home({
       </TouchableOpacity>
 
       <View style={styles.haut}>
-        <TitreArc texte="CLUEBOX" />
+        <TitreArc texte="BOXTERY" />
         <Text style={styles.sousTitre}>Devinez le mystère du jour</Text>
       </View>
 

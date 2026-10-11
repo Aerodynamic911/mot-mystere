@@ -83,7 +83,7 @@ export default function Game({
     const carres =
       propositions.map((p) => (p === PASSE ? '🟨' : estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
       '⬛'.repeat(MAX_ESSAIS - propositions.length);
-    const entete = numero ? `Mot Mystère n°${numero}` : 'Mot Mystère';
+    const entete = numero ? `Boxtery n°${numero}` : 'Boxtery';
     const resultat = gagne ? `${score}/${MAX_ESSAIS}` : `X/${MAX_ESSAIS}`;
     try {
       await Share.share({ message: `${entete} ${resultat}\n${carres}` });

@@ -1,4 +1,4 @@
-# Cluebox
+# Boxtery
 
 Jeu quotidien de culture générale (Expo / React Native, TypeScript).
 
