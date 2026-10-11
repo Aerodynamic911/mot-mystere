@@ -99,6 +99,14 @@ const DECORS: Decor[] = [
   { nom: 'Espace infini', parchemin: '#1E1B5E', encre: '#FFF1C9', image: require('../../assets/aventure/decor-8.jpg'), sombre: true, tresor: '🛸' },
 ];
 
+/** Nombre de décors différents. */
+export const NB_DECORS = DECORS.length;
+
+/** Décor par rang (revient au début après le dernier) : sert à l'aperçu des décors. */
+export function decorParRang(rang: number): Decor {
+  return DECORS[((rang % DECORS.length) + DECORS.length) % DECORS.length];
+}
+
 /** Décor de la carte : il change tous les 10 niveaux. */
 export function decorAventure(niveau: number): Decor {
   const dizaine = Math.floor((Math.max(1, niveau) - 1) / 10);

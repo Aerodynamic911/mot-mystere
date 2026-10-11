@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Image, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { jouerEffet } from '../audio/effets';
-import { decorAventure, essaisAventure, titreJoueur } from '../game/aventure';
+import { NB_DECORS, decorAventure, decorParRang, essaisAventure, titreJoueur } from '../game/aventure';
 import { Progression } from '../game/progression';
 import { couleurs, rayon } from '../theme';
 import Eclat from '../ui/Eclat';
@@ -55,7 +55,9 @@ interface Point {
 /** Carte au trésor : 10 étapes par carte, la mascotte avance de niveau en niveau. Le décor change tous les 10 niveaux. */
 export default function Aventure({ progression, depuis, onArrive, onJouer, onRetour }: Props) {
   const { niveau, record, etoiles } = progression.aventure;
-  const decor = decorAventure(niveau);
+  // Aperçu des décors (appui long sur le nom du décor) : on feuillette les cartes sans toucher à la progression.
+  const [apercu, setApercu] = useState(0);
+  const decor = apercu ? decorParRang(Math.floor((niveau - 1) / PAR_CARTE) + apercu) : decorAventure(niveau);
   const sombre = decor.sombre;
   const base = Math.floor((niveau - 1) / PAR_CARTE) * PAR_CARTE; // niveau 0-indexé du début de la carte
   const rang = (niveau - 1) % PAR_CARTE; // position de la mascotte sur la carte
@@ -85,13 +87,13 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   // Les 10 étapes, du bas vers le haut. Le point 0 est un départ virtuel, sous la première étape.
   const noeuds: Point[] = useMemo(() => {
     if (!taille) return [];
-    const parcours = PARCOURS[Math.floor(base / PAR_CARTE) % PARCOURS.length];
+    const parcours = PARCOURS[(Math.floor(base / PAR_CARTE) + apercu) % PARCOURS.length];
     const utile = taille.h - MARGE - MARGE_HAUT;
     return parcours.map((pt) => ({
       x: MARGE + pt.x * (taille.l - 2 * MARGE),
       y: taille.h - MARGE - pt.y * utile,
     }));
-  }, [taille, base]);
+  }, [taille, base, apercu]);
 
   const jalons: Point[] = useMemo(
     () => (noeuds.length && taille ? [{ x: noeuds[0].x, y: taille.h + 30 }, ...noeuds] : []),
@@ -226,15 +228,17 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
           <View style={[styles.carte, { width: taille.l, height: taille.h, backgroundColor: decor.parchemin }]}>
             {/* Image du décor, entière, sous le chemin et les pastilles. Taille explicite : une image locale a sinon sa taille d'origine (900 px) et déborde. */}
             <Image source={decor.image} style={{ position: 'absolute', left: 0, top: 0, width: taille.l, height: taille.h }} resizeMode="stretch" />
-            <View pointerEvents="none" style={styles.nomDecorZone}>
-              <Text
-                style={[
-                  styles.nomDecor,
-                  { color: encre, backgroundColor: sombre ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.72)' },
-                ]}
-              >
-                {decor.nom} · niveaux {base + 1}–{base + PAR_CARTE}
-              </Text>
+            <View pointerEvents="box-none" style={styles.nomDecorZone}>
+              <TouchableOpacity activeOpacity={1} onLongPress={() => setApercu((a) => (a + 1) % NB_DECORS)} delayLongPress={500}>
+                <Text
+                  style={[
+                    styles.nomDecor,
+                    { color: encre, backgroundColor: sombre ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.72)' },
+                  ]}
+                >
+                  {apercu ? `👁 ${decor.nom} (aperçu)` : `${decor.nom} · niveaux ${base + 1}–${base + PAR_CARTE}`}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <Svg width={taille.l} height={taille.h} style={StyleSheet.absoluteFill}>
