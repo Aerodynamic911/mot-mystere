@@ -18,6 +18,11 @@ interface Props {
   onJouerDuJour: () => void;
   onPartieLibre: () => void;
   onPreferences: () => void;
+  niveauAventure: number;
+  etapesFaites: number;
+  etapesTotal: number;
+  onAventure: () => void;
+  onEvenements: () => void;
 }
 
 export default function Home({
@@ -31,6 +36,11 @@ export default function Home({
   onJouerDuJour,
   onPartieLibre,
   onPreferences,
+  niveauAventure,
+  etapesFaites,
+  etapesTotal,
+  onAventure,
+  onEvenements,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
@@ -57,7 +67,7 @@ export default function Home({
       </View>
 
       <View style={styles.scene}>
-        <Mascotte taille={230} />
+        <Mascotte taille={190} />
         <Text style={styles.jour}>
           Mystère n°{numero} · {etatJour}
         </Text>
@@ -72,6 +82,21 @@ export default function Home({
             <Text style={styles.puceTexte}>📊 Stats</Text>
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={styles.modes}>
+        <TouchableOpacity style={styles.mode} onPress={onAventure} activeOpacity={0.85}>
+          <Text style={styles.modeEmoji}>🗺️</Text>
+          <Text style={styles.modeTitre}>Aventure</Text>
+          <Text style={styles.modeDetail}>Niveau {niveauAventure}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mode} onPress={onEvenements} activeOpacity={0.85}>
+          <Text style={styles.modeEmoji}>🎉</Text>
+          <Text style={styles.modeTitre}>Événements</Text>
+          <Text style={styles.modeDetail}>
+            {etapesFaites}/{etapesTotal} étapes
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.pied}>
@@ -156,6 +181,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   puceTexte: { color: couleurs.texte, fontSize: 14, fontWeight: '600' },
+  modes: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 12 },
+  mode: {
+    flex: 1,
+    marginHorizontal: 4,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: rayon,
+    backgroundColor: 'rgba(26,31,58,0.88)',
+    borderWidth: 1.5,
+    borderColor: couleurs.bordure,
+  },
+  modeEmoji: { fontSize: 24 },
+  modeTitre: { color: couleurs.texte, fontSize: 16, fontWeight: '800', marginTop: 2 },
+  modeDetail: { color: couleurs.accent, fontSize: 12, fontWeight: '700', marginTop: 2 },
   pied: {
     paddingHorizontal: 20,
     paddingTop: 12,

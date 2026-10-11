@@ -25,8 +25,12 @@ interface Props {
   onProgression?: (propositions: string[]) => void;
   onTerminee?: (propositions: string[], gagne: boolean) => void;
   onRetour: () => void;
-  /** Proposé en fin de partie libre. */
-  onRejouer?: () => void;
+  /** Nombre d'essais autorisés (6 par défaut). */
+  maxEssais?: number;
+  /** Début du message de partage, à la place de « Boxtery n°X ». */
+  libellePartage?: string;
+  /** Bouton proposé en fin de partie (mystère suivant, niveau suivant, réessayer…). */
+  actionFin?: (gagne: boolean) => { libelle: string; onPress: () => void } | null;
 }
 
 export default function Game({
@@ -38,16 +42,21 @@ export default function Game({
   onProgression,
   onTerminee,
   onRetour,
-  onRejouer,
+  maxEssais = MAX_ESSAIS,
+  libellePartage,
+  actionFin,
 }: Props) {
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
   const [saisie, setSaisie] = useState('');
   const [message, setMessage] = useState('');
 
   const gagne = propositions.some((p) => estCorrect(mystere, p));
-  const termine = gagne || propositions.length >= MAX_ESSAIS;
-  const indicesVisibles = termine ? MAX_ESSAIS : Math.min(propositions.length + INDICES_DE_BASE[difficulte], MAX_ESSAIS);
-  const score = gagne ? MAX_ESSAIS + 1 - propositions.length : 0;
+  const nbIndices = mystere.indices.length;
+  const termine = gagne || propositions.length >= maxEssais;
+  const indicesVisibles = termine ? nbIndices : Math.min(propositions.length + INDICES_DE_BASE[difficulte], nbIndices);
+  const score = gagne ? maxEssais + 1 - propositions.length : 0;
+
+  const suite = termine ? (actionFin?.(gagne) ?? null) : null;
 
   function valider() {
     const texte = saisie.trim();
@@ -60,7 +69,7 @@ export default function Game({
     setPropositions(suivantes);
     setSaisie('');
     setMessage('');
-    const fini = estCorrect(mystere, texte) || suivantes.length >= MAX_ESSAIS;
+    const fini = estCorrect(mystere, texte) || suivantes.length >= maxEssais;
     if (fini) {
       onTerminee?.(suivantes, estCorrect(mystere, texte));
     } else {
@@ -68,8 +77,9 @@ export default function Game({
     }
   }
 
-  // Pas de bouton en mode difficile, ni quand tous les indices sont déjà visibles.
-  const peutDemanderIndice = !termine && difficulte !== 'difficile' && indicesVisibles < MAX_ESSAIS;
+  // Pas de bouton en mode difficile, quand tous les indices sont déjà visibles, ni quand il ne reste qu'un essai.
+  const peutDemanderIndice =
+    !termine && difficulte !== 'difficile' && indicesVisibles < nbIndices && propositions.length < maxEssais - 1;
 
   function indiceSuivant() {
     if (!peutDemanderIndice) return;
@@ -82,9 +92,9 @@ export default function Game({
   async function partager() {
     const carres =
       propositions.map((p) => (p === PASSE ? '🟨' : estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
-      '⬛'.repeat(MAX_ESSAIS - propositions.length);
-    const entete = numero ? `Boxtery n°${numero}` : 'Boxtery';
-    const resultat = gagne ? `${score}/${MAX_ESSAIS}` : `X/${MAX_ESSAIS}`;
+      '⬛'.repeat(Math.max(0, maxEssais - propositions.length));
+    const entete = libellePartage ?? (numero ? `Boxtery n°${numero}` : 'Boxtery');
+    const resultat = gagne ? `${score}/${maxEssais}` : `X/${maxEssais}`;
     try {
       await Share.share({ message: `${entete} ${resultat}\n${carres}` });
     } catch {
@@ -100,7 +110,7 @@ export default function Game({
         </TouchableOpacity>
         <Text style={styles.titre}>{titre}</Text>
         <Text style={styles.essais}>
-          {Math.min(propositions.length, MAX_ESSAIS)}/{MAX_ESSAIS}
+          {Math.min(propositions.length, maxEssais)}/{maxEssais}
         </Text>
       </View>
 
@@ -145,7 +155,7 @@ export default function Game({
               {gagne ? `Bravo ! Trouvé en ${propositions.length} essai${propositions.length > 1 ? 's' : ''}` : 'Raté pour cette fois'}
             </Text>
             <Text style={styles.reponse}>{mystere.reponse}</Text>
-            {gagne && <Text style={styles.score}>Score : {score}/{MAX_ESSAIS}</Text>}
+            {gagne && <Text style={styles.score}>Score : {score}/{maxEssais}</Text>}
 
             <Text style={styles.anecdoteTitre}>💡 Le saviez-vous ?</Text>
             <Text style={styles.anecdote}>{mystere.anecdote}</Text>
@@ -153,9 +163,9 @@ export default function Game({
             <TouchableOpacity style={styles.bouton} onPress={partager} activeOpacity={0.85}>
               <Text style={styles.boutonTexte}>Partager mon résultat</Text>
             </TouchableOpacity>
-            {onRejouer && (
-              <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire]} onPress={onRejouer} activeOpacity={0.85}>
-                <Text style={styles.boutonSecondaireTexte}>Mystère suivant</Text>
+            {suite && (
+              <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire]} onPress={suite.onPress} activeOpacity={0.85}>
+                <Text style={styles.boutonSecondaireTexte}>{suite.libelle}</Text>
               </TouchableOpacity>
             )}
           </View>
