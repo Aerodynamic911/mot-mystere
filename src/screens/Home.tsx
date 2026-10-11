@@ -42,11 +42,10 @@ export default function Home({
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   const [hauteurScene, setHauteurScene] = useState(0);
-  // La place restante après le texte « Mystère du jour » et les puces (≈ 110 px) revient à la mascotte.
-  const tailleMascotte = hauteurScene ? Math.max(90, Math.min(190, hauteurScene - 110)) : 190;
+  // La place restante après le texte « Mystère du jour » et les puces (≈ 70 px) revient à la mascotte.
+  const tailleMascotte = hauteurScene ? Math.max(90, Math.min(190, hauteurScene - 70)) : 190;
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
-  const etatJour = jourTermine ? 'terminé ✅' : 'à découvrir';
 
   return (
     <View style={styles.racine}>
@@ -72,7 +71,6 @@ export default function Home({
       {/* Zone fixe (non défilante) : la mascotte rétrécit sur un petit écran pour que « Mystère du jour » et les stats restent visibles. */}
       <View style={styles.scene} onLayout={(e) => setHauteurScene(e.nativeEvent.layout.height)}>
         <Mascotte taille={tailleMascotte} />
-        <Text style={styles.jour}>Mystère du jour · {etatJour}</Text>
         <View style={styles.puces}>
           <View style={styles.puce}>
             <Text style={styles.puceTexte}>🔥 {serie}</Text>
@@ -84,12 +82,12 @@ export default function Home({
       </View>
 
       <View style={styles.modes}>
-        <TouchableOpacity style={styles.mode} onPress={onAventure} activeOpacity={0.85}>
+        <TouchableOpacity style={[styles.mode, jourTermine && styles.modeEnAvant]} onPress={onAventure} activeOpacity={0.85}>
           <Text style={styles.modeEmoji}>🗺️</Text>
           <Text style={styles.modeTitre}>Aventure</Text>
           <Text style={styles.modeDetail}>Niveau {niveauAventure}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.mode} onPress={onEvenement} activeOpacity={0.85}>
+        <TouchableOpacity style={[styles.mode, jourTermine && styles.modeEnAvant]} onPress={onEvenement} activeOpacity={0.85}>
           <Text style={styles.modeEmoji}>🎉</Text>
           <Text style={styles.modeTitre}>Événements</Text>
           <Text style={styles.modeDetail}>
@@ -99,8 +97,18 @@ export default function Home({
       </View>
 
       <View style={styles.pied}>
-        <TouchableOpacity style={styles.boutonPrincipal} onPress={onJouerDuJour} activeOpacity={0.85}>
-          <Text style={styles.boutonPrincipalTexte}>▶  Jouer</Text>
+        {/* Tant que le mystère du jour n'est pas fait, c'est le bouton principal ; ensuite il s'efface devant les autres modes. */}
+        <TouchableOpacity
+          style={[styles.boutonPrincipal, jourTermine && styles.boutonPrincipalFait]}
+          onPress={onJouerDuJour}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.boutonPrincipalTexte, jourTermine && styles.boutonPrincipalTexteFait]}>
+            {jourTermine ? '✅  Mystère du jour' : '📅  Mystère du jour'}
+          </Text>
+          <Text style={[styles.boutonPrincipalSous, jourTermine && styles.boutonPrincipalSousFait]}>
+            {jourTermine ? (jourGagne ? 'Trouvé · revenez demain !' : 'Terminé · revenez demain !') : 'À découvrir'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.boutonPreferences} onPress={onPreferences} activeOpacity={0.85}>
           <Text style={styles.boutonPreferencesTexte}>⚙️  Préférences</Text>
@@ -177,7 +185,6 @@ const styles = StyleSheet.create({
   },
   rubanTexte: { color: '#E4D9FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   scene: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
-  jour: { color: couleurs.texte, fontSize: 14, marginTop: 14, fontWeight: '600' },
   puces: { flexDirection: 'row', marginTop: 14 },
   puce: {
     backgroundColor: 'rgba(26,31,58,0.82)',
@@ -200,6 +207,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: couleurs.bordure,
   },
+  modeEnAvant: { borderColor: couleurs.accent },
   modeEmoji: { fontSize: 24 },
   modeTitre: { color: couleurs.texte, fontSize: 16, fontWeight: '800', marginTop: 2 },
   modeDetail: { color: couleurs.accent, fontSize: 12, fontWeight: '700', marginTop: 2 },
@@ -213,6 +221,10 @@ const styles = StyleSheet.create({
   },
   boutonPrincipal: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 18, alignItems: 'center' },
   boutonPrincipalTexte: { color: '#1B1B1B', fontSize: 20, fontWeight: '800', letterSpacing: 0.5 },
+  boutonPrincipalSous: { color: '#1B1B1B', fontSize: 12, fontWeight: '600', marginTop: 2, opacity: 0.75 },
+  boutonPrincipalFait: { backgroundColor: 'transparent', borderWidth: 2, borderColor: couleurs.succes, paddingVertical: 12 },
+  boutonPrincipalTexteFait: { color: couleurs.succes, fontSize: 17 },
+  boutonPrincipalSousFait: { color: couleurs.texteSecondaire, opacity: 1 },
   boutonPreferences: {
     marginTop: 10,
     alignSelf: 'center',
