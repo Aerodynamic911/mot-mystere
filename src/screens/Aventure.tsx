@@ -40,6 +40,8 @@ const PARCOURS: { x: number; y: number }[][] = [
     { x: 0.5, y: 0.56 }, { x: 0.84, y: 0.7 }, { x: 0.46, y: 0.78 }, { x: 0.18, y: 0.9 }, { x: 0.6, y: 1 },
   ],
 ];
+// Tirets du chemin : tous de même longueur, avec le même espace entre eux (longueur, espace, en px).
+const TIRETS = '11 9';
 const TAILLE_NOEUD = 40;
 const TAILLE_MASCOTTE = 46;
 
@@ -206,8 +208,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
             </View>
 
             <Svg width={taille.l} height={taille.h} style={StyleSheet.absoluteFill}>
-              <Path d={chemin} stroke={sombre ? '#000000' : '#FFFFFF'} strokeOpacity={0.4} strokeWidth={8} strokeDasharray="1 11" strokeLinecap="round" fill="none" />
-              <Path d={chemin} stroke={encre} strokeOpacity={0.95} strokeWidth={4} strokeDasharray="1 11" strokeLinecap="round" fill="none" />
+              <Path d={chemin} stroke={sombre ? '#000000' : '#FFFFFF'} strokeOpacity={0.4} strokeWidth={8} strokeDasharray={TIRETS} strokeLinecap="butt" fill="none" />
+              <Path d={chemin} stroke={encre} strokeOpacity={0.95} strokeWidth={4} strokeDasharray={TIRETS} strokeLinecap="butt" fill="none" />
             </Svg>
 
             {noeuds.map((n, p) => {
