@@ -1,9 +1,11 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { jouerEffet } from '../audio/effets';
 import { Evenement, NB_ETAPES } from '../data/evenements';
 import { essaisEtape } from '../game/aventure';
 import { ProgressionEvenement } from '../game/progression';
 import { couleurs, rayon } from '../theme';
+import Eclat from '../ui/Eclat';
 import EnteteEcran from '../ui/EnteteEcran';
 import FondAnime from '../ui/FondAnime';
 
@@ -12,6 +14,9 @@ interface Props {
   progression: ProgressionEvenement;
   onJouerEtape: (etape: number) => void;
   onRetour: () => void;
+  /** Étape qui vient d'être réussie : elle rebondit avec une gerbe d'étoiles, puis la suivante s'illumine. */
+  etapeAnimee?: number | null;
+  onAnimeFini?: () => void;
 }
 
 const PAR_LIGNE = 4;
@@ -33,9 +38,37 @@ function surDeuxLignes(titre: string): string {
 }
 
 /** Carte d'un événement : 20 étapes en parcours, la suivante se débloque quand on réussit la précédente. */
-export default function EvenementCarte({ evenement, progression, onJouerEtape, onRetour }: Props) {
+export default function EvenementCarte({ evenement, progression, onJouerEtape, onRetour, etapeAnimee = null, onAnimeFini }: Props) {
   const { faites, etoiles } = progression;
   const fini = faites >= NB_ETAPES;
+  const pop = useRef(new Animated.Value(etapeAnimee ? 0 : 1)).current; // rebond de l'étape réussie
+  const eclat = useRef(new Animated.Value(0)).current; // gerbe d'étoiles
+  const pulse = useRef(new Animated.Value(0)).current; // l'étape à jouer respire
+
+  useEffect(() => {
+    const boucle = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ]),
+    );
+    boucle.start();
+    return () => boucle.stop();
+  }, [pulse]);
+
+  useEffect(() => {
+    if (!etapeAnimee) return;
+    const minuteur = setTimeout(() => {
+      jouerEffet('pop');
+      Animated.spring(pop, { toValue: 1, friction: 4, tension: 110, useNativeDriver: true }).start();
+      eclat.setValue(0);
+      Animated.timing(eclat, { toValue: 1, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(() =>
+        onAnimeFini?.(),
+      );
+    }, 450);
+    return () => clearTimeout(minuteur);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Parcours en serpentin : une ligne de gauche à droite, la suivante de droite à gauche.
   const lignes: number[][] = [];
@@ -60,9 +93,16 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
               const courante = etape === faites + 1;
               const finale = etape === NB_ETAPES;
               const nbEtoiles = faite ? (etoiles[etape - 1] ?? 1) : 0;
+              const rebondit = etape === etapeAnimee;
+              // Avant le rebond, l'étape réussie reste réduite : elle « apparaît » en se cochant.
+              const echelle = rebondit
+                ? pop.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] })
+                : courante
+                  ? pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.07] })
+                  : 1;
               return (
+                <Animated.View key={etape} style={[styles.noeudZone, { transform: [{ scale: echelle }] }]}>
                 <TouchableOpacity
-                  key={etape}
                   disabled={!courante}
                   onPress={() => onJouerEtape(etape)}
                   activeOpacity={0.85}
@@ -81,6 +121,12 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
                   {faite && <Text style={styles.noeudEtoiles}>{'⭐'.repeat(nbEtoiles)}</Text>}
                   {finale && !faite && courante ? <Text style={styles.noeudFinale}>FINALE</Text> : null}
                 </TouchableOpacity>
+                {rebondit && (
+                  <View pointerEvents="none" style={styles.centre}>
+                    <Eclat valeur={eclat} />
+                  </View>
+                )}
+                </Animated.View>
               );
             })}
           </View>
@@ -102,9 +148,10 @@ const styles = StyleSheet.create({
   titreTheme: { fontSize: 28, fontWeight: '900', textAlign: 'center', lineHeight: 34, marginTop: 6 },
   statut: { color: couleurs.texte, fontSize: 16, fontWeight: '700', textAlign: 'center', marginTop: 12, marginBottom: 34 },
   ligne: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  noeudZone: { width: '22%', aspectRatio: 1 },
+  centre: { position: 'absolute', left: '50%', top: '50%', width: 0, height: 0 },
   noeud: {
-    width: '22%',
-    aspectRatio: 1,
+    flex: 1,
     borderRadius: rayon,
     borderWidth: 2,
     borderColor: couleurs.bordure,

@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Image, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { jouerEffet } from '../audio/effets';
 import { decorAventure, essaisAventure, titreJoueur } from '../game/aventure';
 import { Progression } from '../game/progression';
 import { couleurs, rayon } from '../theme';
+import Eclat from '../ui/Eclat';
 import EnteteEcran from '../ui/EnteteEcran';
 import FondAnime from '../ui/FondAnime';
 import MiniMascotte from '../ui/MiniMascotte';
@@ -59,6 +61,14 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   const rang = (niveau - 1) % PAR_CARTE; // position de la mascotte sur la carte
   const [zone, setZone] = useState<{ l: number; h: number } | null>(null);
   const [nouveaute, setNouveaute] = useState('');
+  // Situation au moment d'arriver sur la carte : d'où part la mascotte (figé, même quand la progression est mise à jour).
+  const depart = useRef({
+    marche: depuis < niveau,
+    memeCarte: Math.floor((depuis - 1) / PAR_CARTE) === Math.floor((niveau - 1) / PAR_CARTE),
+    depuis,
+  }).current;
+  // attente → la mascotte est sur l'étape de départ ; marche → elle avance ; arrive → elle est sur l'étape actuelle.
+  const [etat, setEtat] = useState<'attente' | 'marche' | 'arrive'>(depart.marche ? 'attente' : 'arrive');
 
   function mesurer(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
@@ -117,6 +127,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   const rebond = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
   const annonce = useRef(new Animated.Value(0)).current;
+  const eclat = useRef(new Animated.Value(0)).current; // gerbe d'étoiles à l'arrivée
+  const pop = useRef(new Animated.Value(1)).current; // l'étape quittée se coche en rebondissant
   const aDeplace = useRef(false);
 
   useEffect(() => {
@@ -165,18 +177,36 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
         Animated.timing(annonce, { toValue: 0, duration: 400, useNativeDriver: true }),
       ]).start();
     }
+    // La mascotte quitte son étape : elle se coche en rebondissant, puis la mascotte avance.
+    setTimeout(() => {
+      setEtat('marche');
+      jouerEffet('pop');
+      pop.setValue(0);
+      Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }).start();
+    }, 500);
     Animated.timing(progres, {
       toValue: jalonArrivee,
       duration: 900 + 450 * Math.abs(jalonArrivee - jalonDepart),
       delay: 500,
       easing: Easing.inOut(Easing.cubic),
       useNativeDriver: true,
-    }).start(() => onArrive());
-  }, [echantillons, depuis, niveau, rang, progres, onArrive, annonce, decor.nom]);
+    }).start(() => {
+      // Arrivée : une gerbe d'étoiles, un petit son, et l'étape devient celle à jouer.
+      setEtat('arrive');
+      jouerEffet('pop');
+      eclat.setValue(0);
+      Animated.timing(eclat, { toValue: 1, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+      onArrive();
+    });
+  }, [echantillons, depuis, niveau, rang, progres, onArrive, annonce, decor.nom, eclat, pop]);
 
   const entrees = echantillons.map((_, i) => i / ECHANTILLONS);
   const essais = essaisAventure(niveau);
   const encre = decor.encre;
+  // Étapes cochées et étape à jouer, selon l'avancement de la mascotte.
+  const coche = etat === 'arrive' ? niveau : etat === 'marche' && depart.memeCarte ? depart.depuis + 1 : depart.memeCarte ? depart.depuis : niveau;
+  const actuel = etat === 'arrive' ? niveau : etat === 'marche' ? -1 : depart.memeCarte ? depart.depuis : niveau;
+  const echellePop = pop.interpolate({ inputRange: [0, 1], outputRange: [1.7, 1] });
 
   return (
     <View style={styles.racine}>
@@ -214,11 +244,15 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
 
             {noeuds.map((n, p) => {
               const niveauNoeud = base + p + 1;
-              const fait = niveauNoeud < niveau;
-              const courant = niveauNoeud === niveau;
+              const fait = niveauNoeud < coche;
+              const courant = niveauNoeud === actuel;
+              const rebondit = etat !== 'attente' && depart.marche && depart.memeCarte && niveauNoeud === depart.depuis;
               const tresor = p === PAR_CARTE - 1;
               return (
-                <View key={p} style={[styles.noeud, { left: n.x - TAILLE_NOEUD / 2, top: n.y - TAILLE_NOEUD / 2 }]}>
+                <Animated.View
+                  key={p}
+                  style={[styles.noeud, { left: n.x - TAILLE_NOEUD / 2, top: n.y - TAILLE_NOEUD / 2 }, rebondit && { transform: [{ scale: echellePop }] }]}
+                >
                   <View
                     style={[
                       styles.noeudRond,
@@ -230,12 +264,12 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                     </Text>
                   </View>
                   {tresor && !fait && <Text style={[styles.etiquetteTresor, { color: encre }]}>{niveauNoeud}</Text>}
-                </View>
+                </Animated.View>
               );
             })}
 
             {/* Un anneau qui bat autour du niveau à jouer */}
-            {noeuds[rang] && (
+            {etat === 'arrive' && noeuds[rang] && (
               <Animated.View
                 pointerEvents="none"
                 style={[
@@ -248,6 +282,13 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                   },
                 ]}
               />
+            )}
+
+            {/* Gerbe d'étoiles à l'arrivée de la mascotte */}
+            {noeuds[rang] && (
+              <View pointerEvents="none" style={{ position: 'absolute', left: noeuds[rang].x, top: noeuds[rang].y, width: 0, height: 0 }}>
+                <Eclat valeur={eclat} />
+              </View>
             )}
 
             {/* La mascotte avance sur le chemin */}

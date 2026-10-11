@@ -54,6 +54,8 @@ export default function App() {
   const [prog, setProg] = useState<Progression>(PROGRESSION_VIDE);
   // Dernier niveau d'aventure affiché sur la carte : la mascotte part de là pour avancer jusqu'au niveau actuel.
   const [niveauVu, setNiveauVu] = useState(1);
+  // Étape d'événement qui vient d'être réussie : la carte la fait rebondir avant de passer à la suivante.
+  const [etapeAnimee, setEtapeAnimee] = useState<{ id: string; etape: number } | null>(null);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const musique = useMusique();
   // Les bruitages suivent le bouton son de l'accueil.
@@ -179,7 +181,7 @@ export default function App() {
           onRetour={() => setEcran({ nom: 'aventure' })}
           actionFin={(gagne) =>
             gagne
-              ? { libelle: 'Niveau suivant', onPress: () => setEcran({ nom: 'aventure-jeu', niveau: ecran.niveau + 1, essai: 0 }) }
+              ? { libelle: 'Avancer sur la carte 🗺️', onPress: () => setEcran({ nom: 'aventure' }) }
               : { libelle: 'Réessayer ce niveau', onPress: () => setEcran({ nom: 'aventure-jeu', niveau: ecran.niveau, essai: ecran.essai + 1 }) }
           }
         />
@@ -189,6 +191,8 @@ export default function App() {
         <EvenementCarte
           evenement={EVENEMENTS.find((e) => e.id === ecran.id)!}
           progression={evenementDe(prog, ecran.id)}
+          etapeAnimee={etapeAnimee?.id === ecran.id ? etapeAnimee.etape : null}
+          onAnimeFini={() => setEtapeAnimee(null)}
           onJouerEtape={(etape) => {
             // Une étape déjà réussie ne se rejoue pas : seule l'étape en cours est accessible.
             if (etape === evenementDe(prog, ecran.id).faites + 1) setEcran({ nom: 'etape', id: ecran.id, etape });
@@ -207,14 +211,17 @@ export default function App() {
           libellePartage={`Boxtery · ${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} ${ecran.etape}/${NB_ETAPES}`}
           propositionsInitiales={[]}
           onTerminee={(propositions, gagne) => {
-            if (gagne) changerProgression(etapeReussie(prog, ecran.id, ecran.etape, propositions.length));
+            if (gagne) {
+              changerProgression(etapeReussie(prog, ecran.id, ecran.etape, propositions.length));
+              setEtapeAnimee({ id: ecran.id, etape: ecran.etape });
+            }
           }}
           onRetour={() => setEcran({ nom: 'evenement', id: ecran.id })}
-          actionFin={(gagne) =>
-            gagne && ecran.etape < NB_ETAPES
-              ? { libelle: 'Étape suivante', onPress: () => setEcran({ nom: 'etape', id: ecran.id, etape: ecran.etape + 1 }) }
-              : { libelle: gagne ? '🏆 Terminer' : 'Retour à la carte', onPress: () => setEcran({ nom: 'evenement', id: ecran.id }) }
-          }
+          // Après une victoire on repasse par la carte : l'étape se coche et la suivante s'illumine.
+          actionFin={(gagne) => ({
+            libelle: !gagne ? 'Retour à la carte' : ecran.etape < NB_ETAPES ? 'Continuer 🗺️' : '🏆 Terminer',
+            onPress: () => setEcran({ nom: 'evenement', id: ecran.id }),
+          })}
         />
       )}
     </SafeAreaView>
