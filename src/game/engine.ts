@@ -54,8 +54,3 @@ export function mystereDuJour(cle: string): Mystere {
   const i = (((numeroDuJour(cle) - 1) % n) + n) % n;
   return MYSTERES[i];
 }
-
-export function mystereAleatoire(exclure?: string): Mystere {
-  const choix = MYSTERES.filter((m) => m.id !== exclure);
-  return choix[Math.floor(Math.random() * choix.length)];
-}

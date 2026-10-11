@@ -19,7 +19,7 @@ interface Props {
   difficulte: Difficulte;
   mystere: Mystere;
   titre: string;
-  /** Numéro du mystère du jour (pour le partage). Absent en partie libre. */
+  /** Numéro du mystère du jour (pour le partage). Absent dans les autres modes. */
   numero?: number;
   propositionsInitiales: string[];
   onProgression?: (propositions: string[]) => void;

@@ -16,13 +16,14 @@ interface Props {
   musiqueActive: boolean;
   onToggleMusique: () => void;
   onJouerDuJour: () => void;
-  onPartieLibre: () => void;
   onPreferences: () => void;
   niveauAventure: number;
   etapesFaites: number;
   etapesTotal: number;
   onAventure: () => void;
-  onEvenements: () => void;
+  onEvenement: () => void;
+  evenementEmoji: string;
+  evenementTitre: string;
 }
 
 export default function Home({
@@ -34,13 +35,14 @@ export default function Home({
   musiqueActive,
   onToggleMusique,
   onJouerDuJour,
-  onPartieLibre,
   onPreferences,
   niveauAventure,
   etapesFaites,
   etapesTotal,
   onAventure,
-  onEvenements,
+  onEvenement,
+  evenementEmoji,
+  evenementTitre,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
@@ -75,9 +77,6 @@ export default function Home({
           <View style={styles.puce}>
             <Text style={styles.puceTexte}>🔥 {serie}</Text>
           </View>
-          <TouchableOpacity style={styles.puce} onPress={onPartieLibre} activeOpacity={0.85}>
-            <Text style={styles.puceTexte}>🎲 Partie libre</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.puce} onPress={() => setStatsOuvertes(true)} activeOpacity={0.85}>
             <Text style={styles.puceTexte}>📊 Stats</Text>
           </TouchableOpacity>
@@ -90,9 +89,11 @@ export default function Home({
           <Text style={styles.modeTitre}>Aventure</Text>
           <Text style={styles.modeDetail}>Niveau {niveauAventure}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.mode} onPress={onEvenements} activeOpacity={0.85}>
-          <Text style={styles.modeEmoji}>🎉</Text>
-          <Text style={styles.modeTitre}>Événements</Text>
+        <TouchableOpacity style={styles.mode} onPress={onEvenement} activeOpacity={0.85}>
+          <Text style={styles.modeEmoji}>{evenementEmoji}</Text>
+          <Text style={styles.modeTitre} numberOfLines={1}>
+            {evenementTitre}
+          </Text>
           <Text style={styles.modeDetail}>
             {etapesFaites}/{etapesTotal} étapes
           </Text>

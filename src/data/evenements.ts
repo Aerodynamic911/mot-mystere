@@ -656,6 +656,11 @@ const histoire: Mystere[] = [
   },
 ];
 
+/** L'événement en cours change chaque mois, à tour de rôle. */
+export function evenementEnCours(date: Date = new Date()): Evenement {
+  return EVENEMENTS[(date.getFullYear() * 12 + date.getMonth()) % EVENEMENTS.length];
+}
+
 export const EVENEMENTS: Evenement[] = [
   {
     id: 'merveilles',

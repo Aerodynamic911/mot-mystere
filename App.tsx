@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { EVENEMENTS, NB_ETAPES } from './src/data/evenements';
-import { Mystere } from './src/data/mysteres';
+import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { essaisAventure, essaisEtape, mystereAventure } from './src/game/aventure';
-import { cleDuJour, mystereAleatoire, mystereDuJour, numeroDuJour } from './src/game/engine';
+import { cleDuJour, mystereDuJour, numeroDuJour } from './src/game/engine';
 import {
   EtatDuJour,
   STATS_VIDES,
@@ -28,7 +27,6 @@ import {
 } from './src/game/progression';
 import Aventure from './src/screens/Aventure';
 import EvenementCarte from './src/screens/EvenementCarte';
-import Evenements from './src/screens/Evenements';
 import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
 import { useMusique } from './src/audio/musique';
@@ -40,10 +38,8 @@ type Ecran =
   | { nom: 'accueil' }
   | { nom: 'preferences' }
   | { nom: 'jour' }
-  | { nom: 'libre'; mystere: Mystere; run: number }
   | { nom: 'aventure' }
   | { nom: 'aventure-jeu'; niveau: number; essai: number }
-  | { nom: 'evenements' }
   | { nom: 'evenement'; id: string }
   | { nom: 'etape'; id: string; etape: number };
 
@@ -103,14 +99,6 @@ export default function App() {
     sauverProgression(p);
   }
 
-  function lancerPartieLibre(precedent?: Mystere) {
-    setEcran((e) => ({
-      nom: 'libre',
-      mystere: mystereAleatoire(precedent?.id),
-      run: e.nom === 'libre' ? e.run + 1 : 1,
-    }));
-  }
-
   if (!pret || !delaiEcoule) {
     return (
       <SafeAreaView style={[styles.racine, { backgroundColor: FOND_SPLASH }]}>
@@ -133,13 +121,14 @@ export default function App() {
           musiqueActive={musique.actif}
           onToggleMusique={musique.basculer}
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
-          onPartieLibre={() => lancerPartieLibre()}
           onPreferences={() => setEcran({ nom: 'preferences' })}
           niveauAventure={prog.aventure.niveau}
-          etapesFaites={EVENEMENTS.reduce((somme, ev) => somme + evenementDe(prog, ev.id).faites, 0)}
-          etapesTotal={EVENEMENTS.length * NB_ETAPES}
+          etapesFaites={evenementDe(prog, evenementEnCours().id).faites}
+          etapesTotal={NB_ETAPES}
           onAventure={() => setEcran({ nom: 'aventure' })}
-          onEvenements={() => setEcran({ nom: 'evenements' })}
+          onEvenement={() => setEcran({ nom: 'evenement', id: evenementEnCours().id })}
+          evenementEmoji={evenementEnCours().emoji}
+          evenementTitre={evenementEnCours().titre}
         />
       )}
 
@@ -158,18 +147,6 @@ export default function App() {
           onProgression={progression}
           onTerminee={terminee}
           onRetour={() => setEcran({ nom: 'accueil' })}
-        />
-      )}
-
-      {ecran.nom === 'libre' && (
-        <Game
-          key={`libre-${ecran.run}`}
-          difficulte={prefs.difficulte}
-          mystere={ecran.mystere}
-          titre="Partie libre"
-          propositionsInitiales={[]}
-          onRetour={() => setEcran({ nom: 'accueil' })}
-          actionFin={() => ({ libelle: 'Mystère suivant', onPress: () => lancerPartieLibre(ecran.mystere) })}
         />
       )}
 
@@ -202,16 +179,12 @@ export default function App() {
         />
       )}
 
-      {ecran.nom === 'evenements' && (
-        <Evenements progression={prog} onChoisir={(id) => setEcran({ nom: 'evenement', id })} onRetour={() => setEcran({ nom: 'accueil' })} />
-      )}
-
       {ecran.nom === 'evenement' && (
         <EvenementCarte
           evenement={EVENEMENTS.find((e) => e.id === ecran.id)!}
           progression={evenementDe(prog, ecran.id)}
           onJouerEtape={(etape) => setEcran({ nom: 'etape', id: ecran.id, etape })}
-          onRetour={() => setEcran({ nom: 'evenements' })}
+          onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
 
