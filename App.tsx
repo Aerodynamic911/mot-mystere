@@ -199,6 +199,7 @@ export default function App() {
           etapesTotal={NB_ETAPES}
           onAventure={() => setEcran({ nom: 'aventure' })}
           onEvenement={() => setEcran({ nom: 'evenement', id: evenementEnCours().id })}
+          serieVictoires={stats.serieVictoires}
           jokers={stats.jokers}
           nbCartes={collection.length}
           onCollection={() => setEcran({ nom: 'collection' })}

@@ -15,6 +15,8 @@ export interface Carte {
   /** Couleur du fond de la carte. */
   fond: string;
   rarete: Rarete;
+  /** Comment on l'a obtenue (affiché quand on agrandit la carte). */
+  obtention: string;
 }
 
 export const RARETES: Record<Rarete, { libelle: string; couleur: string }> = {
@@ -42,6 +44,7 @@ export function carteAventure(n: number): Carte {
     couleur: decor.sombre ? decor.trait : decor.encre,
     fond: decor.parchemin,
     rarete,
+    obtention: `Obtenue en réussissant le niveau ${n * NIVEAUX_PAR_CARTE_AVENTURE} de l'aventure.`,
   };
 }
 
@@ -55,6 +58,7 @@ export function carteEvenement(e: Evenement): Carte {
     couleur: e.couleur,
     fond: '#1A1F3A',
     rarete: 'epique',
+    obtention: `Obtenue en terminant les 20 étapes de l'événement « ${e.titre} ».`,
   };
 }
 
@@ -73,6 +77,7 @@ export function carteJour(k: number): Carte {
     couleur: '#F5B942',
     fond: '#2A2350',
     rarete: k <= 1 ? 'rare' : k <= 3 ? 'epique' : 'legendaire',
+    obtention: `Obtenue en résolvant ${k * MYSTERES_PAR_CARTE_JOUR} mystères du jour.`,
   };
 }
 

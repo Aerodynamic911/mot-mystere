@@ -48,8 +48,8 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
   useEffect(() => {
     const boucle = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
       ]),
     );
     boucle.start();
@@ -60,9 +60,9 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
     if (!etapeAnimee) return;
     const minuteur = setTimeout(() => {
       jouerEffet('pop');
-      Animated.spring(pop, { toValue: 1, friction: 4, tension: 110, useNativeDriver: true }).start();
+      Animated.spring(pop, { toValue: 1, friction: 4, tension: 110, useNativeDriver: false }).start();
       eclat.setValue(0);
-      Animated.timing(eclat, { toValue: 1, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(() =>
+      Animated.timing(eclat, { toValue: 1, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: false }).start(() =>
         onAnimeFini?.(),
       );
     }, 450);

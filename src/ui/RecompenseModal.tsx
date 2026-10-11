@@ -27,8 +27,8 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
     entree.setValue(0);
     eclat.setValue(0);
     jouerEffet('victoire');
-    Animated.spring(entree, { toValue: 1, friction: 5, tension: 70, useNativeDriver: true }).start();
-    Animated.timing(eclat, { toValue: 1, duration: 1100, delay: 250, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+    Animated.spring(entree, { toValue: 1, friction: 5, tension: 70, useNativeDriver: false }).start();
+    Animated.timing(eclat, { toValue: 1, duration: 1100, delay: 250, easing: Easing.out(Easing.quad), useNativeDriver: false }).start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cle]);
 

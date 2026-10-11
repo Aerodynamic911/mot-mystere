@@ -1,7 +1,7 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { Carte, MYSTERES_PAR_CARTE_JOUR, NIVEAUX_PAR_CARTE_AVENTURE, carteAventure, carteEvenement, carteJour, carteParId } from '../data/cartes';
-import { EVENEMENTS } from '../data/evenements';
+import { EVENEMENTS, evenementEnCours } from '../data/evenements';
 import { Progression } from '../game/progression';
 import { Stats } from '../game/storage';
 import { couleurs } from '../theme';
@@ -23,6 +23,13 @@ const ECART = 10;
 export default function Collection({ possedees, progression, stats, onRetour }: Props) {
   const { width } = useWindowDimensions();
   const largeur = Math.floor((width - 40 - ECART * (COLONNES - 1)) / COLONNES);
+  // Carte agrandie (touchez une carte obtenue pour l'admirer).
+  const [agrandie, setAgrandie] = useState<Carte | null>(null);
+  // Seuls l'événement en cours et ceux déjà commencés ou terminés apparaissent : les suivants restent une surprise.
+  const courant = evenementEnCours().id;
+  const evenementsVisibles = EVENEMENTS.filter(
+    (e) => e.id === courant || possedees.includes(`ev-${e.id}`) || (progression.evenements[e.id]?.faites ?? 0) > 0,
+  );
 
   const avoir = (prefixe: string): Carte[] =>
     possedees
@@ -46,10 +53,15 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
       <EnteteEcran titre="Collection" onRetour={onRetour} />
       <ScrollView contentContainerStyle={styles.contenu}>
         <Text style={styles.resume}>🃏 {total} carte{total > 1 ? 's' : ''} obtenue{total > 1 ? 's' : ''}</Text>
+        <Text style={styles.aide}>
+          Des cartes à collectionner se gagnent en jouant. Touchez une carte obtenue pour l'agrandir et l'admirer.
+        </Text>
 
         <Section titre="🗺️ Aventure" note={`Une carte tous les ${NIVEAUX_PAR_CARTE_AVENTURE} niveaux réussis`}>
           {aventure.map((c) => (
-            <CarteVisuelle key={c.id} carte={c} largeur={largeur} />
+            <Touchable key={c.id} onPress={() => setAgrandie(c)}>
+              <CarteVisuelle carte={c} largeur={largeur} />
+            </Touchable>
           ))}
           <CarteVisuelle
             carte={carteAventure(prochaineAventure)}
@@ -60,11 +72,13 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
         </Section>
 
         <Section titre="🎉 Événements" note="Une carte quand l'événement est terminé (20 étapes)">
-          {EVENEMENTS.map((e) => {
+          {evenementsVisibles.map((e) => {
             const c = carteEvenement(e);
             const faites = progression.evenements[e.id]?.faites ?? 0;
             return possedees.includes(c.id) ? (
-              <CarteVisuelle key={c.id} carte={c} largeur={largeur} />
+              <Touchable key={c.id} onPress={() => setAgrandie(c)}>
+                <CarteVisuelle carte={c} largeur={largeur} />
+              </Touchable>
             ) : (
               <CarteVisuelle key={c.id} carte={c} largeur={largeur} verrouillee consigne={`${e.titre} : ${faites}/20 étapes`} />
             );
@@ -73,7 +87,9 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
 
         <Section titre="📅 Mystère du jour" note={`Une carte tous les ${MYSTERES_PAR_CARTE_JOUR} mystères du jour résolus`}>
           {jour.map((c) => (
-            <CarteVisuelle key={c.id} carte={c} largeur={largeur} />
+            <Touchable key={c.id} onPress={() => setAgrandie(c)}>
+              <CarteVisuelle carte={c} largeur={largeur} />
+            </Touchable>
           ))}
           <CarteVisuelle
             carte={carteJour(prochaineJour)}
@@ -83,7 +99,62 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
           />
         </Section>
       </ScrollView>
+      <CarteAgrandie carte={agrandie} onFermer={() => setAgrandie(null)} />
     </View>
+  );
+}
+
+function Touchable({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel="Agrandir la carte">
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+/** Carte en grand, qui flotte doucement : de quoi l'admirer. */
+function CarteAgrandie({ carte, onFermer }: { carte: Carte | null; onFermer: () => void }) {
+  const { width, height } = useWindowDimensions();
+  const entree = useRef(new Animated.Value(0)).current;
+  const flotte = useRef(new Animated.Value(0)).current;
+  const largeur = Math.min(width - 70, (height - 260) / 1.42, 340);
+
+  useEffect(() => {
+    if (!carte) return;
+    entree.setValue(0);
+    Animated.spring(entree, { toValue: 1, friction: 6, tension: 80, useNativeDriver: false }).start();
+    const boucle = Animated.loop(
+      Animated.sequence([
+        Animated.timing(flotte, { toValue: 1, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(flotte, { toValue: 0, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+      ]),
+    );
+    boucle.start();
+    return () => boucle.stop();
+  }, [carte, entree, flotte]);
+
+  return (
+    <Modal visible={!!carte} transparent animationType="fade" onRequestClose={onFermer}>
+      <TouchableOpacity style={styles.voile} activeOpacity={1} onPress={onFermer}>
+        {carte && (
+          <>
+            <Animated.View
+              style={{
+                transform: [
+                  { scale: entree.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) },
+                  { translateY: flotte.interpolate({ inputRange: [0, 1], outputRange: [4, -6] }) },
+                  { rotate: flotte.interpolate({ inputRange: [0, 1], outputRange: ['-1.5deg', '1.5deg'] }) },
+                ],
+              }}
+            >
+              <CarteVisuelle carte={carte} largeur={largeur} />
+            </Animated.View>
+            <Text style={styles.obtention}>{carte.obtention}</Text>
+            <Text style={styles.toucher}>Touchez pour fermer</Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </Modal>
   );
 }
 
@@ -104,5 +175,9 @@ const styles = StyleSheet.create({
   section: { marginTop: 18 },
   sectionTitre: { color: couleurs.accent, fontSize: 18, fontWeight: '800' },
   sectionNote: { color: couleurs.texteSecondaire, fontSize: 12, marginTop: 2, marginBottom: 10 },
+  aide: { color: couleurs.texteSecondaire, fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 4 },
+  voile: { flex: 1, backgroundColor: 'rgba(10,12,28,0.94)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  obtention: { color: couleurs.texte, fontSize: 15, textAlign: 'center', marginTop: 26, maxWidth: 300, lineHeight: 21 },
+  toucher: { color: couleurs.texteSecondaire, fontSize: 12, marginTop: 14 },
   grille: { flexDirection: 'row', flexWrap: 'wrap', gap: ECART },
 });

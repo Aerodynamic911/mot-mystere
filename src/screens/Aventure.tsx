@@ -136,14 +136,14 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   useEffect(() => {
     const r = Animated.loop(
       Animated.sequence([
-        Animated.timing(rebond, { toValue: 1, duration: 420, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(rebond, { toValue: 0, duration: 420, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(rebond, { toValue: 1, duration: 420, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(rebond, { toValue: 0, duration: 420, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
       ]),
     );
     const p = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 900, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 900, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 0, duration: 900, useNativeDriver: false }),
       ]),
     );
     r.start();
@@ -174,9 +174,9 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
       setNouveaute(messages.join('\n'));
       Animated.sequence([
         Animated.delay(300),
-        Animated.timing(annonce, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.timing(annonce, { toValue: 1, duration: 300, useNativeDriver: false }),
         Animated.delay(2600),
-        Animated.timing(annonce, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.timing(annonce, { toValue: 0, duration: 400, useNativeDriver: false }),
       ]).start();
     }
     // La mascotte quitte son étape : elle se coche en rebondissant, puis la mascotte avance.
@@ -184,14 +184,14 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
       setEtat('marche');
       jouerEffet('pop');
       pop.setValue(0);
-      Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }).start();
+      Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: false }).start();
     }, 500);
     Animated.timing(progres, {
       toValue: jalonArrivee,
       duration: 900 + 450 * Math.abs(jalonArrivee - jalonDepart),
       delay: 500,
       easing: Easing.inOut(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start(() => {
       // On fixe la valeur finale côté JS : sinon, au rendu suivant, la mascotte reviendrait à son point de départ.
       progres.setValue(jalonArrivee);
@@ -199,11 +199,13 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
       setEtat('arrive');
       jouerEffet('pop');
       eclat.setValue(0);
-      Animated.timing(eclat, { toValue: 1, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+      Animated.timing(eclat, { toValue: 1, duration: 800, easing: Easing.out(Easing.quad), useNativeDriver: false }).start();
       onArrive();
     });
   }, [echantillons, depuis, niveau, rang, progres, onArrive, annonce, decor.nom, eclat, pop]);
 
+  // Animations pilotées côté JavaScript (pas par le moteur natif) : la valeur reste toujours à jour. Avec le moteur natif,
+  // un simple nouveau rendu de l'écran pendant la marche remettait la mascotte à son point de départ.
   // Les interpolations sont créées une seule fois : refaites à chaque rendu, elles repartiraient de l'ancienne valeur.
   const deplacement = useMemo(() => {
     const entrees = echantillons.map((_, i) => i / ECHANTILLONS);

@@ -23,6 +23,7 @@ interface Props {
   etapesTotal: number;
   onAventure: () => void;
   onEvenement: () => void;
+  serieVictoires: number;
   jokers: number;
   nbCartes: number;
   onCollection: () => void;
@@ -43,14 +44,17 @@ export default function Home({
   etapesTotal,
   onAventure,
   onEvenement,
+  serieVictoires,
   jokers,
   nbCartes,
   onCollection,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
+  // Infobulle ouverte en touchant la série ou les jokers.
+  const [info, setInfo] = useState<'serie' | 'jokers' | null>(null);
   const [hauteurScene, setHauteurScene] = useState(0);
-  // La place restante après le texte « Mystère du jour » et les puces (≈ 70 px) revient à la mascotte.
-  const tailleMascotte = hauteurScene ? Math.max(90, Math.min(190, hauteurScene - 70)) : 190;
+  // La place restante après le texte « Mystère du jour » et les puces (≈ 84 px) revient à la mascotte.
+  const tailleMascotte = hauteurScene ? Math.max(90, Math.min(190, hauteurScene - 84)) : 190;
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
 
@@ -79,18 +83,10 @@ export default function Home({
       <View style={styles.scene} onLayout={(e) => setHauteurScene(e.nativeEvent.layout.height)}>
         <Mascotte taille={tailleMascotte} />
         <View style={styles.puces}>
-          <View style={styles.puce}>
-            <Text style={styles.puceTexte}>🔥 {serie}</Text>
-          </View>
-          <View style={styles.puce}>
-            <Text style={styles.puceTexte}>✨ {jokers}</Text>
-          </View>
-          <TouchableOpacity style={styles.puce} onPress={() => setStatsOuvertes(true)} activeOpacity={0.85}>
-            <Text style={styles.puceTexte}>📊 Stats</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.puce} onPress={onCollection} activeOpacity={0.85}>
-            <Text style={styles.puceTexte}>🃏 {nbCartes}</Text>
-          </TouchableOpacity>
+          <Puce icone="🔥" valeur={serieVictoires} libelle="Série" onPress={() => setInfo('serie')} />
+          <Puce icone="✨" valeur={jokers} libelle="Jokers" onPress={() => setInfo('jokers')} />
+          <Puce icone="🃏" valeur={nbCartes} libelle="Cartes" onPress={onCollection} />
+          <Puce icone="📊" valeur="" libelle="Stats" onPress={() => setStatsOuvertes(true)} />
         </View>
       </View>
 
@@ -127,6 +123,39 @@ export default function Home({
           <Text style={styles.boutonPreferencesTexte}>⚙️  Préférences</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal visible={info !== null} transparent animationType="fade" onRequestClose={() => setInfo(null)}>
+        <TouchableOpacity style={styles.voile} activeOpacity={1} onPress={() => setInfo(null)}>
+          <View style={styles.infoCarte}>
+            {info === 'serie' && (
+              <>
+                <Text style={styles.statsTitre}>🔥 Série de victoires</Text>
+                <Text style={styles.infoTexte}>
+                  C'est le nombre de parties gagnées d'affilée, tous modes confondus : mystère du jour, aventure et événements. Une défaite remet le compteur à zéro.
+                </Text>
+                <Text style={styles.infoTexte}>
+                  {prochainPalier(PALIERS_VICTOIRES, serieVictoires)
+                    ? `Prochain bonus : ${prochainPalier(PALIERS_VICTOIRES, serieVictoires)!.seuil} victoires d'affilée → +${prochainPalier(PALIERS_VICTOIRES, serieVictoires)!.jokers} ✨ joker(s).`
+                    : "Vous avez atteint tous les paliers de bonus !"}
+                </Text>
+                <Text style={styles.infoNote}>Votre meilleure série : {stats.meilleureSerieVictoires}. Série de jours avec le mystère du jour : {serie} (détail dans 📊 Stats).</Text>
+              </>
+            )}
+            {info === 'jokers' && (
+              <>
+                <Text style={styles.statsTitre}>✨ Jokers</Text>
+                <Text style={styles.infoTexte}>
+                  Un joker révèle un indice supplémentaire sans compter comme un essai. Vous en avez {jokers} en réserve : utilisez-les pendant une partie avec le bouton vert « Utiliser un joker ».
+                </Text>
+                <Text style={styles.infoTexte}>
+                  Pour en gagner, enchaînez les séries : {PALIERS_JOURS.map((p) => p.seuil).join(', ')} jours de suite avec le mystère du jour, ou {PALIERS_VICTOIRES.map((p) => p.seuil).join(', ')} victoires d'affilée.
+                </Text>
+              </>
+            )}
+            <Text style={styles.infoNote}>Touchez pour fermer</Text>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <Modal visible={statsOuvertes} transparent animationType="fade" onRequestClose={() => setStatsOuvertes(false)}>
         <View style={styles.voile}>
@@ -198,6 +227,19 @@ export default function Home({
   );
 }
 
+/** Pastille de l'accueil : une icône, sa valeur et un mot qui dit ce que c'est. */
+function Puce({ icone, valeur, libelle, onPress }: { icone: string; valeur: number | string; libelle: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.puce} onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={`${libelle} ${valeur}`}>
+      <Text style={styles.puceTexte}>
+        {icone}
+        {valeur !== '' ? ` ${valeur}` : ''}
+      </Text>
+      <Text style={styles.puceLibelle}>{libelle}</Text>
+    </TouchableOpacity>
+  );
+}
+
 function Stat({ valeur, label }: { valeur: number | string; label: string }) {
   return (
     <View style={styles.stat}>
@@ -242,10 +284,25 @@ const styles = StyleSheet.create({
     borderColor: couleurs.bordure,
     borderWidth: 1,
     borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     marginHorizontal: 4,
+    alignItems: 'center',
+    minWidth: 66,
   },
+  puceLibelle: { color: couleurs.texteSecondaire, fontSize: 11, fontWeight: '600', marginTop: 1 },
+  infoCarte: {
+    alignSelf: 'center',
+    backgroundColor: couleurs.carte,
+    borderRadius: rayon,
+    borderWidth: 1,
+    borderColor: couleurs.bordure,
+    padding: 22,
+    width: '100%',
+    maxWidth: 360,
+  },
+  infoTexte: { color: couleurs.texte, fontSize: 15, lineHeight: 22, marginBottom: 10 },
+  infoNote: { color: couleurs.texteSecondaire, fontSize: 12, lineHeight: 18, marginTop: 4, textAlign: 'center' },
   modeLigne: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   modeNom: { color: couleurs.texte, fontSize: 14, fontWeight: '600' },
   modeDetailTexte: { color: couleurs.texteSecondaire, fontSize: 13 },
