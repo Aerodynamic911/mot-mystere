@@ -1,3 +1,4 @@
+import { ImageSourcePropType } from 'react-native';
 import { EVENEMENTS, NB_ETAPES } from '../data/evenements';
 import { MYSTERES, Mystere } from '../data/mysteres';
 
@@ -75,25 +76,27 @@ export function titreJoueur(niveau: number): string {
 
 export interface Decor {
   nom: string;
-  /** Couleur du parchemin de la carte. */
+  /** Couleur de repli, affichée si l'image du décor tarde à charger. */
   parchemin: string;
   /** Couleur de l'encre (chemin, textes sur la carte). */
   encre: string;
-  /** Petits motifs semés sur la carte. */
-  motifs: string[];
+  /** Image de fond de la carte (portrait, ratio 3:4). */
+  image: ImageSourcePropType;
+  /** Fond sombre : le chemin et les pastilles passent en clair. */
+  sombre: boolean;
   /** Emoji du coffre-fort final de la carte. */
   tresor: string;
 }
 
 const DECORS: Decor[] = [
-  { nom: 'Forêt enchantée', parchemin: '#D9E7B8', encre: '#4A3B1F', motifs: ['🌲', '🌳', '🍄', '🦉'], tresor: '🧰' },
-  { nom: 'Désert doré', parchemin: '#F0D898', encre: '#5B3A12', motifs: ['🌵', '🏜️', '🐪', '☀️'], tresor: '🏺' },
-  { nom: 'Montagnes gelées', parchemin: '#DCE8F2', encre: '#2F3F55', motifs: ['🏔️', '❄️', '⛷️', '🐻‍❄️'], tresor: '💎' },
-  { nom: 'Jungle mystérieuse', parchemin: '#BFE0B0', encre: '#264A25', motifs: ['🌴', '🦜', '🐒', '🌺'], tresor: '🗿' },
-  { nom: 'Îles des pirates', parchemin: '#C6E6EC', encre: '#1F4A57', motifs: ['🏝️', '⛵', '🐙', '🐚'], tresor: '🪙' },
-  { nom: 'Volcan en feu', parchemin: '#EBC3A6', encre: '#5A2418', motifs: ['🌋', '🔥', '🦎', '🪨'], tresor: '👑' },
-  { nom: 'Cité des nuages', parchemin: '#E2DCF5', encre: '#3F3470', motifs: ['☁️', '🎈', '🦅', '🌈'], tresor: '🔮' },
-  { nom: 'Espace infini', parchemin: '#2F3068', encre: '#F3E9C6', motifs: ['⭐', '🪐', '🚀', '🌙'], tresor: '🛸' },
+  { nom: 'Forêt enchantée', parchemin: '#9CE6B8', encre: '#17492B', image: require('../../assets/aventure/decor-1.jpg'), sombre: false, tresor: '🧰' },
+  { nom: 'Désert doré', parchemin: '#FBE7A0', encre: '#6B3F0C', image: require('../../assets/aventure/decor-2.jpg'), sombre: false, tresor: '🏺' },
+  { nom: 'Montagnes gelées', parchemin: '#DCF3F8', encre: '#17476B', image: require('../../assets/aventure/decor-3.jpg'), sombre: false, tresor: '💎' },
+  { nom: 'Jungle mystérieuse', parchemin: '#B8E98A', encre: '#124A1C', image: require('../../assets/aventure/decor-4.jpg'), sombre: false, tresor: '🗿' },
+  { nom: 'Îles des pirates', parchemin: '#5CF0F0', encre: '#0B4A5C', image: require('../../assets/aventure/decor-5.jpg'), sombre: false, tresor: '🪙' },
+  { nom: 'Volcan en feu', parchemin: '#4A2E26', encre: '#FFE4BE', image: require('../../assets/aventure/decor-6.jpg'), sombre: true, tresor: '👑' },
+  { nom: 'Cité des nuages', parchemin: '#9EDCFA', encre: '#33307A', image: require('../../assets/aventure/decor-7.jpg'), sombre: false, tresor: '🔮' },
+  { nom: 'Espace infini', parchemin: '#1E1B5E', encre: '#FFF1C9', image: require('../../assets/aventure/decor-8.jpg'), sombre: true, tresor: '🛸' },
 ];
 
 /** Décor de la carte : il change tous les 10 niveaux. */

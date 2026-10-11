@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, Image, LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { decorAventure, essaisAventure, titreJoueur } from '../game/aventure';
 import { Progression } from '../game/progression';
@@ -34,7 +34,7 @@ interface Point {
 export default function Aventure({ progression, depuis, onArrive, onJouer, onRetour }: Props) {
   const { niveau, record, etoiles } = progression.aventure;
   const decor = decorAventure(niveau);
-  const sombre = decor.parchemin === '#2F3068';
+  const sombre = decor.sombre;
   const base = Math.floor((niveau - 1) / PAR_CARTE) * PAR_CARTE; // niveau 0-indexé du début de la carte
   const rang = (niveau - 1) % PAR_CARTE; // position de la mascotte sur la carte
   const [taille, setTaille] = useState<{ l: number; h: number } | null>(null);
@@ -160,25 +160,25 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
         </Text>
       </View>
 
-      <View style={[styles.carte, { backgroundColor: decor.parchemin, borderColor: sombre ? '#8C6BFF' : '#8B6B3E' }]} onLayout={mesurer}>
+      <View style={[styles.carte, { backgroundColor: decor.parchemin, borderColor: sombre ? '#8C6BFF' : '#FFFFFF' }]} onLayout={mesurer}>
+        {/* Image du décor, sous le chemin et les pastilles */}
+        <Image source={decor.image} style={StyleSheet.absoluteFill} resizeMode="cover" />
         {taille && (
           <>
-            <Text style={[styles.nomDecor, { color: encre }]}>
-              {decor.nom} · niveaux {base + 1}–{base + PAR_CARTE}
-            </Text>
-
-            {/* Motifs du décor semés sur la carte */}
-            {MOTIFS_POSITIONS.map((m, i) => (
+            <View pointerEvents="none" style={styles.nomDecorZone}>
               <Text
-                key={i}
-                style={[styles.motif, { left: m.x * taille.l, top: m.y * taille.h, fontSize: m.t }]}
+                style={[
+                  styles.nomDecor,
+                  { color: encre, backgroundColor: sombre ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.72)' },
+                ]}
               >
-                {decor.motifs[i % decor.motifs.length]}
+                {decor.nom} · niveaux {base + 1}–{base + PAR_CARTE}
               </Text>
-            ))}
+            </View>
 
             <Svg width={taille.l} height={taille.h} style={StyleSheet.absoluteFill}>
-              <Path d={chemin} stroke={encre} strokeOpacity={0.7} strokeWidth={4} strokeDasharray="1 11" strokeLinecap="round" fill="none" />
+              <Path d={chemin} stroke={sombre ? '#000000' : '#FFFFFF'} strokeOpacity={0.4} strokeWidth={8} strokeDasharray="1 11" strokeLinecap="round" fill="none" />
+              <Path d={chemin} stroke={encre} strokeOpacity={0.95} strokeWidth={4} strokeDasharray="1 11" strokeLinecap="round" fill="none" />
             </Svg>
 
             {noeuds.map((n, p) => {
@@ -191,7 +191,7 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                   <View
                     style={[
                       styles.noeudRond,
-                      { borderColor: encre, backgroundColor: fait ? '#3DDC97' : courant ? couleurs.accent : sombre ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.55)' },
+                      { borderColor: encre, backgroundColor: fait ? '#3DDC97' : courant ? couleurs.accent : sombre ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.82)' },
                     ]}
                   >
                     <Text style={[styles.noeudTexte, { color: fait || courant ? '#1B1B1B' : encre }]}>
@@ -262,20 +262,6 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   );
 }
 
-/** Emplacements des motifs de décor (en part de la carte), choisis pour rester à l'écart du chemin. */
-const MOTIFS_POSITIONS = [
-  { x: 0.04, y: 0.1, t: 28 },
-  { x: 0.82, y: 0.14, t: 30 },
-  { x: 0.05, y: 0.36, t: 26 },
-  { x: 0.86, y: 0.4, t: 26 },
-  { x: 0.46, y: 0.24, t: 24 },
-  { x: 0.04, y: 0.62, t: 30 },
-  { x: 0.84, y: 0.64, t: 28 },
-  { x: 0.46, y: 0.5, t: 22 },
-  { x: 0.06, y: 0.86, t: 26 },
-  { x: 0.84, y: 0.86, t: 30 },
-];
-
 const styles = StyleSheet.create({
   racine: { flex: 1, backgroundColor: couleurs.fond },
   titres: { alignItems: 'center', paddingBottom: 8 },
@@ -290,8 +276,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     overflow: 'hidden',
   },
-  nomDecor: { position: 'absolute', top: 8, left: 0, right: 0, textAlign: 'center', fontSize: 12, fontWeight: '800', letterSpacing: 1, opacity: 0.85 },
-  motif: { position: 'absolute', opacity: 0.85 },
+  nomDecorZone: { position: 'absolute', top: 8, left: 0, right: 0, alignItems: 'center' },
+  nomDecor: { fontSize: 12, fontWeight: '800', letterSpacing: 1, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
   noeud: { position: 'absolute', width: TAILLE_NOEUD, alignItems: 'center' },
   noeudRond: {
     width: TAILLE_NOEUD,
