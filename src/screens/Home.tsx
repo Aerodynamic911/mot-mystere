@@ -41,6 +41,9 @@ export default function Home({
   onEvenement,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
+  const [hauteurScene, setHauteurScene] = useState(0);
+  // La place restante après le texte « Mystère du jour » et les puces (≈ 110 px) revient à la mascotte.
+  const tailleMascotte = hauteurScene ? Math.max(90, Math.min(190, hauteurScene - 110)) : 190;
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
   const etatJour = jourTermine ? 'terminé ✅' : 'à découvrir';
@@ -66,8 +69,9 @@ export default function Home({
         </View>
       </View>
 
-      <ScrollView style={styles.sceneDefil} contentContainerStyle={styles.scene} showsVerticalScrollIndicator={false}>
-        <Mascotte taille={190} />
+      {/* Zone fixe (non défilante) : la mascotte rétrécit sur un petit écran pour que « Mystère du jour » et les stats restent visibles. */}
+      <View style={styles.scene} onLayout={(e) => setHauteurScene(e.nativeEvent.layout.height)}>
+        <Mascotte taille={tailleMascotte} />
         <Text style={styles.jour}>Mystère du jour · {etatJour}</Text>
         <View style={styles.puces}>
           <View style={styles.puce}>
@@ -77,7 +81,7 @@ export default function Home({
             <Text style={styles.puceTexte}>📊 Stats</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
 
       <View style={styles.modes}>
         <TouchableOpacity style={styles.mode} onPress={onAventure} activeOpacity={0.85}>
@@ -172,9 +176,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(181,140,255,0.6)',
   },
   rubanTexte: { color: '#E4D9FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  sceneDefil: { flex: 1 },
-  // Le contenu est centré, et on peut le faire défiler sur un petit écran plutôt que de le voir coupé.
-  scene: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+  scene: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
   jour: { color: couleurs.texte, fontSize: 14, marginTop: 14, fontWeight: '600' },
   puces: { flexDirection: 'row', marginTop: 14 },
   puce: {
