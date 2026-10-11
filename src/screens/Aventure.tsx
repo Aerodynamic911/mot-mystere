@@ -224,8 +224,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
       <View style={styles.zoneCarte} onLayout={mesurer}>
         {taille && (
           <View style={[styles.carte, { width: taille.l, height: taille.h, backgroundColor: decor.parchemin }]}>
-            {/* Image du décor, entière, sous le chemin et les pastilles */}
-            <Image source={decor.image} style={StyleSheet.absoluteFill} resizeMode="stretch" />
+            {/* Image du décor, entière, sous le chemin et les pastilles. Taille explicite : une image locale a sinon sa taille d'origine (900 px) et déborde. */}
+            <Image source={decor.image} style={{ position: 'absolute', left: 0, top: 0, width: taille.l, height: taille.h }} resizeMode="stretch" />
             <View pointerEvents="none" style={styles.nomDecorZone}>
               <Text
                 style={[
