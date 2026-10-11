@@ -19,7 +19,7 @@ import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
-import Splash from './src/screens/Splash';
+import Splash, { DUREE_CHARGEMENT, FOND_SPLASH } from './src/screens/Splash';
 import { couleurs } from './src/theme';
 
 type Ecran = { nom: 'accueil' } | { nom: 'preferences' } | { nom: 'jour' } | { nom: 'libre'; mystere: Mystere; run: number };
@@ -46,7 +46,7 @@ export default function App() {
       setPrefs(p);
       setPret(true);
     })();
-    const minuteur = setTimeout(() => setDelaiEcoule(true), 2200);
+    const minuteur = setTimeout(() => setDelaiEcoule(true), DUREE_CHARGEMENT);
     return () => clearTimeout(minuteur);
   }, []);
 
@@ -83,7 +83,7 @@ export default function App() {
 
   if (!pret || !delaiEcoule) {
     return (
-      <SafeAreaView style={styles.racine}>
+      <SafeAreaView style={[styles.racine, { backgroundColor: FOND_SPLASH }]}>
         <StatusBar style="light" />
         <Splash />
       </SafeAreaView>

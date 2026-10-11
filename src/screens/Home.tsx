@@ -1,9 +1,10 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MAX_ESSAIS } from '../game/engine';
 import { Stats } from '../game/storage';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
+import Mascotte from '../ui/Mascotte';
 import TitreArc from '../ui/TitreArc';
 
 interface Props {
@@ -31,8 +32,10 @@ export default function Home({
   onPartieLibre,
   onPreferences,
 }: Props) {
+  const [statsOuvertes, setStatsOuvertes] = useState(false);
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
+  const etatJour = jourTermine ? (jourGagne ? 'trouvé ✅' : 'terminé') : 'à découvrir';
 
   return (
     <View style={styles.racine}>
@@ -47,42 +50,29 @@ export default function Home({
       >
         <Text style={styles.boutonSonTexte}>{musiqueActive ? '🔊' : '🔇'}</Text>
       </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.conteneur}>
-      <TitreArc texte="CLUEBOX" />
-      <Text style={styles.sousTitre}>Un personnage, un lieu ou un monument à deviner chaque jour.</Text>
 
-      <View style={styles.serieCarte}>
-        <Text style={styles.serieNombre}>🔥 {serie}</Text>
-        <Text style={styles.serieLabel}>{serie > 1 ? 'jours de suite' : 'jour de suite'}</Text>
-        <Text style={styles.serieJour}>
-          Mystère du jour n°{numero} · {jourTermine ? (jourGagne ? 'trouvé ✅' : 'terminé') : 'à découvrir'}
+      <View style={styles.haut}>
+        <TitreArc texte="CLUEBOX" />
+        <Text style={styles.sousTitre}>Devinez le mystère du jour</Text>
+      </View>
+
+      <View style={styles.scene}>
+        <Mascotte taille={230} />
+        <Text style={styles.jour}>
+          Mystère n°{numero} · {etatJour}
         </Text>
-      </View>
-
-      <TouchableOpacity style={styles.boutonSecondaire} onPress={onPartieLibre} activeOpacity={0.85}>
-        <Text style={styles.boutonSecondaireTexte}>🎲 Partie libre (sans limite)</Text>
-      </TouchableOpacity>
-
-      <View style={styles.statsCarte}>
-        <Text style={styles.statsTitre}>Vos statistiques</Text>
-        <View style={styles.statsLigne}>
-          <Stat valeur={stats.parties} label="Parties" />
-          <Stat valeur={`${tauxVictoire}%`} label="Victoires" />
-          <Stat valeur={stats.meilleureSerie} label="Meilleure série" />
-        </View>
-
-        <Text style={styles.repTitre}>Victoires par nombre d'essais</Text>
-        {Array.from({ length: MAX_ESSAIS }, (_, i) => (
-          <View key={i} style={styles.repLigne}>
-            <Text style={styles.repIndex}>{i + 1}</Text>
-            <View style={styles.repPiste}>
-              <View style={[styles.repBarre, { width: `${(stats.repartition[i] / maxRep) * 100}%` }]} />
-            </View>
-            <Text style={styles.repValeur}>{stats.repartition[i]}</Text>
+        <View style={styles.puces}>
+          <View style={styles.puce}>
+            <Text style={styles.puceTexte}>🔥 {serie}</Text>
           </View>
-        ))}
+          <TouchableOpacity style={styles.puce} onPress={onPartieLibre} activeOpacity={0.85}>
+            <Text style={styles.puceTexte}>🎲 Partie libre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.puce} onPress={() => setStatsOuvertes(true)} activeOpacity={0.85}>
+            <Text style={styles.puceTexte}>📊 Stats</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      </ScrollView>
 
       <View style={styles.pied}>
         <TouchableOpacity style={styles.boutonPrincipal} onPress={onJouerDuJour} activeOpacity={0.85}>
@@ -92,6 +82,35 @@ export default function Home({
           <Text style={styles.boutonPreferencesTexte}>⚙️  Préférences</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal visible={statsOuvertes} transparent animationType="fade" onRequestClose={() => setStatsOuvertes(false)}>
+        <View style={styles.voile}>
+          <View style={styles.statsCarte}>
+            <ScrollView>
+              <Text style={styles.statsTitre}>Vos statistiques</Text>
+              <View style={styles.statsLigne}>
+                <Stat valeur={stats.parties} label="Parties" />
+                <Stat valeur={`${tauxVictoire}%`} label="Victoires" />
+                <Stat valeur={stats.meilleureSerie} label="Meilleure série" />
+              </View>
+
+              <Text style={styles.repTitre}>Victoires par nombre d'essais</Text>
+              {Array.from({ length: MAX_ESSAIS }, (_, i) => (
+                <View key={i} style={styles.repLigne}>
+                  <Text style={styles.repIndex}>{i + 1}</Text>
+                  <View style={styles.repPiste}>
+                    <View style={[styles.repBarre, { width: `${(stats.repartition[i] / maxRep) * 100}%` }]} />
+                  </View>
+                  <Text style={styles.repValeur}>{stats.repartition[i]}</Text>
+                </View>
+              ))}
+            </ScrollView>
+            <TouchableOpacity style={styles.fermer} onPress={() => setStatsOuvertes(false)} activeOpacity={0.85}>
+              <Text style={styles.fermerTexte}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -107,7 +126,6 @@ function Stat({ valeur, label }: { valeur: number | string; label: string }) {
 
 const styles = StyleSheet.create({
   racine: { flex: 1, backgroundColor: couleurs.fond },
-  conteneur: { padding: 20, paddingTop: 28, alignItems: 'stretch' },
   boutonSon: {
     position: 'absolute',
     top: 10,
@@ -123,19 +141,21 @@ const styles = StyleSheet.create({
     borderColor: couleurs.bordure,
   },
   boutonSonTexte: { fontSize: 18 },
-  sousTitre: { color: couleurs.texteSecondaire, fontSize: 15, textAlign: 'center', marginTop: 10, marginBottom: 24 },
-  serieCarte: {
+  haut: { paddingTop: 28, alignItems: 'center' },
+  sousTitre: { color: couleurs.texteSecondaire, fontSize: 15, textAlign: 'center', marginTop: 6 },
+  scene: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  jour: { color: couleurs.texte, fontSize: 14, marginTop: 14, fontWeight: '600' },
+  puces: { flexDirection: 'row', marginTop: 14 },
+  puce: {
     backgroundColor: 'rgba(26,31,58,0.82)',
-    borderRadius: rayon,
-    paddingVertical: 18,
-    alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
     borderColor: couleurs.bordure,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginHorizontal: 4,
   },
-  serieNombre: { color: couleurs.texte, fontSize: 40, fontWeight: '800' },
-  serieLabel: { color: couleurs.texteSecondaire, fontSize: 14, marginTop: 2 },
-  serieJour: { color: couleurs.texte, fontSize: 13, marginTop: 10 },
+  puceTexte: { color: couleurs.texte, fontSize: 14, fontWeight: '600' },
   pied: {
     paddingHorizontal: 20,
     paddingTop: 12,
@@ -158,23 +178,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(26,31,58,0.82)',
   },
   boutonPreferencesTexte: { color: couleurs.texte, fontSize: 15, fontWeight: '600' },
-  boutonSecondaire: {
-    marginTop: 12,
-    borderRadius: rayon,
-    paddingVertical: 15,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: couleurs.bordure,
-    backgroundColor: 'rgba(26,31,58,0.82)',
-  },
-  boutonSecondaireTexte: { color: couleurs.texte, fontSize: 16, fontWeight: '600' },
+  voile: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', padding: 20 },
   statsCarte: {
-    backgroundColor: 'rgba(26,31,58,0.82)',
+    backgroundColor: couleurs.carte,
     borderRadius: rayon,
     padding: 18,
-    marginTop: 24,
     borderWidth: 1,
     borderColor: couleurs.bordure,
+    maxHeight: '85%',
   },
   statsTitre: { color: couleurs.texte, fontSize: 17, fontWeight: '700', marginBottom: 14 },
   statsLigne: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 18 },
@@ -187,4 +198,6 @@ const styles = StyleSheet.create({
   repPiste: { flex: 1, height: 14, backgroundColor: couleurs.carteClaire, borderRadius: 7, overflow: 'hidden', marginHorizontal: 8 },
   repBarre: { height: '100%', backgroundColor: couleurs.succes, borderRadius: 7 },
   repValeur: { color: couleurs.texte, width: 24, fontSize: 13, textAlign: 'right' },
+  fermer: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 13, alignItems: 'center', marginTop: 14 },
+  fermerTexte: { color: '#1B1B1B', fontWeight: '700', fontSize: 16 },
 });
