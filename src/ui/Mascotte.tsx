@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { jouerEffet } from '../audio/effets';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -10,6 +11,60 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
   const flotte = useRef(new Animated.Value(0)).current;
   const point = useRef(new Animated.Value(0)).current;
   const [yeuxFermes, setYeuxFermes] = useState(false);
+  const [bulle, setBulle] = useState('');
+  const [content, setContent] = useState(false);
+  const saut = useRef(new Animated.Value(0)).current; // hauteur du saut, de 0 à 1
+  const tour = useRef(new Animated.Value(0)).current; // rotation, de 0 à 1 = un tour complet
+  const ecrase = useRef(new Animated.Value(0)).current; // écrasement à l'atterrissage
+  const etincelles = useRef(new Animated.Value(0)).current;
+  const bulleOpacite = useRef(new Animated.Value(0)).current;
+  const compteur = useRef(0);
+
+  /** Au toucher : une petite réaction différente à chaque fois (saut, pirouette, secousse). */
+  function reagir() {
+    const variante = compteur.current++ % 3;
+    jouerEffet('pop');
+    setContent(true);
+    setBulle(['Hihi !', 'Youpi !', 'Wouhou !', 'Coucou !', 'Chatouilles !'][Math.floor(Math.random() * 5)]);
+    saut.setValue(0);
+    tour.setValue(0);
+    ecrase.setValue(0);
+    etincelles.setValue(0);
+    bulleOpacite.setValue(0);
+
+    const sauter = Animated.sequence([
+      Animated.timing(saut, { toValue: 1, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(saut, { toValue: 0, duration: 260, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+    ]);
+    const atterrir = Animated.sequence([
+      Animated.timing(ecrase, { toValue: 1, duration: 90, useNativeDriver: true }),
+      Animated.spring(ecrase, { toValue: 0, friction: 4, tension: 120, useNativeDriver: true }),
+    ]);
+    const pirouette = Animated.timing(tour, { toValue: 1, duration: 520, easing: Easing.inOut(Easing.cubic), useNativeDriver: true });
+    const secousse = Animated.sequence(
+      [1, -1, 1, -1, 0.6, -0.6, 0].map((v) => Animated.timing(tour, { toValue: v * 0.03, duration: 70, useNativeDriver: true })),
+    );
+
+    const mouvement =
+      variante === 0
+        ? Animated.sequence([sauter, atterrir])
+        : variante === 1
+          ? Animated.parallel([sauter, pirouette])
+          : secousse;
+
+    Animated.parallel([
+      mouvement,
+      Animated.timing(etincelles, { toValue: 1, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.sequence([
+        Animated.timing(bulleOpacite, { toValue: 1, duration: 120, useNativeDriver: true }),
+        Animated.delay(900),
+        Animated.timing(bulleOpacite, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]),
+    ]).start(() => {
+      tour.setValue(0);
+      setContent(false);
+    });
+  }
 
   useEffect(() => {
     const f = Animated.loop(
@@ -46,8 +101,17 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
   const hauteur = taille * 1.15;
   const l = taille;
 
+  const ETINCELLES = [
+    { dx: -0.46, dy: -0.34, e: '✨' },
+    { dx: 0.46, dy: -0.3, e: '⭐' },
+    { dx: -0.34, dy: -0.62, e: '✨' },
+    { dx: 0.32, dy: -0.66, e: '💫' },
+    { dx: 0, dy: -0.8, e: '⭐' },
+  ];
+
   return (
-    <View style={{ width: l, height: hauteur, alignItems: 'center' }} pointerEvents="none">
+    <TouchableWithoutFeedback onPress={reagir} accessibilityRole="button" accessibilityLabel="Toucher la mascotte">
+    <View style={{ width: l, height: hauteur, alignItems: 'center' }}>
       <Animated.Text
         style={[
           styles.point,
@@ -70,7 +134,11 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
           bottom: 0,
           transform: [
             { translateY: flotte.interpolate({ inputRange: [0, 1], outputRange: [0, -taille * 0.05] }) },
+            { translateY: saut.interpolate({ inputRange: [0, 1], outputRange: [0, -taille * 0.32] }) },
             { rotate: flotte.interpolate({ inputRange: [0, 1], outputRange: ['-2deg', '2deg'] }) },
+            { rotate: tour.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-360deg', '0deg', '360deg'] }) },
+            { scaleY: ecrase.interpolate({ inputRange: [0, 1], outputRange: [1, 0.82] }) },
+            { scaleX: ecrase.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] }) },
           ],
         }}
       >
@@ -109,7 +177,7 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
           <Rect x={86} y={34} width={28} height={14} rx={7} fill="#FFD36B" />
 
           {/* Visage */}
-          {yeuxFermes ? (
+          {yeuxFermes || content ? (
             <>
               <Path d="M60 112 Q73 120 86 112" stroke="#2A1B5C" strokeWidth={5} strokeLinecap="round" fill="none" />
               <Path d="M114 112 Q127 120 140 112" stroke="#2A1B5C" strokeWidth={5} strokeLinecap="round" fill="none" />
@@ -129,11 +197,44 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
           <Path d="M82 134 Q100 152 118 134 Q100 140 82 134 Z" fill="#2A1B5C" stroke="#2A1B5C" strokeWidth={3} strokeLinejoin="round" />
         </Svg>
       </Animated.View>
+
+      {ETINCELLES.map((et, i) => (
+        <Animated.Text
+          key={i}
+          style={{
+            position: 'absolute',
+            top: hauteur * 0.5,
+            fontSize: taille * 0.12,
+            opacity: etincelles.interpolate({ inputRange: [0, 0.15, 0.7, 1], outputRange: [0, 1, 1, 0] }),
+            transform: [
+              { translateX: etincelles.interpolate({ inputRange: [0, 1], outputRange: [0, et.dx * taille] }) },
+              { translateY: etincelles.interpolate({ inputRange: [0, 1], outputRange: [0, et.dy * taille] }) },
+              { scale: etincelles.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.3, 1.2, 0.8] }) },
+            ],
+          }}
+        >
+          {et.e}
+        </Animated.Text>
+      ))}
+
+      <Animated.View style={[styles.bulle, { opacity: bulleOpacite, top: hauteur * 0.08 }]}>
+        <Text style={styles.bulleTexte}>{bulle}</Text>
+      </Animated.View>
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  bulle: {
+    position: 'absolute',
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  bulleTexte: { color: '#2A1B5C', fontWeight: '800', fontSize: 15 },
   point: {
     position: 'absolute',
     top: 0,

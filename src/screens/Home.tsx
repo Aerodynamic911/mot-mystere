@@ -22,8 +22,6 @@ interface Props {
   etapesTotal: number;
   onAventure: () => void;
   onEvenement: () => void;
-  evenementEmoji: string;
-  evenementTitre: string;
 }
 
 export default function Home({
@@ -41,8 +39,6 @@ export default function Home({
   etapesTotal,
   onAventure,
   onEvenement,
-  evenementEmoji,
-  evenementTitre,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
@@ -65,7 +61,9 @@ export default function Home({
 
       <View style={styles.haut}>
         <TitreArc texte="BOXTERY" />
-        <Text style={styles.sousTitre}>Devinez le mystère du jour</Text>
+        <View style={styles.ruban}>
+          <Text style={styles.rubanTexte}>LE JEU DES MYSTÈRES</Text>
+        </View>
       </View>
 
       <ScrollView style={styles.sceneDefil} contentContainerStyle={styles.scene} showsVerticalScrollIndicator={false}>
@@ -90,10 +88,8 @@ export default function Home({
           <Text style={styles.modeDetail}>Niveau {niveauAventure}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.mode} onPress={onEvenement} activeOpacity={0.85}>
-          <Text style={styles.modeEmoji}>{evenementEmoji}</Text>
-          <Text style={styles.modeTitre} numberOfLines={1}>
-            {evenementTitre}
-          </Text>
+          <Text style={styles.modeEmoji}>🎉</Text>
+          <Text style={styles.modeTitre}>Événements</Text>
           <Text style={styles.modeDetail}>
             {etapesFaites}/{etapesTotal} étapes
           </Text>
@@ -168,7 +164,16 @@ const styles = StyleSheet.create({
   },
   boutonSonTexte: { fontSize: 18 },
   haut: { paddingTop: 28, alignItems: 'center' },
-  sousTitre: { color: couleurs.texteSecondaire, fontSize: 15, textAlign: 'center', marginTop: 6 },
+  ruban: {
+    marginTop: 4,
+    paddingHorizontal: 18,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: 'rgba(140,107,255,0.28)',
+    borderWidth: 1,
+    borderColor: 'rgba(181,140,255,0.6)',
+  },
+  rubanTexte: { color: '#E4D9FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   sceneDefil: { flex: 1 },
   // Le contenu est centré, et on peut le faire défiler sur un petit écran plutôt que de le voir coupé.
   scene: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },

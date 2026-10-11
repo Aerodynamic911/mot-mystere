@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,10 +11,33 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
 import { Difficulte, INDICES_DE_BASE } from '../game/preferences';
 import { couleurs, rayon } from '../theme';
+import EffetsJeu, { EffetEnCours, TypeEffet } from '../ui/EffetsJeu';
+
+/** Encouragements après une mauvaise réponse (il reste des essais). */
+const ENCOURAGEMENTS = [
+  'Pas tout à fait… mais vous chauffez ! 🔥',
+  'Bien tenté ! Relisez les indices, la réponse est tout près.',
+  'Courage, vous êtes sur la piste ! 🕵️',
+  "Ce n'est pas ça, mais chaque essai vous rapproche.",
+  'Presque ! Un autre regard sur les indices peut tout changer.',
+];
+
+/** Messages après un échec : toujours bienveillants. */
+const CONSOLATIONS = [
+  "Ce n'était pas facile ! Chaque mystère raté est une chose de plus apprise. 💪",
+  'Pas cette fois, mais vous avez bien cherché. La prochaine sera la bonne !',
+  "Même les meilleurs détectives s'y reprennent à plusieurs fois. Vous y étiez presque ! ✨",
+  'Bravo pour avoir essayé jusqu\'au bout : vous retiendrez celui-là !',
+];
+
+function auHasard<T>(liste: T[]): T {
+  return liste[Math.floor(Math.random() * liste.length)];
+}
 
 interface Props {
   difficulte: Difficulte;
@@ -49,12 +73,35 @@ export default function Game({
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
   const [saisie, setSaisie] = useState('');
   const [message, setMessage] = useState('');
+  const [encouragement, setEncouragement] = useState('');
+  const [consolation] = useState(() => auHasard(CONSOLATIONS));
+  const [effet, setEffet] = useState<EffetEnCours | null>(null);
+  const secousse = useRef(new Animated.Value(0)).current;
+  const apparitionResultat = useRef(new Animated.Value(0)).current;
+
+  function declencher(type: TypeEffet) {
+    setEffet((e) => ({ type, cle: (e?.cle ?? 0) + 1 }));
+  }
+
+  function secouer() {
+    secousse.setValue(0);
+    Animated.sequence(
+      [1, -1, 0.7, -0.7, 0.4, 0].map((v) => Animated.timing(secousse, { toValue: v, duration: 60, useNativeDriver: true })),
+    ).start();
+  }
 
   const gagne = propositions.some((p) => estCorrect(mystere, p));
   const nbIndices = mystere.indices.length;
   const termine = gagne || propositions.length >= maxEssais;
   const indicesVisibles = termine ? nbIndices : Math.min(propositions.length + INDICES_DE_BASE[difficulte], nbIndices);
   const score = gagne ? maxEssais + 1 - propositions.length : 0;
+
+  // La fiche de résultat arrive en rebondissant.
+  useEffect(() => {
+    if (!termine) return;
+    apparitionResultat.setValue(0);
+    Animated.spring(apparitionResultat, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
+  }, [termine, apparitionResultat]);
 
   const suite = termine ? (actionFin?.(gagne) ?? null) : null;
 
@@ -69,9 +116,23 @@ export default function Game({
     setPropositions(suivantes);
     setSaisie('');
     setMessage('');
-    const fini = estCorrect(mystere, texte) || suivantes.length >= maxEssais;
+    const juste = estCorrect(mystere, texte);
+    const fini = juste || suivantes.length >= maxEssais;
+    if (juste) {
+      setEncouragement('');
+      declencher('bravo');
+      jouerEffet('victoire');
+    } else if (fini) {
+      setEncouragement('');
+      declencher('faux');
+      jouerEffet('echec');
+    } else {
+      setEncouragement(auHasard(ENCOURAGEMENTS));
+      declencher('faux');
+      secouer();
+    }
     if (fini) {
-      onTerminee?.(suivantes, estCorrect(mystere, texte));
+      onTerminee?.(suivantes, juste);
     } else {
       onProgression?.(suivantes);
     }
@@ -86,6 +147,9 @@ export default function Game({
     const suivantes = [...propositions, PASSE];
     setPropositions(suivantes);
     setMessage('');
+    setEncouragement('');
+    declencher('indice');
+    jouerEffet('indice');
     onProgression?.(suivantes);
   }
 
@@ -121,12 +185,7 @@ export default function Game({
           const visible = i < indicesVisibles;
           const dernier = visible && i === indicesVisibles - 1 && !termine;
           return (
-            <View key={i} style={[styles.indice, !visible && styles.indiceVerrouille, dernier && styles.indiceRecent]}>
-              <Text style={styles.indiceNumero}>{i + 1}</Text>
-              <Text style={visible ? styles.indiceTexte : styles.indiceTexteVerrouille}>
-                {visible ? indice : '🔒 Indice verrouillé'}
-              </Text>
-            </View>
+            <IndiceCarte key={i} visible={visible} recent={dernier} numero={i + 1} texte={indice} />
           );
         })}
 
@@ -150,10 +209,20 @@ export default function Game({
         )}
 
         {termine && (
-          <View style={[styles.resultat, gagne ? styles.resultatGagne : styles.resultatPerdu]}>
+          <Animated.View
+            style={[
+              styles.resultat,
+              gagne ? styles.resultatGagne : styles.resultatPerdu,
+              {
+                opacity: apparitionResultat,
+                transform: [{ scale: apparitionResultat.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }],
+              },
+            ]}
+          >
             <Text style={styles.resultatTitre}>
-              {gagne ? `Bravo ! Trouvé en ${propositions.length} essai${propositions.length > 1 ? 's' : ''}` : 'Raté pour cette fois'}
+              {gagne ? `Bravo ! Trouvé en ${propositions.length} essai${propositions.length > 1 ? 's' : ''}` : 'Pas cette fois, mais bien joué !'}
             </Text>
+            {!gagne && <Text style={styles.consolation}>{consolation}</Text>}
             <Text style={styles.reponse}>{mystere.reponse}</Text>
             {gagne && <Text style={styles.score}>Score : {score}/{maxEssais}</Text>}
 
@@ -168,26 +237,33 @@ export default function Game({
                 <Text style={styles.boutonSecondaireTexte}>{suite.libelle}</Text>
               </TouchableOpacity>
             )}
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
 
       {!termine && (
         <View style={styles.saisieBarre}>
           {message !== '' && <Text style={styles.message}>{message}</Text>}
+          {message === '' && encouragement !== '' && <Text style={styles.encouragement}>{encouragement}</Text>}
           {peutDemanderIndice && (
             <TouchableOpacity style={styles.boutonIndice} onPress={indiceSuivant} activeOpacity={0.85}>
               <Text style={styles.boutonIndiceTexte}>💡 Indice suivant</Text>
               <Text style={styles.boutonIndiceNote}>compte comme un essai</Text>
             </TouchableOpacity>
           )}
-          <View style={styles.saisieLigne}>
+          <Animated.View
+            style={[
+              styles.saisieLigne,
+              { transform: [{ translateX: secousse.interpolate({ inputRange: [-1, 1], outputRange: [-12, 12] }) }] },
+            ]}
+          >
             <TextInput
               style={styles.input}
               value={saisie}
               onChangeText={(t) => {
                 setSaisie(t);
                 if (message) setMessage('');
+                if (encouragement) setEncouragement('');
               }}
               placeholder="Votre réponse…"
               placeholderTextColor={couleurs.texteSecondaire}
@@ -199,10 +275,40 @@ export default function Game({
             <TouchableOpacity style={styles.envoyer} onPress={valider} activeOpacity={0.85}>
               <Text style={styles.envoyerTexte}>Valider</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       )}
+      <EffetsJeu effet={effet} />
     </KeyboardAvoidingView>
+  );
+}
+
+/** Une carte d'indice : celle qui vient d'être débloquée glisse en place avec un éclat. */
+function IndiceCarte({ visible, recent, numero, texte }: { visible: boolean; recent: boolean; numero: number; texte: string }) {
+  const arrivee = useRef(new Animated.Value(visible ? 1 : 0)).current;
+  const dejaVu = useRef(visible);
+  useEffect(() => {
+    if (visible && !dejaVu.current) {
+      dejaVu.current = true;
+      arrivee.setValue(0);
+      Animated.spring(arrivee, { toValue: 1, friction: 7, tension: 80, useNativeDriver: true }).start();
+    }
+  }, [visible, arrivee]);
+  return (
+    <Animated.View
+      style={[
+        styles.indice,
+        !visible && styles.indiceVerrouille,
+        recent && styles.indiceRecent,
+        visible && {
+          opacity: arrivee.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1] }),
+          transform: [{ translateX: arrivee.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }],
+        },
+      ]}
+    >
+      <Text style={styles.indiceNumero}>{numero}</Text>
+      <Text style={visible ? styles.indiceTexte : styles.indiceTexteVerrouille}>{visible ? texte : '🔒 Indice verrouillé'}</Text>
+    </Animated.View>
   );
 }
 
@@ -274,6 +380,8 @@ const styles = StyleSheet.create({
   boutonSecondaire: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: couleurs.bordure, marginTop: 10 },
   boutonSecondaireTexte: { color: couleurs.texte, fontWeight: '600', fontSize: 16 },
   saisieBarre: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
+  encouragement: { color: couleurs.accent, fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
+  consolation: { color: couleurs.texte, fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 8 },
   message: { color: couleurs.erreur, fontSize: 13, marginBottom: 8, textAlign: 'center' },
   saisieLigne: { flexDirection: 'row', alignItems: 'center' },
   input: {

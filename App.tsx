@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { definirEffetsActifs } from './src/audio/effets';
 import { Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
@@ -53,6 +54,8 @@ export default function App() {
   const [prog, setProg] = useState<Progression>(PROGRESSION_VIDE);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const musique = useMusique();
+  // Les bruitages suivent le bouton son de l'accueil.
+  useEffect(() => definirEffetsActifs(musique.actif), [musique.actif]);
 
   const cle = cleDuJour();
   const mystereJour = mystereDuJour(cle);
@@ -127,8 +130,6 @@ export default function App() {
           etapesTotal={NB_ETAPES}
           onAventure={() => setEcran({ nom: 'aventure' })}
           onEvenement={() => setEcran({ nom: 'evenement', id: evenementEnCours().id })}
-          evenementEmoji={evenementEnCours().emoji}
-          evenementTitre={evenementEnCours().titre}
         />
       )}
 
@@ -193,7 +194,7 @@ export default function App() {
           key={`etape-${ecran.id}-${ecran.etape}`}
           difficulte={prefs.difficulte}
           mystere={EVENEMENTS.find((e) => e.id === ecran.id)!.etapes[ecran.etape - 1]}
-          titre={`${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} · ${ecran.etape}/${NB_ETAPES}`}
+          titre={`Étape ${ecran.etape}/${NB_ETAPES}`}
           maxEssais={essaisEtape(ecran.etape)}
           libellePartage={`Boxtery · ${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} ${ecran.etape}/${NB_ETAPES}`}
           propositionsInitiales={[]}

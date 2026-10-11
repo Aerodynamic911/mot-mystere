@@ -16,6 +16,22 @@ interface Props {
 
 const PAR_LIGNE = 4;
 
+/** Coupe un titre en deux lignes équilibrées (« Merveilles / du monde »). */
+function surDeuxLignes(titre: string): string {
+  const mots = titre.split(' ');
+  if (mots.length < 2) return titre;
+  let meilleur = 1;
+  let ecart = Infinity;
+  for (let i = 1; i < mots.length; i++) {
+    const d = Math.abs(mots.slice(0, i).join(' ').length - mots.slice(i).join(' ').length);
+    if (d < ecart) {
+      ecart = d;
+      meilleur = i;
+    }
+  }
+  return `${mots.slice(0, meilleur).join(' ')}\n${mots.slice(meilleur).join(' ')}`;
+}
+
 /** Carte d'un événement : 20 étapes en parcours, la suivante se débloque quand on réussit la précédente. */
 export default function EvenementCarte({ evenement, progression, onJouerEtape, onRetour }: Props) {
   const { faites, etoiles } = progression;
@@ -31,11 +47,11 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
   return (
     <View style={styles.racine}>
       <FondAnime />
-      <EnteteEcran titre={evenement.titre} onRetour={onRetour} libelleRetour="‹ Retour" />
+      <EnteteEcran titre="Événement" onRetour={onRetour} libelleRetour="‹ Retour" />
       <ScrollView contentContainerStyle={styles.contenu}>
-        <Text style={styles.statut}>
-          {evenement.emoji}  {fini ? '🏆 Événement terminé !' : `Étape ${faites + 1} sur ${NB_ETAPES}`}
-        </Text>
+        <Text style={styles.emoji}>{evenement.emoji}</Text>
+        <Text style={[styles.titreTheme, { color: evenement.couleur }]}>{surDeuxLignes(evenement.titre)}</Text>
+        <Text style={styles.statut}>{fini ? '🏆 Événement terminé !' : `Étape ${faites + 1} sur ${NB_ETAPES}`}</Text>
 
         {lignes.map((ligne, i) => (
           <View key={i} style={styles.ligne}>
@@ -80,8 +96,11 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
 
 const styles = StyleSheet.create({
   racine: { flex: 1, backgroundColor: couleurs.fond },
-  contenu: { padding: 20, paddingTop: 4, paddingBottom: 40 },
-  statut: { color: couleurs.texte, fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 20 },
+  // Le titre est sur deux lignes et tout le parcours est descendu pour respirer.
+  contenu: { padding: 20, paddingTop: 36, paddingBottom: 40 },
+  emoji: { fontSize: 44, textAlign: 'center' },
+  titreTheme: { fontSize: 28, fontWeight: '900', textAlign: 'center', lineHeight: 34, marginTop: 6 },
+  statut: { color: couleurs.texte, fontSize: 16, fontWeight: '700', textAlign: 'center', marginTop: 12, marginBottom: 34 },
   ligne: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
   noeud: {
     width: '22%',
