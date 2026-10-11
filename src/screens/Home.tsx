@@ -43,7 +43,7 @@ export default function Home({
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
-  const etatJour = jourTermine ? (jourGagne ? 'trouvé ✅' : 'terminé') : 'à découvrir';
+  const etatJour = jourTermine ? 'terminé ✅' : 'à découvrir';
 
   return (
     <View style={styles.racine}>
@@ -68,9 +68,7 @@ export default function Home({
 
       <ScrollView style={styles.sceneDefil} contentContainerStyle={styles.scene} showsVerticalScrollIndicator={false}>
         <Mascotte taille={190} />
-        <Text style={styles.jour}>
-          Mystère n°{numero} · {etatJour}
-        </Text>
+        <Text style={styles.jour}>Mystère du jour · {etatJour}</Text>
         <View style={styles.puces}>
           <View style={styles.puce}>
             <Text style={styles.puceTexte}>🔥 {serie}</Text>

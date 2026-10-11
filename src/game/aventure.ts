@@ -65,13 +65,41 @@ export function essaisAventure(niveau: number): number {
   return 4;
 }
 
-/** Nom du palier, pour donner une impression de progression. */
-export function palierAventure(niveau: number): string {
-  if (niveau <= 10) return 'Apprenti';
-  if (niveau <= 30) return 'Curieux';
-  if (niveau <= 60) return 'Érudit';
-  if (niveau <= 100) return 'Maître';
-  return 'Légende';
+const TITRES = ['Apprenti', 'Curieux', 'Explorateur', 'Détective', 'Érudit', 'Maître', 'Sage', 'Légende'];
+
+/** Titre du joueur : il change tous les 30 niveaux (au-delà de « Légende » : « Légende 2 », « Légende 3 »…). */
+export function titreJoueur(niveau: number): string {
+  const rang = Math.floor((Math.max(1, niveau) - 1) / 30);
+  return rang < TITRES.length ? TITRES[rang] : `Légende ${rang - TITRES.length + 2}`;
+}
+
+export interface Decor {
+  nom: string;
+  /** Couleur du parchemin de la carte. */
+  parchemin: string;
+  /** Couleur de l'encre (chemin, textes sur la carte). */
+  encre: string;
+  /** Petits motifs semés sur la carte. */
+  motifs: string[];
+  /** Emoji du coffre-fort final de la carte. */
+  tresor: string;
+}
+
+const DECORS: Decor[] = [
+  { nom: 'Forêt enchantée', parchemin: '#D9E7B8', encre: '#4A3B1F', motifs: ['🌲', '🌳', '🍄', '🦉'], tresor: '🧰' },
+  { nom: 'Désert doré', parchemin: '#F0D898', encre: '#5B3A12', motifs: ['🌵', '🏜️', '🐪', '☀️'], tresor: '🏺' },
+  { nom: 'Montagnes gelées', parchemin: '#DCE8F2', encre: '#2F3F55', motifs: ['🏔️', '❄️', '⛷️', '🐻‍❄️'], tresor: '💎' },
+  { nom: 'Jungle mystérieuse', parchemin: '#BFE0B0', encre: '#264A25', motifs: ['🌴', '🦜', '🐒', '🌺'], tresor: '🗿' },
+  { nom: 'Îles des pirates', parchemin: '#C6E6EC', encre: '#1F4A57', motifs: ['🏝️', '⛵', '🐙', '🐚'], tresor: '🪙' },
+  { nom: 'Volcan en feu', parchemin: '#EBC3A6', encre: '#5A2418', motifs: ['🌋', '🔥', '🦎', '🪨'], tresor: '👑' },
+  { nom: 'Cité des nuages', parchemin: '#E2DCF5', encre: '#3F3470', motifs: ['☁️', '🎈', '🦅', '🌈'], tresor: '🔮' },
+  { nom: 'Espace infini', parchemin: '#2F3068', encre: '#F3E9C6', motifs: ['⭐', '🪐', '🚀', '🌙'], tresor: '🛸' },
+];
+
+/** Décor de la carte : il change tous les 10 niveaux. */
+export function decorAventure(niveau: number): Decor {
+  const dizaine = Math.floor((Math.max(1, niveau) - 1) / 10);
+  return DECORS[dizaine % DECORS.length];
 }
 
 /** La dernière étape d'un événement est une finale plus serrée. */

@@ -11,13 +11,11 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
   const flotte = useRef(new Animated.Value(0)).current;
   const point = useRef(new Animated.Value(0)).current;
   const [yeuxFermes, setYeuxFermes] = useState(false);
-  const [bulle, setBulle] = useState('');
   const [content, setContent] = useState(false);
   const saut = useRef(new Animated.Value(0)).current; // hauteur du saut, de 0 à 1
   const tour = useRef(new Animated.Value(0)).current; // rotation, de 0 à 1 = un tour complet
   const ecrase = useRef(new Animated.Value(0)).current; // écrasement à l'atterrissage
   const etincelles = useRef(new Animated.Value(0)).current;
-  const bulleOpacite = useRef(new Animated.Value(0)).current;
   const compteur = useRef(0);
 
   /** Au toucher : une petite réaction différente à chaque fois (saut, pirouette, secousse). */
@@ -25,12 +23,10 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
     const variante = compteur.current++ % 3;
     jouerEffet('pop');
     setContent(true);
-    setBulle(['Hihi !', 'Youpi !', 'Wouhou !', 'Coucou !', 'Chatouilles !'][Math.floor(Math.random() * 5)]);
     saut.setValue(0);
     tour.setValue(0);
     ecrase.setValue(0);
     etincelles.setValue(0);
-    bulleOpacite.setValue(0);
 
     const sauter = Animated.sequence([
       Animated.timing(saut, { toValue: 1, duration: 260, easing: Easing.out(Easing.quad), useNativeDriver: true }),
@@ -55,11 +51,6 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
     Animated.parallel([
       mouvement,
       Animated.timing(etincelles, { toValue: 1, duration: 900, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.sequence([
-        Animated.timing(bulleOpacite, { toValue: 1, duration: 120, useNativeDriver: true }),
-        Animated.delay(900),
-        Animated.timing(bulleOpacite, { toValue: 0, duration: 300, useNativeDriver: true }),
-      ]),
     ]).start(() => {
       tour.setValue(0);
       setContent(false);
@@ -216,25 +207,12 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
           {et.e}
         </Animated.Text>
       ))}
-
-      <Animated.View style={[styles.bulle, { opacity: bulleOpacite, top: hauteur * 0.08 }]}>
-        <Text style={styles.bulleTexte}>{bulle}</Text>
-      </Animated.View>
     </View>
     </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  bulle: {
-    position: 'absolute',
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  bulleTexte: { color: '#2A1B5C', fontWeight: '800', fontSize: 15 },
   point: {
     position: 'absolute',
     top: 0,

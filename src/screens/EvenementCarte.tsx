@@ -63,7 +63,7 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
               return (
                 <TouchableOpacity
                   key={etape}
-                  disabled={!faite && !courante}
+                  disabled={!courante}
                   onPress={() => onJouerEtape(etape)}
                   activeOpacity={0.85}
                   style={[
@@ -87,7 +87,7 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
         ))}
 
         <Text style={styles.note}>
-          Étoiles : ⭐⭐⭐ en 1 ou 2 essais, ⭐⭐ en 3 ou 4, ⭐ au-delà. La finale ne laisse que {essaisEtape(NB_ETAPES)} essais. Vous pouvez rejouer une étape réussie à tout moment.
+          Étoiles : ⭐⭐⭐ en 1 ou 2 essais, ⭐⭐ en 3 ou 4, ⭐ au-delà. La finale ne laisse que {essaisEtape(NB_ETAPES)} essais. Une étape réussie ne peut plus être rejouée.
         </Text>
       </ScrollView>
     </View>

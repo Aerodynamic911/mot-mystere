@@ -52,6 +52,8 @@ export default function App() {
   const [jour, setJour] = useState<EtatDuJour | null>(null);
   const [prefs, setPrefs] = useState<Preferences>(PREFERENCES_PAR_DEFAUT);
   const [prog, setProg] = useState<Progression>(PROGRESSION_VIDE);
+  // Dernier niveau d'aventure affiché sur la carte : la mascotte part de là pour avancer jusqu'au niveau actuel.
+  const [niveauVu, setNiveauVu] = useState(1);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const musique = useMusique();
   // Les bruitages suivent le bouton son de l'accueil.
@@ -68,6 +70,7 @@ export default function App() {
       setJour(j);
       setPrefs(p);
       setProg(pr);
+      setNiveauVu(pr.aventure.niveau);
       setPret(true);
     })();
     const minuteur = setTimeout(() => setDelaiEcoule(true), DUREE_CHARGEMENT);
@@ -154,6 +157,8 @@ export default function App() {
       {ecran.nom === 'aventure' && (
         <Aventure
           progression={prog}
+          depuis={niveauVu}
+          onArrive={() => setNiveauVu(prog.aventure.niveau)}
           onJouer={() => setEcran({ nom: 'aventure-jeu', niveau: prog.aventure.niveau, essai: 0 })}
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
@@ -184,7 +189,10 @@ export default function App() {
         <EvenementCarte
           evenement={EVENEMENTS.find((e) => e.id === ecran.id)!}
           progression={evenementDe(prog, ecran.id)}
-          onJouerEtape={(etape) => setEcran({ nom: 'etape', id: ecran.id, etape })}
+          onJouerEtape={(etape) => {
+            // Une étape déjà réussie ne se rejoue pas : seule l'étape en cours est accessible.
+            if (etape === evenementDe(prog, ecran.id).faites + 1) setEcran({ nom: 'etape', id: ecran.id, etape });
+          }}
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
