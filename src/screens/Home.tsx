@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MAX_ESSAIS } from '../game/engine';
+import { PALIERS_JOURS, PALIERS_VICTOIRES, prochainPalier } from '../game/bonus';
 import { Stats } from '../game/storage';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
@@ -22,6 +23,9 @@ interface Props {
   etapesTotal: number;
   onAventure: () => void;
   onEvenement: () => void;
+  jokers: number;
+  nbCartes: number;
+  onCollection: () => void;
 }
 
 export default function Home({
@@ -39,6 +43,9 @@ export default function Home({
   etapesTotal,
   onAventure,
   onEvenement,
+  jokers,
+  nbCartes,
+  onCollection,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   const [hauteurScene, setHauteurScene] = useState(0);
@@ -75,8 +82,14 @@ export default function Home({
           <View style={styles.puce}>
             <Text style={styles.puceTexte}>🔥 {serie}</Text>
           </View>
+          <View style={styles.puce}>
+            <Text style={styles.puceTexte}>✨ {jokers}</Text>
+          </View>
           <TouchableOpacity style={styles.puce} onPress={() => setStatsOuvertes(true)} activeOpacity={0.85}>
             <Text style={styles.puceTexte}>📊 Stats</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.puce} onPress={onCollection} activeOpacity={0.85}>
+            <Text style={styles.puceTexte}>🃏 {nbCartes}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -122,9 +135,47 @@ export default function Home({
               <Text style={styles.statsTitre}>Vos statistiques</Text>
               <View style={styles.statsLigne}>
                 <Stat valeur={stats.parties} label="Parties" />
-                <Stat valeur={`${tauxVictoire}%`} label="Victoires" />
-                <Stat valeur={stats.meilleureSerie} label="Meilleure série" />
+                <Stat valeur={stats.victoires} label="Victoires" />
+                <Stat valeur={`${tauxVictoire}%`} label="Réussite" />
               </View>
+
+              <Text style={styles.repTitre}>Séries</Text>
+              <View style={styles.statsLigne}>
+                <Stat valeur={serie} label="Jours de suite" />
+                <Stat valeur={stats.meilleureSerie} label="Meilleure (jours)" />
+              </View>
+              <View style={styles.statsLigne}>
+                <Stat valeur={stats.serieVictoires} label="Victoires d'affilée" />
+                <Stat valeur={stats.meilleureSerieVictoires} label="Meilleure série" />
+              </View>
+
+              <Text style={styles.repTitre}>Par mode</Text>
+              {(
+                [
+                  ['📅 Mystère du jour', stats.modes.jour],
+                  ['🗺️ Aventure', stats.modes.aventure],
+                  ['🎉 Événements', stats.modes.evenement],
+                ] as const
+              ).map(([nom, c]) => (
+                <View key={nom} style={styles.modeLigne}>
+                  <Text style={styles.modeNom}>{nom}</Text>
+                  <Text style={styles.modeDetailTexte}>
+                    {c.victoires}/{c.parties} · 💡 {c.indices} · ✍️ {c.propositions}
+                  </Text>
+                </View>
+              ))}
+              <Text style={styles.legende}>victoires/parties · indices demandés · réponses proposées</Text>
+
+              <Text style={styles.repTitre}>Bonus de série</Text>
+              <Text style={styles.bonusTexte}>✨ {jokers} joker{jokers > 1 ? 's' : ''} en réserve ({stats.jokersUtilises} utilisé{stats.jokersUtilises > 1 ? 's' : ''})</Text>
+              {[
+                { nom: 'Jours de suite', palier: prochainPalier(PALIERS_JOURS, serie), courant: serie, unite: 'jours' },
+                { nom: "Victoires d'affilée", palier: prochainPalier(PALIERS_VICTOIRES, stats.serieVictoires), courant: stats.serieVictoires, unite: 'victoires' },
+              ].map((b) => (
+                <Text key={b.nom} style={styles.bonusTexte}>
+                  {b.palier ? `${b.nom} : ${b.courant}/${b.palier.seuil} ${b.unite} → +${b.palier.jokers} ✨` : `${b.nom} : tous les paliers atteints !`}
+                </Text>
+              ))}
 
               <Text style={styles.repTitre}>Victoires par nombre d'essais</Text>
               {Array.from({ length: MAX_ESSAIS }, (_, i) => (
@@ -185,7 +236,7 @@ const styles = StyleSheet.create({
   },
   rubanTexte: { color: '#E4D9FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   scene: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
-  puces: { flexDirection: 'row', marginTop: 14 },
+  puces: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 14 },
   puce: {
     backgroundColor: 'rgba(26,31,58,0.82)',
     borderColor: couleurs.bordure,
@@ -195,6 +246,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 4,
   },
+  modeLigne: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  modeNom: { color: couleurs.texte, fontSize: 14, fontWeight: '600' },
+  modeDetailTexte: { color: couleurs.texteSecondaire, fontSize: 13 },
+  legende: { color: couleurs.texteSecondaire, fontSize: 11, marginTop: 2 },
+  bonusTexte: { color: couleurs.texte, fontSize: 13, marginTop: 4 },
   puceTexte: { color: couleurs.texte, fontSize: 14, fontWeight: '600' },
   modes: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 12 },
   mode: {

@@ -193,6 +193,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
       easing: Easing.inOut(Easing.cubic),
       useNativeDriver: true,
     }).start(() => {
+      // On fixe la valeur finale côté JS : sinon, au rendu suivant, la mascotte reviendrait à son point de départ.
+      progres.setValue(jalonArrivee);
       // Arrivée : une gerbe d'étoiles, un petit son, et l'étape devient celle à jouer.
       setEtat('arrive');
       jouerEffet('pop');
@@ -202,13 +204,35 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
     });
   }, [echantillons, depuis, niveau, rang, progres, onArrive, annonce, decor.nom, eclat, pop]);
 
-  const entrees = echantillons.map((_, i) => i / ECHANTILLONS);
+  // Les interpolations sont créées une seule fois : refaites à chaque rendu, elles repartiraient de l'ancienne valeur.
+  const deplacement = useMemo(() => {
+    const entrees = echantillons.map((_, i) => i / ECHANTILLONS);
+    if (!entrees.length) return null;
+    return {
+      x: progres.interpolate({ inputRange: entrees, outputRange: echantillons.map((e) => e.x - TAILLE_MASCOTTE / 2) }),
+      y: progres.interpolate({ inputRange: entrees, outputRange: echantillons.map((e) => e.y - TAILLE_MASCOTTE) }),
+    };
+  }, [echantillons, progres]);
+  const anneau = useMemo(
+    () => ({
+      opacite: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 0] }),
+      echelle: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.5] }),
+    }),
+    [pulse],
+  );
+  const rebondMascotte = useMemo(
+    () => ({
+      y: rebond.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }),
+      angle: rebond.interpolate({ inputRange: [0, 1], outputRange: ['-6deg', '6deg'] }),
+    }),
+    [rebond],
+  );
   const essais = essaisAventure(niveau);
   const encre = decor.encre;
   // Étapes cochées et étape à jouer, selon l'avancement de la mascotte.
   const coche = etat === 'arrive' ? niveau : etat === 'marche' && depart.memeCarte ? depart.depuis + 1 : depart.memeCarte ? depart.depuis : niveau;
   const actuel = etat === 'arrive' ? niveau : etat === 'marche' ? -1 : depart.memeCarte ? depart.depuis : niveau;
-  const echellePop = pop.interpolate({ inputRange: [0, 1], outputRange: [1.7, 1] });
+  const echellePop = useMemo(() => pop.interpolate({ inputRange: [0, 1], outputRange: [1.7, 1] }), [pop]);
 
   return (
     <View style={styles.racine}>
@@ -242,8 +266,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
             </View>
 
             <Svg width={taille.l} height={taille.h} style={StyleSheet.absoluteFill}>
-              <Path d={chemin} stroke={sombre ? '#000000' : '#FFFFFF'} strokeOpacity={0.4} strokeWidth={8} strokeDasharray={TIRETS} strokeLinecap="butt" fill="none" />
-              <Path d={chemin} stroke={encre} strokeOpacity={0.95} strokeWidth={4} strokeDasharray={TIRETS} strokeLinecap="butt" fill="none" />
+              <Path d={chemin} stroke={decor.halo} strokeWidth={8} strokeDasharray={TIRETS} strokeLinecap="butt" fill="none" />
+              <Path d={chemin} stroke={decor.trait} strokeWidth={4} strokeDasharray={TIRETS} strokeLinecap="butt" fill="none" />
             </Svg>
 
             {noeuds.map((n, p) => {
@@ -260,7 +284,7 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                   <View
                     style={[
                       styles.noeudRond,
-                      { borderColor: encre, backgroundColor: fait ? '#3DDC97' : courant ? couleurs.accent : sombre ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.82)' },
+                      { borderColor: encre, backgroundColor: fait ? '#3DDC97' : courant ? couleurs.accent : sombre ? '#241F4D' : '#FFFFFF' },
                     ]}
                   >
                     <Text style={[styles.noeudTexte, { color: fait || courant ? '#1B1B1B' : encre }]}>
@@ -281,8 +305,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                   {
                     left: noeuds[rang].x - 30,
                     top: noeuds[rang].y - 30,
-                    opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 0] }),
-                    transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.5] }) }],
+                    opacity: anneau.opacite,
+                    transform: [{ scale: anneau.echelle }],
                   },
                 ]}
               />
@@ -296,15 +320,15 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
             )}
 
             {/* La mascotte avance sur le chemin */}
-            {echantillons.length > 0 && (
+            {deplacement && (
               <Animated.View
                 pointerEvents="none"
                 style={[
                   styles.mascotte,
                   {
                     transform: [
-                      { translateX: progres.interpolate({ inputRange: entrees, outputRange: echantillons.map((e) => e.x - TAILLE_MASCOTTE / 2) }) },
-                      { translateY: progres.interpolate({ inputRange: entrees, outputRange: echantillons.map((e) => e.y - TAILLE_MASCOTTE) }) },
+                      { translateX: deplacement.x },
+                      { translateY: deplacement.y },
                     ],
                   },
                 ]}
@@ -312,8 +336,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                 <Animated.View
                   style={{
                     transform: [
-                      { translateY: rebond.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) },
-                      { rotate: rebond.interpolate({ inputRange: [0, 1], outputRange: ['-6deg', '6deg'] }) },
+                      { translateY: rebondMascotte.y },
+                      { rotate: rebondMascotte.angle },
                     ],
                   }}
                 >

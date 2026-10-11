@@ -55,6 +55,9 @@ interface Props {
   libellePartage?: string;
   /** Bouton proposé en fin de partie (mystère suivant, niveau suivant, réessayer…). */
   actionFin?: (gagne: boolean) => { libelle: string; onPress: () => void } | null;
+  /** Jokers en réserve (bonus de série) : chacun révèle un indice sans compter comme un essai. */
+  jokers?: number;
+  onJoker?: () => void;
 }
 
 export default function Game({
@@ -69,6 +72,8 @@ export default function Game({
   maxEssais = MAX_ESSAIS,
   libellePartage,
   actionFin,
+  jokers = 0,
+  onJoker,
 }: Props) {
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
   const [saisie, setSaisie] = useState('');
@@ -76,6 +81,8 @@ export default function Game({
   const [encouragement, setEncouragement] = useState('');
   const [consolation] = useState(() => auHasard(CONSOLATIONS));
   const [effet, setEffet] = useState<EffetEnCours | null>(null);
+  // Indices offerts par des jokers pendant cette partie.
+  const [offerts, setOfferts] = useState(0);
   const secousse = useRef(new Animated.Value(0)).current;
   const apparitionResultat = useRef(new Animated.Value(0)).current;
 
@@ -93,7 +100,7 @@ export default function Game({
   const gagne = propositions.some((p) => estCorrect(mystere, p));
   const nbIndices = mystere.indices.length;
   const termine = gagne || propositions.length >= maxEssais;
-  const indicesVisibles = termine ? nbIndices : Math.min(propositions.length + INDICES_DE_BASE[difficulte], nbIndices);
+  const indicesVisibles = termine ? nbIndices : Math.min(propositions.length + INDICES_DE_BASE[difficulte] + offerts, nbIndices);
   const score = gagne ? maxEssais + 1 - propositions.length : 0;
 
   // La fiche de résultat arrive en rebondissant.
@@ -141,6 +148,18 @@ export default function Game({
   // Pas de bouton en mode difficile, quand tous les indices sont déjà visibles, ni quand il ne reste qu'un essai.
   const peutDemanderIndice =
     !termine && difficulte !== 'difficile' && indicesVisibles < nbIndices && propositions.length < maxEssais - 1;
+
+  const peutJoker = !termine && jokers > 0 && indicesVisibles < nbIndices;
+
+  function utiliserJoker() {
+    if (!peutJoker) return;
+    setOfferts((n) => n + 1);
+    setMessage('');
+    setEncouragement('');
+    declencher('indice');
+    jouerEffet('indice');
+    onJoker?.();
+  }
 
   function indiceSuivant() {
     if (!peutDemanderIndice) return;
@@ -245,6 +264,12 @@ export default function Game({
         <View style={styles.saisieBarre}>
           {message !== '' && <Text style={styles.message}>{message}</Text>}
           {message === '' && encouragement !== '' && <Text style={styles.encouragement}>{encouragement}</Text>}
+          {peutJoker && (
+            <TouchableOpacity style={[styles.boutonIndice, styles.boutonJoker]} onPress={utiliserJoker} activeOpacity={0.85}>
+              <Text style={[styles.boutonIndiceTexte, { color: couleurs.succes }]}>✨ Utiliser un joker ({jokers})</Text>
+              <Text style={styles.boutonIndiceNote}>indice offert</Text>
+            </TouchableOpacity>
+          )}
           {peutDemanderIndice && (
             <TouchableOpacity style={styles.boutonIndice} onPress={indiceSuivant} activeOpacity={0.85}>
               <Text style={styles.boutonIndiceTexte}>💡 Indice suivant</Text>
@@ -364,6 +389,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     marginBottom: 10,
   },
+  boutonJoker: { borderColor: couleurs.succes },
   boutonIndiceTexte: { color: couleurs.accent, fontSize: 15, fontWeight: '700' },
   boutonIndiceNote: { color: couleurs.texteSecondaire, fontSize: 12, marginLeft: 8 },
   pastilleTexte: { color: couleurs.texte, fontSize: 14 },

@@ -9,12 +9,20 @@ export interface ProgressionEvenement {
 }
 
 export interface Progression {
-  aventure: { niveau: number; record: number; etoiles: number };
+  aventure: {
+    niveau: number;
+    record: number;
+    etoiles: number;
+    /** Identifiants des derniers mystères d'aventure proposés (le plus récent en dernier). */
+    vus: string[];
+    /** Niveau commencé et pas fini : on y retrouve le même mystère en y revenant. */
+    enCours: { niveau: number; id: string } | null;
+  };
   evenements: Record<string, ProgressionEvenement>;
 }
 
 export const PROGRESSION_VIDE: Progression = {
-  aventure: { niveau: 1, record: 1, etoiles: 0 },
+  aventure: { niveau: 1, record: 1, etoiles: 0, vus: [], enCours: null },
   evenements: {},
 };
 
@@ -43,7 +51,10 @@ function valider(brut: Partial<Progression> | null): Progression {
     while (liste.length < faites) liste.push(1);
     evenements[ev.id] = { faites, etoiles: liste.map((x) => (x >= 1 && x <= 3 ? Math.floor(x) : 1)) };
   }
-  return { aventure: { niveau, record, etoiles }, evenements };
+  const vus = Array.isArray(a?.vus) ? a!.vus.filter((x) => typeof x === 'string').slice(-40) : [];
+  const ec = a?.enCours;
+  const enCours = ec && typeof ec.id === 'string' && ec.niveau === niveau ? { niveau, id: ec.id } : null;
+  return { aventure: { niveau, record, etoiles, vus, enCours }, evenements };
 }
 
 export async function chargerProgression(): Promise<Progression> {
@@ -69,9 +80,11 @@ export function niveauReussi(prog: Progression, nbPropositions: number): Progres
   return {
     ...prog,
     aventure: {
+      ...prog.aventure,
       niveau,
       record: Math.max(prog.aventure.record, niveau),
       etoiles: prog.aventure.etoiles + etoilesPour(nbPropositions),
+      enCours: null,
     },
   };
 }

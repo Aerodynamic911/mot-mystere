@@ -59,6 +59,29 @@ export function mystereAventure(niveau: number, reessai = 0): Mystere {
   return ordreCache(tour)[position];
 }
 
+/** Retrouve un mystère de la liste par son identifiant (pour reprendre un niveau en cours). */
+export function mystereParId(id: string): Mystere | null {
+  return POOL.find((m) => m.id === id) ?? null;
+}
+
+/** Combien de derniers mystères vus on évite de reproposer (toujours bien moins que la liste entière). */
+export const NB_VUS_EVITES = Math.max(0, Math.min(20, TAILLE_POOL - 8));
+/** Combien d'identifiants on garde en mémoire. */
+export const NB_VUS_GARDES = 40;
+
+/**
+ * Choisit le mystère d'un niveau en évitant ceux qu'on vient de voir (y compris celui qu'on vient de rater) :
+ * un réessai ne ressort pas au niveau suivant. Sans effet de bord : l'appelant mémorise le choix.
+ */
+export function choisirMystereAventure(niveau: number, vus: string[]): Mystere {
+  const evites = new Set(vus.slice(-NB_VUS_EVITES));
+  for (let k = 0; k < TAILLE_POOL; k++) {
+    const m = mystereAventure(niveau, k);
+    if (!evites.has(m.id)) return m;
+  }
+  return mystereAventure(niveau, 0);
+}
+
 /** Nombre d'essais autorisés : de plus en plus serré à mesure qu'on avance. */
 export function essaisAventure(niveau: number): number {
   if (niveau <= 10) return 6;
@@ -78,8 +101,14 @@ export interface Decor {
   nom: string;
   /** Couleur de repli, affichée si l'image du décor tarde à charger. */
   parchemin: string;
-  /** Couleur de l'encre (chemin, textes sur la carte). */
+  /** Couleur de l'encre (textes et bordures sur la carte). */
   encre: string;
+  /** Couleur du trait pointillé du chemin, accordée au décor. */
+  trait: string;
+  /** Halo sombre ou clair derrière le trait, pour qu'il reste lisible. */
+  halo: string;
+  /** Nom du trésor de fin de carte (pour la carte à collectionner). */
+  tresorNom: string;
   /** Image de fond de la carte (portrait, ratio 3:4). */
   image: ImageSourcePropType;
   /** Fond sombre : le chemin et les pastilles passent en clair. */
@@ -89,14 +118,14 @@ export interface Decor {
 }
 
 const DECORS: Decor[] = [
-  { nom: 'Forêt enchantée', parchemin: '#9CE6B8', encre: '#17492B', image: require('../../assets/aventure/decor-1.jpg'), sombre: false, tresor: '🧰' },
-  { nom: 'Désert doré', parchemin: '#FBE7A0', encre: '#6B3F0C', image: require('../../assets/aventure/decor-2.jpg'), sombre: false, tresor: '🏺' },
-  { nom: 'Montagnes gelées', parchemin: '#DCF3F8', encre: '#17476B', image: require('../../assets/aventure/decor-3.jpg'), sombre: false, tresor: '💎' },
-  { nom: 'Jungle mystérieuse', parchemin: '#B8E98A', encre: '#124A1C', image: require('../../assets/aventure/decor-4.jpg'), sombre: false, tresor: '🗿' },
-  { nom: 'Îles des pirates', parchemin: '#5CF0F0', encre: '#0B4A5C', image: require('../../assets/aventure/decor-5.jpg'), sombre: false, tresor: '🪙' },
-  { nom: 'Volcan en feu', parchemin: '#4A2E26', encre: '#FFE4BE', image: require('../../assets/aventure/decor-6.jpg'), sombre: true, tresor: '👑' },
-  { nom: 'Cité des nuages', parchemin: '#9EDCFA', encre: '#33307A', image: require('../../assets/aventure/decor-7.jpg'), sombre: false, tresor: '🔮' },
-  { nom: 'Espace infini', parchemin: '#1E1B5E', encre: '#FFF1C9', image: require('../../assets/aventure/decor-8.jpg'), sombre: true, tresor: '🛸' },
+  { nom: 'Forêt enchantée', trait: '#FFF4C2', halo: 'rgba(10,70,35,0.6)', tresorNom: 'Coffre des fées', parchemin: '#9CE6B8', encre: '#17492B', image: require('../../assets/aventure/decor-1.jpg'), sombre: false, tresor: '🧰' },
+  { nom: 'Désert doré', trait: '#A6431A', halo: 'rgba(255,255,255,0.7)', tresorNom: 'Amphore dorée', parchemin: '#FBE7A0', encre: '#6B3F0C', image: require('../../assets/aventure/decor-2.jpg'), sombre: false, tresor: '🏺' },
+  { nom: 'Montagnes gelées', trait: '#1D6FA5', halo: 'rgba(255,255,255,0.8)', tresorNom: 'Cristal de glace', parchemin: '#DCF3F8', encre: '#17476B', image: require('../../assets/aventure/decor-3.jpg'), sombre: false, tresor: '💎' },
+  { nom: 'Jungle mystérieuse', trait: '#FFEB99', halo: 'rgba(10,70,25,0.6)', tresorNom: 'Idole perdue', parchemin: '#B8E98A', encre: '#124A1C', image: require('../../assets/aventure/decor-4.jpg'), sombre: false, tresor: '🗿' },
+  { nom: 'Îles des pirates', trait: '#FFF6D6', halo: 'rgba(0,70,95,0.55)', tresorNom: 'Doublon pirate', parchemin: '#5CF0F0', encre: '#0B4A5C', image: require('../../assets/aventure/decor-5.jpg'), sombre: false, tresor: '🪙' },
+  { nom: 'Volcan en feu', trait: '#FFB347', halo: 'rgba(0,0,0,0.55)', tresorNom: 'Couronne de lave', parchemin: '#4A2E26', encre: '#FFE4BE', image: require('../../assets/aventure/decor-6.jpg'), sombre: true, tresor: '👑' },
+  { nom: 'Cité des nuages', trait: '#FFFFFF', halo: 'rgba(70,60,160,0.5)', tresorNom: 'Orbe céleste', parchemin: '#9EDCFA', encre: '#33307A', image: require('../../assets/aventure/decor-7.jpg'), sombre: false, tresor: '🔮' },
+  { nom: 'Espace infini', trait: '#7FE8FF', halo: 'rgba(0,0,40,0.6)', tresorNom: 'Soucoupe stellaire', parchemin: '#1E1B5E', encre: '#FFF1C9', image: require('../../assets/aventure/decor-8.jpg'), sombre: true, tresor: '🛸' },
 ];
 
 /** Nombre de décors différents. */

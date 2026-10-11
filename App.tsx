@@ -3,15 +3,17 @@ import { definirEffetsActifs } from './src/audio/effets';
 import { Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
-import { essaisAventure, essaisEtape, mystereAventure } from './src/game/aventure';
+import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId } from './src/game/aventure';
+import { Mystere } from './src/data/mysteres';
 import { cleDuJour, mystereDuJour, numeroDuJour } from './src/game/engine';
 import {
   EtatDuJour,
+  ModeJeu,
   STATS_VIDES,
   Stats,
   chargerJour,
   chargerStats,
-  enregistrerResultat,
+  enregistrerPartie,
   sauverJour,
   sauverStats,
   serieAffichee,
@@ -26,7 +28,11 @@ import {
   niveauReussi,
   sauverProgression,
 } from './src/game/progression';
+import { carteParId } from './src/data/cartes';
+import { cartesMeritees, chargerCollection, sauverCollection } from './src/game/collection';
 import Aventure from './src/screens/Aventure';
+import Collection from './src/screens/Collection';
+import RecompenseModal, { Recompense } from './src/ui/RecompenseModal';
 import EvenementCarte from './src/screens/EvenementCarte';
 import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
@@ -40,7 +46,8 @@ type Ecran =
   | { nom: 'preferences' }
   | { nom: 'jour' }
   | { nom: 'aventure' }
-  | { nom: 'aventure-jeu'; niveau: number; essai: number }
+  | { nom: 'aventure-jeu'; niveau: number; essai: number; mystere: Mystere }
+  | { nom: 'collection' }
   | { nom: 'evenement'; id: string }
   | { nom: 'etape'; id: string; etape: number };
 
@@ -56,6 +63,9 @@ export default function App() {
   const [niveauVu, setNiveauVu] = useState(1);
   // Étape d'événement qui vient d'être réussie : la carte la fait rebondir avant de passer à la suivante.
   const [etapeAnimee, setEtapeAnimee] = useState<{ id: string; etape: number } | null>(null);
+  // Cartes obtenues et récompenses à montrer au joueur (cartes, bonus de série).
+  const [collection, setCollection] = useState<string[]>([]);
+  const [recompenses, setRecompenses] = useState<Recompense[]>([]);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const musique = useMusique();
   // Les bruitages suivent le bouton son de l'accueil.
@@ -67,11 +77,24 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      const [s, j, p, pr] = await Promise.all([chargerStats(), chargerJour(), chargerPreferences(), chargerProgression()]);
+      const [s, j, p, pr, col] = await Promise.all([
+        chargerStats(),
+        chargerJour(),
+        chargerPreferences(),
+        chargerProgression(),
+        chargerCollection(),
+      ]);
       setStats(s);
       setJour(j);
       setPrefs(p);
       setProg(pr);
+      // Cartes déjà méritées avant l'arrivée de la collection : elles sont remises au joueur.
+      const dues = cartesMeritees(pr, s, col);
+      setCollection([...col, ...dues]);
+      if (dues.length) {
+        sauverCollection([...col, ...dues]);
+        setRecompenses(dues.map((id) => carteParId(id)).filter((c) => !!c).map((carte) => ({ type: 'carte' as const, carte: carte! })));
+      }
       setNiveauVu(pr.aventure.niveau);
       setPret(true);
     })();
@@ -88,13 +111,54 @@ export default function App() {
     sauverJour(etat);
   }
 
+  /**
+   * Fin d'une partie, quel que soit le mode : statistiques, bonus de série et cartes gagnées.
+   * `progApres` est la progression une fois la partie prise en compte.
+   */
+  function finDePartie(mode: ModeJeu, propositions: string[], gagne: boolean, progApres: Progression) {
+    const { stats: nouvellesStats, bonus } = enregistrerPartie(stats, mode, cle, propositions, gagne);
+    setStats(nouvellesStats);
+    sauverStats(nouvellesStats);
+    const nouvelles = cartesMeritees(progApres, nouvellesStats, collection);
+    if (nouvelles.length) {
+      const liste = [...collection, ...nouvelles];
+      setCollection(liste);
+      sauverCollection(liste);
+    }
+    const recomp: Recompense[] = [
+      ...bonus.map((b) => ({ type: 'bonus' as const, bonus: b })),
+      ...nouvelles.map((id) => carteParId(id)).filter((c) => !!c).map((carte) => ({ type: 'carte' as const, carte: carte! })),
+    ];
+    // Un instant après la fin de la partie, pour laisser jouer les animations de résultat.
+    if (recomp.length) setTimeout(() => setRecompenses((r) => [...r, ...recomp]), 1500);
+  }
+
+  function utiliserJoker() {
+    if (stats.jokers <= 0) return;
+    const s2 = { ...stats, jokers: stats.jokers - 1, jokersUtilises: stats.jokersUtilises + 1 };
+    setStats(s2);
+    sauverStats(s2);
+  }
+
   function terminee(propositions: string[], gagne: boolean) {
     const etat: EtatDuJour = { cle, propositions, terminee: true, gagnee: gagne };
-    const nouvellesStats = enregistrerResultat(stats, cle, gagne, propositions.length);
     setJour(etat);
-    setStats(nouvellesStats);
     sauverJour(etat);
-    sauverStats(nouvellesStats);
+    finDePartie('jour', propositions, gagne, prog);
+  }
+
+  /** Lance un niveau d'aventure : on reprend le mystère d'un niveau commencé, sinon on en choisit un qu'on n'a pas vu récemment. */
+  function lancerNiveau(niveau: number, essai: number, nouveau: boolean) {
+    const enCours = prog.aventure.enCours;
+    let mystere = !nouveau && enCours?.niveau === niveau ? mystereParId(enCours.id) : null;
+    if (!mystere) {
+      mystere = choisirMystereAventure(niveau, prog.aventure.vus);
+      changerProgression({
+        ...prog,
+        aventure: { ...prog.aventure, vus: [...prog.aventure.vus, mystere.id].slice(-NB_VUS_GARDES), enCours: { niveau, id: mystere.id } },
+      });
+    }
+    setEcran({ nom: 'aventure-jeu', niveau, essai, mystere });
   }
 
   function changerPreferences(p: Preferences) {
@@ -135,6 +199,9 @@ export default function App() {
           etapesTotal={NB_ETAPES}
           onAventure={() => setEcran({ nom: 'aventure' })}
           onEvenement={() => setEcran({ nom: 'evenement', id: evenementEnCours().id })}
+          jokers={stats.jokers}
+          nbCartes={collection.length}
+          onCollection={() => setEcran({ nom: 'collection' })}
         />
       )}
 
@@ -152,6 +219,8 @@ export default function App() {
           propositionsInitiales={jourCourant?.propositions ?? []}
           onProgression={progression}
           onTerminee={terminee}
+          jokers={stats.jokers}
+          onJoker={utiliserJoker}
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
@@ -161,7 +230,7 @@ export default function App() {
           progression={prog}
           depuis={niveauVu}
           onArrive={() => setNiveauVu(prog.aventure.niveau)}
-          onJouer={() => setEcran({ nom: 'aventure-jeu', niveau: prog.aventure.niveau, essai: 0 })}
+          onJouer={() => lancerNiveau(prog.aventure.niveau, 0, false)}
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
@@ -170,19 +239,26 @@ export default function App() {
         <Game
           key={`av-${ecran.niveau}-${ecran.essai}`}
           difficulte={prefs.difficulte}
-          mystere={mystereAventure(ecran.niveau, ecran.essai)}
+          mystere={ecran.mystere}
           titre={`Niveau ${ecran.niveau}`}
           maxEssais={essaisAventure(ecran.niveau)}
           libellePartage={`Boxtery · Aventure niveau ${ecran.niveau}`}
           propositionsInitiales={[]}
+          jokers={stats.jokers}
+          onJoker={utiliserJoker}
           onTerminee={(propositions, gagne) => {
-            if (gagne && ecran.niveau === prog.aventure.niveau) changerProgression(niveauReussi(prog, propositions.length));
+            let apres = prog;
+            if (gagne && ecran.niveau === prog.aventure.niveau) apres = niveauReussi(prog, propositions.length);
+            // Un échec libère le niveau : en y revenant, on aura un autre mystère.
+            else if (!gagne) apres = { ...prog, aventure: { ...prog.aventure, enCours: null } };
+            if (apres !== prog) changerProgression(apres);
+            finDePartie('aventure', propositions, gagne, apres);
           }}
           onRetour={() => setEcran({ nom: 'aventure' })}
           actionFin={(gagne) =>
             gagne
               ? { libelle: 'Avancer sur la carte 🗺️', onPress: () => setEcran({ nom: 'aventure' }) }
-              : { libelle: 'Réessayer ce niveau', onPress: () => setEcran({ nom: 'aventure-jeu', niveau: ecran.niveau, essai: ecran.essai + 1 }) }
+              : { libelle: 'Réessayer ce niveau', onPress: () => lancerNiveau(ecran.niveau, ecran.essai + 1, true) }
           }
         />
       )}
@@ -210,11 +286,16 @@ export default function App() {
           maxEssais={essaisEtape(ecran.etape)}
           libellePartage={`Boxtery · ${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} ${ecran.etape}/${NB_ETAPES}`}
           propositionsInitiales={[]}
+          jokers={stats.jokers}
+          onJoker={utiliserJoker}
           onTerminee={(propositions, gagne) => {
+            let apres = prog;
             if (gagne) {
-              changerProgression(etapeReussie(prog, ecran.id, ecran.etape, propositions.length));
+              apres = etapeReussie(prog, ecran.id, ecran.etape, propositions.length);
+              changerProgression(apres);
               setEtapeAnimee({ id: ecran.id, etape: ecran.etape });
             }
+            finDePartie('evenement', propositions, gagne, apres);
           }}
           onRetour={() => setEcran({ nom: 'evenement', id: ecran.id })}
           // Après une victoire on repasse par la carte : l'étape se coche et la suivante s'illumine.
@@ -224,6 +305,16 @@ export default function App() {
           })}
         />
       )}
+
+      {ecran.nom === 'collection' && (
+        <Collection possedees={collection} progression={prog} stats={stats} onRetour={() => setEcran({ nom: 'accueil' })} />
+      )}
+
+      <RecompenseModal
+        recompense={recompenses[0] ?? null}
+        suivantes={Math.max(0, recompenses.length - 1)}
+        onFermer={() => setRecompenses((r) => r.slice(1))}
+      />
     </SafeAreaView>
   );
 }
