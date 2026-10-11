@@ -20,8 +20,26 @@ interface Props {
 
 const PAR_CARTE = 10;
 const ECHANTILLONS = 10; // points calculés le long de chaque tronçon, pour un déplacement fluide
-const X_RELATIFS = [0.2, 0.7, 0.32, 0.78, 0.26, 0.72, 0.34, 0.8, 0.3, 0.56];
-const MARGE = 38;
+// Les images de décor sont en 896×1152 : la carte garde ce ratio pour qu'on voie toute l'image, sans recadrage.
+const RATIO = 896 / 1152;
+const MARGE = 38; // côtés et bas
+const MARGE_HAUT = 64; // laisse la place au nom du décor, en haut de la carte
+// Trois parcours en serpentin, utilisés tour à tour d'une carte à l'autre. Positions des 10 étapes, du bas vers le haut :
+// x et y en part de la zone utile (y = 0 en bas, 1 en haut). Les écarts sont volontairement irréguliers, pour un chemin naturel.
+const PARCOURS: { x: number; y: number }[][] = [
+  [
+    { x: 0.2, y: 0 }, { x: 0.68, y: 0.07 }, { x: 0.84, y: 0.25 }, { x: 0.34, y: 0.3 }, { x: 0.16, y: 0.5 },
+    { x: 0.62, y: 0.58 }, { x: 0.82, y: 0.74 }, { x: 0.4, y: 0.76 }, { x: 0.2, y: 0.93 }, { x: 0.66, y: 1 },
+  ],
+  [
+    { x: 0.8, y: 0 }, { x: 0.38, y: 0.08 }, { x: 0.16, y: 0.26 }, { x: 0.6, y: 0.3 }, { x: 0.84, y: 0.52 },
+    { x: 0.46, y: 0.55 }, { x: 0.2, y: 0.74 }, { x: 0.7, y: 0.78 }, { x: 0.84, y: 0.93 }, { x: 0.4, y: 1 },
+  ],
+  [
+    { x: 0.5, y: 0 }, { x: 0.84, y: 0.1 }, { x: 0.7, y: 0.28 }, { x: 0.3, y: 0.26 }, { x: 0.14, y: 0.46 },
+    { x: 0.5, y: 0.56 }, { x: 0.84, y: 0.7 }, { x: 0.46, y: 0.78 }, { x: 0.18, y: 0.9 }, { x: 0.6, y: 1 },
+  ],
+];
 const TAILLE_NOEUD = 40;
 const TAILLE_MASCOTTE = 46;
 
@@ -37,50 +55,61 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   const sombre = decor.sombre;
   const base = Math.floor((niveau - 1) / PAR_CARTE) * PAR_CARTE; // niveau 0-indexé du début de la carte
   const rang = (niveau - 1) % PAR_CARTE; // position de la mascotte sur la carte
-  const [taille, setTaille] = useState<{ l: number; h: number } | null>(null);
+  const [zone, setZone] = useState<{ l: number; h: number } | null>(null);
   const [nouveaute, setNouveaute] = useState('');
 
   function mesurer(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
-    setTaille((t) => (t && t.l === width && t.h === height ? t : { l: width, h: height }));
+    setZone((z) => (z && z.l === width && z.h === height ? z : { l: width, h: height }));
   }
+
+  // La carte est la plus grande à ratio d'image fixe qui tient dans la zone disponible.
+  const taille = useMemo(() => {
+    if (!zone) return null;
+    const l = Math.min(zone.l, zone.h * RATIO);
+    return { l, h: l / RATIO };
+  }, [zone]);
 
   // Les 10 étapes, du bas vers le haut. Le point 0 est un départ virtuel, sous la première étape.
   const noeuds: Point[] = useMemo(() => {
     if (!taille) return [];
-    const utile = taille.h - 2 * MARGE;
-    return X_RELATIFS.map((xr, p) => ({
-      x: MARGE + xr * (taille.l - 2 * MARGE),
-      y: taille.h - MARGE - (p * utile) / (PAR_CARTE - 1),
+    const parcours = PARCOURS[Math.floor(base / PAR_CARTE) % PARCOURS.length];
+    const utile = taille.h - MARGE - MARGE_HAUT;
+    return parcours.map((pt) => ({
+      x: MARGE + pt.x * (taille.l - 2 * MARGE),
+      y: taille.h - MARGE - pt.y * utile,
     }));
-  }, [taille]);
+  }, [taille, base]);
 
   const jalons: Point[] = useMemo(
     () => (noeuds.length && taille ? [{ x: noeuds[0].x, y: taille.h + 30 }, ...noeuds] : []),
     [noeuds, taille],
   );
 
-  // Courbe en S entre deux jalons, et ses points d'échantillonnage pour animer la mascotte le long du chemin.
+  // Courbe lisse (Catmull-Rom) passant par tous les jalons, et ses points d'échantillonnage pour animer la mascotte.
   const { chemin, echantillons } = useMemo(() => {
-    if (jalons.length < 2) return { chemin: '', echantillons: [] as Point[] };
+    if (jalons.length < 2 || !taille) return { chemin: '', echantillons: [] as Point[] };
     let d = `M ${jalons[0].x} ${jalons[0].y}`;
     const pts: Point[] = [jalons[0]];
     for (let i = 1; i < jalons.length; i++) {
+      const p0 = jalons[Math.max(0, i - 2)];
       const a = jalons[i - 1];
       const b = jalons[i];
-      const ym = (a.y + b.y) / 2;
-      d += ` C ${a.x} ${ym}, ${b.x} ${ym}, ${b.x} ${b.y}`;
+      const p3 = jalons[Math.min(jalons.length - 1, i + 1)];
+      const c1 = { x: a.x + (b.x - p0.x) / 6, y: a.y + (b.y - p0.y) / 6 };
+      const c2 = { x: b.x - (p3.x - a.x) / 6, y: b.y - (p3.y - a.y) / 6 };
+      d += ` C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
       for (let k = 1; k <= ECHANTILLONS; k++) {
         const t = k / ECHANTILLONS;
         const u = 1 - t;
         pts.push({
-          x: u * u * u * a.x + 3 * u * u * t * a.x + 3 * u * t * t * b.x + t * t * t * b.x,
-          y: u * u * u * a.y + 3 * u * u * t * ym + 3 * u * t * t * ym + t * t * t * b.y,
+          x: u * u * u * a.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * b.x,
+          y: u * u * u * a.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * b.y,
         });
       }
     }
     return { chemin: d, echantillons: pts };
-  }, [jalons]);
+  }, [jalons, taille]);
 
   const progres = useRef(new Animated.Value(0)).current; // en nombre de jalons : 0 = départ, p + 1 = étape p
   const rebond = useRef(new Animated.Value(0)).current;
@@ -160,11 +189,11 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
         </Text>
       </View>
 
-      <View style={[styles.carte, { backgroundColor: decor.parchemin, borderColor: sombre ? '#8C6BFF' : '#FFFFFF' }]} onLayout={mesurer}>
-        {/* Image du décor, sous le chemin et les pastilles */}
-        <Image source={decor.image} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.zoneCarte} onLayout={mesurer}>
         {taille && (
-          <>
+          <View style={[styles.carte, { width: taille.l, height: taille.h, backgroundColor: decor.parchemin }]}>
+            {/* Image du décor, entière, sous le chemin et les pastilles */}
+            <Image source={decor.image} style={StyleSheet.absoluteFill} resizeMode="stretch" />
             <View pointerEvents="none" style={styles.nomDecorZone}>
               <Text
                 style={[
@@ -249,7 +278,9 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
             <Animated.View pointerEvents="none" style={[styles.annonce, { opacity: annonce }]}>
               <Text style={styles.annonceTexte}>{nouveaute}</Text>
             </Animated.View>
-          </>
+
+            <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.cadre, { borderColor: sombre ? '#8C6BFF' : '#FFFFFF' }]} />
+          </View>
         )}
       </View>
 
@@ -268,14 +299,10 @@ const styles = StyleSheet.create({
   titreJoueur: { color: couleurs.accent, fontSize: 13, fontWeight: '800', letterSpacing: 2 },
   niveau: { color: couleurs.texte, fontSize: 34, fontWeight: '900' },
   stats: { color: couleurs.texteSecondaire, fontSize: 13, marginTop: 2 },
-  carte: {
-    flex: 1,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: rayon,
-    borderWidth: 3,
-    overflow: 'hidden',
-  },
+  // Zone disponible entre l'en-tête et le bouton ; la carte, à ratio fixe, y est centrée.
+  zoneCarte: { flex: 1, marginHorizontal: 16, marginBottom: 12, alignItems: 'center', justifyContent: 'center' },
+  carte: { borderRadius: rayon, overflow: 'hidden' },
+  cadre: { borderRadius: rayon, borderWidth: 3 },
   nomDecorZone: { position: 'absolute', top: 8, left: 0, right: 0, alignItems: 'center' },
   nomDecor: { fontSize: 12, fontWeight: '800', letterSpacing: 1, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
   noeud: { position: 'absolute', width: TAILLE_NOEUD, alignItems: 'center' },
