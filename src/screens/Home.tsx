@@ -66,7 +66,7 @@ export default function Home({
         <Text style={styles.sousTitre}>Devinez le mystère du jour</Text>
       </View>
 
-      <View style={styles.scene}>
+      <ScrollView style={styles.sceneDefil} contentContainerStyle={styles.scene} showsVerticalScrollIndicator={false}>
         <Mascotte taille={190} />
         <Text style={styles.jour}>
           Mystère n°{numero} · {etatJour}
@@ -82,7 +82,7 @@ export default function Home({
             <Text style={styles.puceTexte}>📊 Stats</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
 
       <View style={styles.modes}>
         <TouchableOpacity style={styles.mode} onPress={onAventure} activeOpacity={0.85}>
@@ -168,7 +168,9 @@ const styles = StyleSheet.create({
   boutonSonTexte: { fontSize: 18 },
   haut: { paddingTop: 28, alignItems: 'center' },
   sousTitre: { color: couleurs.texteSecondaire, fontSize: 15, textAlign: 'center', marginTop: 6 },
-  scene: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  sceneDefil: { flex: 1 },
+  // Le contenu est centré, et on peut le faire défiler sur un petit écran plutôt que de le voir coupé.
+  scene: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
   jour: { color: couleurs.texte, fontSize: 14, marginTop: 14, fontWeight: '600' },
   puces: { flexDirection: 'row', marginTop: 14 },
   puce: {
