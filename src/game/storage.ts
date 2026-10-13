@@ -40,6 +40,9 @@ export interface Stats {
   dernierPartage: string | null;
   /** Dernier jour où un défi d'ami gagné a rapporté un joker. */
   dernierDefiJoker: string | null;
+  /** Combien de fois on a proposé de noter l'appli, et quand la dernière fois. */
+  avisDemandes: number;
+  dernierAvis: string | null;
 }
 
 export interface EtatDuJour {
@@ -69,6 +72,8 @@ export const STATS_VIDES: Stats = {
   partages: 0,
   dernierPartage: null,
   dernierDefiJoker: null,
+  avisDemandes: 0,
+  dernierAvis: null,
 };
 
 export async function chargerStats(): Promise<Stats> {

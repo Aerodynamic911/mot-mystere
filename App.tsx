@@ -6,6 +6,8 @@ import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
 import { LIEN_APP } from './src/config';
 import { Bonus } from './src/game/bonus';
+import * as StoreReview from 'expo-store-review';
+import { doitDemanderAvis } from './src/game/avis';
 import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
 import EntreAmis from './src/ui/EntreAmis';
 import { Mystere } from './src/data/mysteres';
@@ -135,7 +137,18 @@ export default function App() {
   ) {
     const partie = enregistrerPartie(stats, mode, cle, propositions, gagne);
     const extra = supplement ? supplement(partie.stats) : { stats: partie.stats, bonus: null };
-    const nouvellesStats = extra.stats;
+    let nouvellesStats = extra.stats;
+    // Après une victoire, on propose de noter l'appli (fenêtre native, rarement).
+    if (gagne && doitDemanderAvis(nouvellesStats, cle)) {
+      nouvellesStats = { ...nouvellesStats, avisDemandes: nouvellesStats.avisDemandes + 1, dernierAvis: cle };
+      setTimeout(async () => {
+        try {
+          if (await StoreReview.isAvailableAsync()) await StoreReview.requestReview();
+        } catch {
+          // Pas disponible (émulateur, boutique absente) : on ignore.
+        }
+      }, 4500);
+    }
     const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : partie.bonus;
     setStats(nouvellesStats);
     sauverStats(nouvellesStats);
