@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import { EDITEUR } from '../config';
+import { tr } from '../i18n';
 import LogoEditeur from '../ui/LogoEditeur';
 
 /** Durée de la barre de chargement (l'écran reste affiché au moins ce temps). */
@@ -58,14 +59,14 @@ export default function Splash() {
       </Animated.View>
 
       <View style={styles.bas}>
-        <Text style={styles.chargement}>Chargement</Text>
+        <Text style={styles.chargement}>{tr('Chargement', 'Loading')}</Text>
         <View style={styles.piste}>
           <Animated.View
             style={[styles.barre, { width: progres.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]}
           />
         </View>
         <Text style={styles.pourcent}>{pourcent} %</Text>
-        <Text style={styles.version}>Version {version}</Text>
+        <Text style={styles.version}>{tr('Version', 'Version')} {version}</Text>
       </View>
     </View>
   );

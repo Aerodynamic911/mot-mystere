@@ -1,4 +1,5 @@
 import { decorParRang } from '../game/aventure';
+import { tr } from '../i18n';
 import { EVENEMENTS, Evenement } from './evenements';
 
 export type Rarete = 'commune' | 'rare' | 'epique' | 'legendaire';
@@ -20,10 +21,10 @@ export interface Carte {
 }
 
 export const RARETES: Record<Rarete, { libelle: string; couleur: string }> = {
-  commune: { libelle: 'Commune', couleur: '#9AA0C0' },
-  rare: { libelle: 'Rare', couleur: '#4DA3FF' },
-  epique: { libelle: 'Épique', couleur: '#B07CFF' },
-  legendaire: { libelle: 'Légendaire', couleur: '#F5B942' },
+  commune: { get libelle() { return tr('Commune', 'Common'); }, couleur: '#9AA0C0' },
+  rare: { get libelle() { return tr('Rare', 'Rare'); }, couleur: '#4DA3FF' },
+  epique: { get libelle() { return tr('Épique', 'Epic'); }, couleur: '#B07CFF' },
+  legendaire: { get libelle() { return tr('Légendaire', 'Legendary'); }, couleur: '#F5B942' },
 };
 
 /** Une carte d'aventure tous les 10 niveaux : la n-ième carte récompense le niveau 10 × n. Le décor suit celui de la carte. */
@@ -39,12 +40,12 @@ export function carteAventure(n: number): Carte {
     id: `av-${n}`,
     origine: 'aventure',
     titre: decor.tresorNom,
-    sousTitre: `${decor.nom} · niveau ${n * NIVEAUX_PAR_CARTE_AVENTURE}`,
+    sousTitre: `${decor.nom} · ${tr('niveau', 'level')} ${n * NIVEAUX_PAR_CARTE_AVENTURE}`,
     emoji: decor.tresor,
     couleur: decor.sombre ? decor.trait : decor.encre,
     fond: decor.parchemin,
     rarete,
-    obtention: `Obtenue en réussissant le niveau ${n * NIVEAUX_PAR_CARTE_AVENTURE} de l'aventure.`,
+    obtention: tr("Obtenue en réussissant le niveau {n} de l'aventure.", 'Earned by completing level {n} of the adventure.', { n: n * NIVEAUX_PAR_CARTE_AVENTURE }),
   };
 }
 
@@ -53,31 +54,33 @@ export function carteEvenement(e: Evenement): Carte {
     id: `ev-${e.id}`,
     origine: 'evenement',
     titre: e.titre,
-    sousTitre: 'Événement terminé',
+    sousTitre: tr('Événement terminé', 'Event completed'),
     emoji: e.emoji,
     couleur: e.couleur,
     fond: '#1A1F3A',
     rarete: 'epique',
-    obtention: `Obtenue en terminant les 20 étapes de l'événement « ${e.titre} ».`,
+    obtention: tr("Obtenue en terminant les 20 étapes de l'événement « {t} ».", 'Earned by completing all 20 steps of the “{t}” event.', { t: e.titre }),
   };
 }
 
-const TITRES_JOUR = ['Éclaireur', 'Gardien du temps', 'Maître des énigmes', 'Oracle', 'Grand sage', 'Légende vivante'];
+const TITRES_JOUR_FR = ['Éclaireur', 'Gardien du temps', 'Maître des énigmes', 'Oracle', 'Grand sage', 'Légende vivante'];
+const TITRES_JOUR_EN = ['Scout', 'Keeper of Time', 'Riddle Master', 'Oracle', 'Grand Sage', 'Living Legend'];
 const EMOJIS_JOUR = ['🌅', '⏳', '🧩', '🔮', '📜', '👑'];
 
 export function carteJour(k: number): Carte {
-  const i = (k - 1) % TITRES_JOUR.length;
-  const cycle = Math.floor((k - 1) / TITRES_JOUR.length);
+  const i = (k - 1) % TITRES_JOUR_FR.length;
+  const cycle = Math.floor((k - 1) / TITRES_JOUR_FR.length);
+  const nom = tr(TITRES_JOUR_FR[i], TITRES_JOUR_EN[i]);
   return {
     id: `jr-${k}`,
     origine: 'jour',
-    titre: cycle ? `${TITRES_JOUR[i]} ${cycle + 1}` : TITRES_JOUR[i],
-    sousTitre: `${k * MYSTERES_PAR_CARTE_JOUR} mystères du jour`,
+    titre: cycle ? `${nom} ${cycle + 1}` : nom,
+    sousTitre: `${k * MYSTERES_PAR_CARTE_JOUR} ${tr('mystères du jour', 'daily mysteries')}`,
     emoji: EMOJIS_JOUR[i],
     couleur: '#F5B942',
     fond: '#2A2350',
     rarete: k <= 1 ? 'rare' : k <= 3 ? 'epique' : 'legendaire',
-    obtention: `Obtenue en résolvant ${k * MYSTERES_PAR_CARTE_JOUR} mystères du jour.`,
+    obtention: tr('Obtenue en résolvant {n} mystères du jour.', 'Earned by solving {n} daily mysteries.', { n: k * MYSTERES_PAR_CARTE_JOUR }),
   };
 }
 

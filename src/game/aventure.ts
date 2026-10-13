@@ -1,6 +1,7 @@
 import { ImageSourcePropType } from 'react-native';
 import { EVENEMENTS, NB_ETAPES } from '../data/evenements';
 import { MYSTERES, Mystere } from '../data/mysteres';
+import { tr } from '../i18n';
 
 /** Tous les mystères disponibles : la base du jeu et ceux des événements. */
 const POOL: Mystere[] = (() => {
@@ -89,12 +90,13 @@ export function essaisAventure(niveau: number): number {
   return 4;
 }
 
-const TITRES = ['Apprenti', 'Curieux', 'Explorateur', 'Détective', 'Érudit', 'Maître', 'Sage', 'Légende'];
+const TITRES_FR = ['Apprenti', 'Curieux', 'Explorateur', 'Détective', 'Érudit', 'Maître', 'Sage', 'Légende'];
+const TITRES_EN = ['Apprentice', 'Curious One', 'Explorer', 'Detective', 'Scholar', 'Master', 'Sage', 'Legend'];
 
 /** Titre du joueur : il change tous les 30 niveaux (au-delà de « Légende » : « Légende 2 », « Légende 3 »…). */
 export function titreJoueur(niveau: number): string {
   const rang = Math.floor((Math.max(1, niveau) - 1) / 30);
-  return rang < TITRES.length ? TITRES[rang] : `Légende ${rang - TITRES.length + 2}`;
+  return rang < TITRES_FR.length ? tr(TITRES_FR[rang], TITRES_EN[rang]) : `${tr('Légende', 'Legend')} ${rang - TITRES_FR.length + 2}`;
 }
 
 export interface Decor {
@@ -118,14 +120,14 @@ export interface Decor {
 }
 
 const DECORS: Decor[] = [
-  { nom: 'Forêt enchantée', trait: '#FFF4C2', halo: 'rgba(10,70,35,0.6)', tresorNom: 'Coffre des fées', parchemin: '#9CE6B8', encre: '#17492B', image: require('../../assets/aventure/decor-1.jpg'), sombre: false, tresor: '🧰' },
-  { nom: 'Désert doré', trait: '#A6431A', halo: 'rgba(255,255,255,0.7)', tresorNom: 'Amphore dorée', parchemin: '#FBE7A0', encre: '#6B3F0C', image: require('../../assets/aventure/decor-2.jpg'), sombre: false, tresor: '🏺' },
-  { nom: 'Montagnes gelées', trait: '#1D6FA5', halo: 'rgba(255,255,255,0.8)', tresorNom: 'Cristal de glace', parchemin: '#DCF3F8', encre: '#17476B', image: require('../../assets/aventure/decor-3.jpg'), sombre: false, tresor: '💎' },
-  { nom: 'Jungle mystérieuse', trait: '#FFEB99', halo: 'rgba(10,70,25,0.6)', tresorNom: 'Idole perdue', parchemin: '#B8E98A', encre: '#124A1C', image: require('../../assets/aventure/decor-4.jpg'), sombre: false, tresor: '🗿' },
-  { nom: 'Îles des pirates', trait: '#FFF6D6', halo: 'rgba(0,70,95,0.55)', tresorNom: 'Doublon pirate', parchemin: '#5CF0F0', encre: '#0B4A5C', image: require('../../assets/aventure/decor-5.jpg'), sombre: false, tresor: '🪙' },
-  { nom: 'Volcan en feu', trait: '#FFB347', halo: 'rgba(0,0,0,0.55)', tresorNom: 'Couronne de lave', parchemin: '#4A2E26', encre: '#FFE4BE', image: require('../../assets/aventure/decor-6.jpg'), sombre: true, tresor: '👑' },
-  { nom: 'Cité des nuages', trait: '#FFFFFF', halo: 'rgba(70,60,160,0.5)', tresorNom: 'Orbe céleste', parchemin: '#9EDCFA', encre: '#33307A', image: require('../../assets/aventure/decor-7.jpg'), sombre: false, tresor: '🔮' },
-  { nom: 'Espace infini', trait: '#7FE8FF', halo: 'rgba(0,0,40,0.6)', tresorNom: 'Soucoupe stellaire', parchemin: '#1E1B5E', encre: '#FFF1C9', image: require('../../assets/aventure/decor-8.jpg'), sombre: true, tresor: '🛸' },
+  { get nom() { return tr('Forêt enchantée', 'Enchanted Forest'); }, trait: '#FFF4C2', halo: 'rgba(10,70,35,0.6)', get tresorNom() { return tr('Coffre des fées', 'Fairy Chest'); }, parchemin: '#9CE6B8', encre: '#17492B', image: require('../../assets/aventure/decor-1.jpg'), sombre: false, tresor: '🧰' },
+  { get nom() { return tr('Désert doré', 'Golden Desert'); }, trait: '#A6431A', halo: 'rgba(255,255,255,0.7)', get tresorNom() { return tr('Amphore dorée', 'Golden Amphora'); }, parchemin: '#FBE7A0', encre: '#6B3F0C', image: require('../../assets/aventure/decor-2.jpg'), sombre: false, tresor: '🏺' },
+  { get nom() { return tr('Montagnes gelées', 'Frozen Mountains'); }, trait: '#1D6FA5', halo: 'rgba(255,255,255,0.8)', get tresorNom() { return tr('Cristal de glace', 'Ice Crystal'); }, parchemin: '#DCF3F8', encre: '#17476B', image: require('../../assets/aventure/decor-3.jpg'), sombre: false, tresor: '💎' },
+  { get nom() { return tr('Jungle mystérieuse', 'Mysterious Jungle'); }, trait: '#FFEB99', halo: 'rgba(10,70,25,0.6)', get tresorNom() { return tr('Idole perdue', 'Lost Idol'); }, parchemin: '#B8E98A', encre: '#124A1C', image: require('../../assets/aventure/decor-4.jpg'), sombre: false, tresor: '🗿' },
+  { get nom() { return tr('Îles des pirates', 'Pirate Islands'); }, trait: '#FFF6D6', halo: 'rgba(0,70,95,0.55)', get tresorNom() { return tr('Doublon pirate', 'Pirate Doubloon'); }, parchemin: '#5CF0F0', encre: '#0B4A5C', image: require('../../assets/aventure/decor-5.jpg'), sombre: false, tresor: '🪙' },
+  { get nom() { return tr('Volcan en feu', 'Blazing Volcano'); }, trait: '#FFB347', halo: 'rgba(0,0,0,0.55)', get tresorNom() { return tr('Couronne de lave', 'Lava Crown'); }, parchemin: '#4A2E26', encre: '#FFE4BE', image: require('../../assets/aventure/decor-6.jpg'), sombre: true, tresor: '👑' },
+  { get nom() { return tr('Cité des nuages', 'Cloud City'); }, trait: '#FFFFFF', halo: 'rgba(70,60,160,0.5)', get tresorNom() { return tr('Orbe céleste', 'Celestial Orb'); }, parchemin: '#9EDCFA', encre: '#33307A', image: require('../../assets/aventure/decor-7.jpg'), sombre: false, tresor: '🔮' },
+  { get nom() { return tr('Espace infini', 'Infinite Space'); }, trait: '#7FE8FF', halo: 'rgba(0,0,40,0.6)', get tresorNom() { return tr('Soucoupe stellaire', 'Star Saucer'); }, parchemin: '#1E1B5E', encre: '#FFF1C9', image: require('../../assets/aventure/decor-8.jpg'), sombre: true, tresor: '🛸' },
 ];
 
 /** Nombre de décors différents. */

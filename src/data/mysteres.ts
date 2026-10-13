@@ -1,4 +1,4 @@
-export type Categorie = 'Personnage' | 'Lieu' | 'Monument';
+export type Categorie = string;
 
 export interface Mystere {
   id: string;

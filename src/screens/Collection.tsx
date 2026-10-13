@@ -4,6 +4,7 @@ import { Carte, MYSTERES_PAR_CARTE_JOUR, NIVEAUX_PAR_CARTE_AVENTURE, carteAventu
 import { EVENEMENTS, evenementEnCours } from '../data/evenements';
 import { Progression } from '../game/progression';
 import { Stats } from '../game/storage';
+import { tr } from '../i18n';
 import { couleurs } from '../theme';
 import CarteVisuelle from '../ui/CarteVisuelle';
 import EnteteEcran from '../ui/EnteteEcran';
@@ -50,14 +51,16 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
   return (
     <View style={styles.racine}>
       <FondAnime />
-      <EnteteEcran titre="Collection" onRetour={onRetour} />
+      <EnteteEcran titre={tr('Collection', 'Collection')} onRetour={onRetour} />
       <ScrollView contentContainerStyle={styles.contenu}>
-        <Text style={styles.resume}>🃏 {total} carte{total > 1 ? 's' : ''} obtenue{total > 1 ? 's' : ''}</Text>
+        <Text style={styles.resume}>
+          🃏 {total} {tr(total > 1 ? 'cartes obtenues' : 'carte obtenue', total > 1 ? 'cards collected' : 'card collected')}
+        </Text>
         <Text style={styles.aide}>
-          Des cartes à collectionner se gagnent en jouant. Touchez une carte obtenue pour l'agrandir et l'admirer.
+          {tr("Des cartes à collectionner se gagnent en jouant. Touchez une carte obtenue pour l'agrandir et l'admirer.", 'Collectible cards are earned by playing. Tap a card you own to enlarge it and admire it.')}
         </Text>
 
-        <Section titre="🗺️ Aventure" note={`Une carte tous les ${NIVEAUX_PAR_CARTE_AVENTURE} niveaux réussis`}>
+        <Section titre={`🗺️ ${tr('Aventure', 'Adventure')}`} note={tr('Une carte tous les {n} niveaux réussis', 'One card every {n} levels completed', { n: NIVEAUX_PAR_CARTE_AVENTURE })}>
           {aventure.map((c) => (
             <Touchable key={c.id} onPress={() => setAgrandie(c)}>
               <CarteVisuelle carte={c} largeur={largeur} />
@@ -67,11 +70,11 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
             carte={carteAventure(prochaineAventure)}
             largeur={largeur}
             verrouillee
-            consigne={`Réussir le niveau ${prochaineAventure * NIVEAUX_PAR_CARTE_AVENTURE} (${Math.min(niveauxReussis, prochaineAventure * NIVEAUX_PAR_CARTE_AVENTURE)}/${prochaineAventure * NIVEAUX_PAR_CARTE_AVENTURE})`}
+            consigne={tr('Réussir le niveau {n} ({a}/{n})', 'Complete level {n} ({a}/{n})', { n: prochaineAventure * NIVEAUX_PAR_CARTE_AVENTURE, a: Math.min(niveauxReussis, prochaineAventure * NIVEAUX_PAR_CARTE_AVENTURE) })}
           />
         </Section>
 
-        <Section titre="🎉 Événements" note="Une carte quand l'événement est terminé (20 étapes)">
+        <Section titre={`🎉 ${tr('Événements', 'Events')}`} note={tr("Une carte quand l'événement est terminé (20 étapes)", 'One card when the event is completed (20 steps)')}>
           {evenementsVisibles.map((e) => {
             const c = carteEvenement(e);
             const faites = progression.evenements[e.id]?.faites ?? 0;
@@ -80,12 +83,12 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
                 <CarteVisuelle carte={c} largeur={largeur} />
               </Touchable>
             ) : (
-              <CarteVisuelle key={c.id} carte={c} largeur={largeur} verrouillee consigne={`${e.titre} : ${faites}/20 étapes`} />
+              <CarteVisuelle key={c.id} carte={c} largeur={largeur} verrouillee consigne={`${e.titre}${tr(' : ', ': ')}${faites}/20 ${tr('étapes', 'steps')}`} />
             );
           })}
         </Section>
 
-        <Section titre="📅 Mystère du jour" note={`Une carte tous les ${MYSTERES_PAR_CARTE_JOUR} mystères du jour résolus`}>
+        <Section titre={`📅 ${tr('Mystère du jour', 'Daily mystery')}`} note={tr('Une carte tous les {n} mystères du jour résolus', 'One card every {n} daily mysteries solved', { n: MYSTERES_PAR_CARTE_JOUR })}>
           {jour.map((c) => (
             <Touchable key={c.id} onPress={() => setAgrandie(c)}>
               <CarteVisuelle carte={c} largeur={largeur} />
@@ -95,7 +98,7 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
             carte={carteJour(prochaineJour)}
             largeur={largeur}
             verrouillee
-            consigne={`${Math.min(victoiresJour, prochaineJour * MYSTERES_PAR_CARTE_JOUR)}/${prochaineJour * MYSTERES_PAR_CARTE_JOUR} mystères du jour`}
+            consigne={`${Math.min(victoiresJour, prochaineJour * MYSTERES_PAR_CARTE_JOUR)}/${prochaineJour * MYSTERES_PAR_CARTE_JOUR} ${tr('mystères du jour', 'daily mysteries')}`}
           />
         </Section>
       </ScrollView>
@@ -106,7 +109,7 @@ export default function Collection({ possedees, progression, stats, onRetour }: 
 
 function Touchable({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel="Agrandir la carte">
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={tr('Agrandir la carte', 'Enlarge card')}>
       {children}
     </TouchableOpacity>
   );
@@ -150,7 +153,7 @@ function CarteAgrandie({ carte, onFermer }: { carte: Carte | null; onFermer: () 
               <CarteVisuelle carte={carte} largeur={largeur} />
             </Animated.View>
             <Text style={styles.obtention}>{carte.obtention}</Text>
-            <Text style={styles.toucher}>Touchez pour fermer</Text>
+            <Text style={styles.toucher}>{tr('Touchez pour fermer', 'Tap to close')}</Text>
           </>
         )}
       </TouchableOpacity>

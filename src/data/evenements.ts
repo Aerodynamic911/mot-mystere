@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 import { Mystere } from './mysteres';
 
 export interface Evenement {
@@ -664,17 +665,17 @@ export function evenementEnCours(date: Date = new Date()): Evenement {
 export const EVENEMENTS: Evenement[] = [
   {
     id: 'merveilles',
-    titre: 'Merveilles du monde',
+    get titre() { return tr('Merveilles du monde', 'Wonders of the World'); },
     emoji: '🌍',
-    description: '20 monuments et lieux extraordinaires à identifier, des pyramides à la Cité de Carcassonne.',
+    get description() { return tr('20 monuments et lieux extraordinaires à identifier, des pyramides à la Cité de Carcassonne.', '20 extraordinary monuments and places to identify, from the pyramids to the Cité de Carcassonne.'); },
     couleur: '#3DDC97',
     etapes: merveilles,
   },
   {
     id: 'histoire',
-    titre: "Grands noms de l'histoire",
+    get titre() { return tr("Grands noms de l'histoire", 'Great Names of History'); },
     emoji: '🏛️',
-    description: "20 figures qui ont marqué l'histoire, des savants aux artistes, des conquérants aux visionnaires.",
+    get description() { return tr("20 figures qui ont marqué l'histoire, des savants aux artistes, des conquérants aux visionnaires.", '20 figures who shaped history, from scientists to artists, from conquerors to visionaries.'); },
     couleur: '#8C6BFF',
     etapes: histoire,
   },

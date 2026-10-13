@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type Langue = 'fr' | 'en';
+import { Langue, langueAppareil } from '../i18n';
+
+export type { Langue };
 export type Difficulte = 'facile' | 'normal' | 'difficile';
 export type TrancheAge = 'tous' | 'enfant' | 'ado' | 'adulte';
 
@@ -10,7 +12,7 @@ export interface Preferences {
   age: TrancheAge;
 }
 
-export const PREFERENCES_PAR_DEFAUT: Preferences = { langue: 'fr', difficulte: 'normal', age: 'tous' };
+export const PREFERENCES_PAR_DEFAUT: Preferences = { langue: langueAppareil(), difficulte: 'normal', age: 'tous' };
 
 /** Nombre d'indices visibles dès le début de la partie. */
 export const INDICES_DE_BASE: Record<Difficulte, number> = { facile: 2, normal: 1, difficile: 1 };

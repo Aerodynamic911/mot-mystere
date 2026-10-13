@@ -15,6 +15,7 @@ import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
 import { Difficulte, INDICES_DE_BASE } from '../game/preferences';
+import { langue, localiser, tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import EffetsJeu, { EffetEnCours, TypeEffet } from '../ui/EffetsJeu';
 
@@ -33,6 +34,21 @@ const CONSOLATIONS = [
   'Pas cette fois, mais vous avez bien cherché. La prochaine sera la bonne !',
   "Même les meilleurs détectives s'y reprennent à plusieurs fois. Vous y étiez presque ! ✨",
   'Bravo pour avoir essayé jusqu\'au bout : vous retiendrez celui-là !',
+];
+
+const ENCOURAGEMENTS_EN = [
+  'Not quite… but you’re getting warm! 🔥',
+  'Nice try! Re-read the clues, the answer is very close.',
+  'Keep going, you’re on the trail! 🕵️',
+  'That’s not it, but every attempt brings you closer.',
+  'Almost! A fresh look at the clues can change everything.',
+];
+
+const CONSOLATIONS_EN = [
+  'That wasn’t easy! Every missed mystery is one more thing learned. 💪',
+  'Not this time, but you searched well. The next one will be yours!',
+  'Even the best detectives need several tries. You were so close! ✨',
+  'Well done for trying until the end: you’ll remember this one!',
 ];
 
 function auHasard<T>(liste: T[]): T {
@@ -62,7 +78,7 @@ interface Props {
 
 export default function Game({
   difficulte,
-  mystere,
+  mystere: mystereBrut,
   titre,
   numero,
   propositionsInitiales,
@@ -75,11 +91,12 @@ export default function Game({
   jokers = 0,
   onJoker,
 }: Props) {
+  const mystere = localiser(mystereBrut);
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
   const [saisie, setSaisie] = useState('');
   const [message, setMessage] = useState('');
   const [encouragement, setEncouragement] = useState('');
-  const [consolation] = useState(() => auHasard(CONSOLATIONS));
+  const [consolation] = useState(() => auHasard(langue() === 'en' ? CONSOLATIONS_EN : CONSOLATIONS));
   const [effet, setEffet] = useState<EffetEnCours | null>(null);
   // Indices offerts par des jokers pendant cette partie.
   const [offerts, setOfferts] = useState(0);
@@ -116,7 +133,7 @@ export default function Game({
     const texte = saisie.trim();
     if (!texte || termine) return;
     if (propositions.some((p) => p !== PASSE && normaliser(p) === normaliser(texte))) {
-      setMessage('Vous avez déjà essayé cette réponse.');
+      setMessage(tr('Vous avez déjà essayé cette réponse.', 'You already tried that answer.'));
       return;
     }
     const suivantes = [...propositions, texte];
@@ -134,7 +151,7 @@ export default function Game({
       declencher('faux');
       jouerEffet('echec');
     } else {
-      setEncouragement(auHasard(ENCOURAGEMENTS));
+      setEncouragement(auHasard(langue() === 'en' ? ENCOURAGEMENTS_EN : ENCOURAGEMENTS));
       declencher('faux');
       secouer();
     }
@@ -176,7 +193,7 @@ export default function Game({
     const carres =
       propositions.map((p) => (p === PASSE ? '🟨' : estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
       '⬛'.repeat(Math.max(0, maxEssais - propositions.length));
-    const entete = libellePartage ?? (numero ? `Boxtery n°${numero}` : 'Boxtery');
+    const entete = libellePartage ?? (numero ? `Boxtery ${tr('n°', 'No.')}${numero}` : 'Boxtery');
     const resultat = gagne ? `${score}/${maxEssais}` : `X/${maxEssais}`;
     try {
       await Share.share({ message: `${entete} ${resultat}\n${carres}` });
@@ -189,7 +206,7 @@ export default function Game({
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.entete}>
         <TouchableOpacity onPress={onRetour} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Text style={styles.retour}>‹ Accueil</Text>
+          <Text style={styles.retour}>{tr('‹ Accueil', '‹ Home')}</Text>
         </TouchableOpacity>
         <Text style={styles.titre}>{titre}</Text>
         <Text style={styles.essais}>
@@ -198,7 +215,7 @@ export default function Game({
       </View>
 
       <ScrollView contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
-        <Text style={styles.categorie}>{mystere.categorie.toUpperCase()} À DEVINER</Text>
+        <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>
 
         {mystere.indices.map((indice, i) => {
           const visible = i < indicesVisibles;
@@ -213,7 +230,7 @@ export default function Game({
             {propositions.map((p, i) =>
               p === PASSE ? (
                 <View key={i} style={[styles.pastille, styles.pastillePasse]}>
-                  <Text style={styles.pastilleTexte}>⏭ Indice demandé</Text>
+                  <Text style={styles.pastilleTexte}>⏭ {tr('Indice demandé', 'Clue requested')}</Text>
                 </View>
               ) : (
                 <View key={i} style={[styles.pastille, estCorrect(mystere, p) && styles.pastilleOk]}>
@@ -239,17 +256,19 @@ export default function Game({
             ]}
           >
             <Text style={styles.resultatTitre}>
-              {gagne ? `Bravo ! Trouvé en ${propositions.length} essai${propositions.length > 1 ? 's' : ''}` : 'Pas cette fois, mais bien joué !'}
+              {gagne
+                ? tr('Bravo ! Trouvé en {n} essai{s}', 'Well done! Found in {n} attempt{s}', { n: propositions.length, s: propositions.length > 1 ? 's' : '' })
+                : tr('Pas cette fois, mais bien joué !', 'Not this time, but well played!')}
             </Text>
             {!gagne && <Text style={styles.consolation}>{consolation}</Text>}
             <Text style={styles.reponse}>{mystere.reponse}</Text>
-            {gagne && <Text style={styles.score}>Score : {score}/{maxEssais}</Text>}
+            {gagne && <Text style={styles.score}>{tr('Score', 'Score')} : {score}/{maxEssais}</Text>}
 
-            <Text style={styles.anecdoteTitre}>💡 Le saviez-vous ?</Text>
+            <Text style={styles.anecdoteTitre}>💡 {tr('Le saviez-vous ?', 'Did you know?')}</Text>
             <Text style={styles.anecdote}>{mystere.anecdote}</Text>
 
             <TouchableOpacity style={styles.bouton} onPress={partager} activeOpacity={0.85}>
-              <Text style={styles.boutonTexte}>Partager mon résultat</Text>
+              <Text style={styles.boutonTexte}>{tr('Partager mon résultat', 'Share my result')}</Text>
             </TouchableOpacity>
             {suite && (
               <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire]} onPress={suite.onPress} activeOpacity={0.85}>
@@ -266,14 +285,14 @@ export default function Game({
           {message === '' && encouragement !== '' && <Text style={styles.encouragement}>{encouragement}</Text>}
           {peutJoker && (
             <TouchableOpacity style={[styles.boutonIndice, styles.boutonJoker]} onPress={utiliserJoker} activeOpacity={0.85}>
-              <Text style={[styles.boutonIndiceTexte, { color: couleurs.succes }]}>✨ Utiliser un joker ({jokers})</Text>
-              <Text style={styles.boutonIndiceNote}>indice offert</Text>
+              <Text style={[styles.boutonIndiceTexte, { color: couleurs.succes }]}>✨ {tr('Utiliser un joker', 'Use a joker')} ({jokers})</Text>
+              <Text style={styles.boutonIndiceNote}>{tr('indice offert', 'free clue')}</Text>
             </TouchableOpacity>
           )}
           {peutDemanderIndice && (
             <TouchableOpacity style={styles.boutonIndice} onPress={indiceSuivant} activeOpacity={0.85}>
-              <Text style={styles.boutonIndiceTexte}>💡 Indice suivant</Text>
-              <Text style={styles.boutonIndiceNote}>compte comme un essai</Text>
+              <Text style={styles.boutonIndiceTexte}>💡 {tr('Indice suivant', 'Next clue')}</Text>
+              <Text style={styles.boutonIndiceNote}>{tr('compte comme un essai', 'counts as an attempt')}</Text>
             </TouchableOpacity>
           )}
           <Animated.View
@@ -290,7 +309,7 @@ export default function Game({
                 if (message) setMessage('');
                 if (encouragement) setEncouragement('');
               }}
-              placeholder="Votre réponse…"
+              placeholder={tr('Votre réponse…', 'Your answer…')}
               placeholderTextColor={couleurs.texteSecondaire}
               autoCapitalize="words"
               autoCorrect={false}
@@ -298,7 +317,7 @@ export default function Game({
               onSubmitEditing={valider}
             />
             <TouchableOpacity style={styles.envoyer} onPress={valider} activeOpacity={0.85}>
-              <Text style={styles.envoyerTexte}>Valider</Text>
+              <Text style={styles.envoyerTexte}>{tr('Valider', 'Submit')}</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -332,7 +351,7 @@ function IndiceCarte({ visible, recent, numero, texte }: { visible: boolean; rec
       ]}
     >
       <Text style={styles.indiceNumero}>{numero}</Text>
-      <Text style={visible ? styles.indiceTexte : styles.indiceTexteVerrouille}>{visible ? texte : '🔒 Indice verrouillé'}</Text>
+      <Text style={visible ? styles.indiceTexte : styles.indiceTexteVerrouille}>{visible ? texte : tr('🔒 Indice verrouillé', '🔒 Locked clue')}</Text>
     </Animated.View>
   );
 }

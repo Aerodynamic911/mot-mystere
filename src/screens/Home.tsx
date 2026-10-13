@@ -3,6 +3,7 @@ import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { MAX_ESSAIS } from '../game/engine';
 import { PALIERS_JOURS, PALIERS_VICTOIRES, prochainPalier } from '../game/bonus';
 import { Stats } from '../game/storage';
+import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
 import Mascotte from '../ui/Mascotte';
@@ -66,7 +67,7 @@ export default function Home({
         onPress={onToggleMusique}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={musiqueActive ? 'Couper la musique' : 'Activer la musique'}
+        accessibilityLabel={musiqueActive ? tr('Couper la musique', 'Mute music') : tr('Activer la musique', 'Turn music on')}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={styles.boutonSonTexte}>{musiqueActive ? '🔊' : '🔇'}</Text>
@@ -75,7 +76,7 @@ export default function Home({
       <View style={styles.haut}>
         <TitreArc texte="BOXTERY" />
         <View style={styles.ruban}>
-          <Text style={styles.rubanTexte}>LE JEU DES MYSTÈRES</Text>
+          <Text style={styles.rubanTexte}>{tr('LE JEU DES MYSTÈRES', 'THE MYSTERY GAME')}</Text>
         </View>
       </View>
 
@@ -83,24 +84,24 @@ export default function Home({
       <View style={styles.scene} onLayout={(e) => setHauteurScene(e.nativeEvent.layout.height)}>
         <Mascotte taille={tailleMascotte} />
         <View style={styles.puces}>
-          <Puce icone="🔥" valeur={serieVictoires} libelle="Série" onPress={() => setInfo('serie')} />
-          <Puce icone="✨" valeur={jokers} libelle="Jokers" onPress={() => setInfo('jokers')} />
-          <Puce icone="🃏" valeur={nbCartes} libelle="Cartes" onPress={onCollection} />
-          <Puce icone="📊" valeur="" libelle="Stats" onPress={() => setStatsOuvertes(true)} />
+          <Puce icone="🔥" valeur={serieVictoires} libelle={tr('Série', 'Streak')} onPress={() => setInfo('serie')} />
+          <Puce icone="✨" valeur={jokers} libelle={tr('Jokers', 'Jokers')} onPress={() => setInfo('jokers')} />
+          <Puce icone="🃏" valeur={nbCartes} libelle={tr('Cartes', 'Cards')} onPress={onCollection} />
+          <Puce icone="📊" valeur="" libelle={tr('Stats', 'Stats')} onPress={() => setStatsOuvertes(true)} />
         </View>
       </View>
 
       <View style={styles.modes}>
         <TouchableOpacity style={[styles.mode, jourTermine && styles.modeEnAvant]} onPress={onAventure} activeOpacity={0.85}>
           <Text style={styles.modeEmoji}>🗺️</Text>
-          <Text style={styles.modeTitre}>Aventure</Text>
-          <Text style={styles.modeDetail}>Niveau {niveauAventure}</Text>
+          <Text style={styles.modeTitre}>{tr('Aventure', 'Adventure')}</Text>
+          <Text style={styles.modeDetail}>{tr('Niveau', 'Level')} {niveauAventure}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.mode, jourTermine && styles.modeEnAvant]} onPress={onEvenement} activeOpacity={0.85}>
           <Text style={styles.modeEmoji}>🎉</Text>
-          <Text style={styles.modeTitre}>Événements</Text>
+          <Text style={styles.modeTitre}>{tr('Événements', 'Events')}</Text>
           <Text style={styles.modeDetail}>
-            {etapesFaites}/{etapesTotal} étapes
+            {etapesFaites}/{etapesTotal} {tr('étapes', 'steps')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -113,14 +114,18 @@ export default function Home({
           activeOpacity={0.85}
         >
           <Text style={[styles.boutonPrincipalTexte, jourTermine && styles.boutonPrincipalTexteFait]}>
-            {jourTermine ? '✅  Mystère du jour' : '📅  Mystère du jour'}
+            {jourTermine ? '✅  ' : '📅  '}{tr('Mystère du jour', 'Daily mystery')}
           </Text>
           <Text style={[styles.boutonPrincipalSous, jourTermine && styles.boutonPrincipalSousFait]}>
-            {jourTermine ? (jourGagne ? 'Trouvé · revenez demain !' : 'Terminé · revenez demain !') : 'À découvrir'}
+            {jourTermine
+              ? jourGagne
+                ? tr('Trouvé · revenez demain !', 'Solved · come back tomorrow!')
+                : tr('Terminé · revenez demain !', 'Finished · come back tomorrow!')
+              : tr('À découvrir', 'To discover')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.boutonPreferences} onPress={onPreferences} activeOpacity={0.85}>
-          <Text style={styles.boutonPreferencesTexte}>⚙️  Préférences</Text>
+          <Text style={styles.boutonPreferencesTexte}>⚙️  {tr('Préférences', 'Settings')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -129,30 +134,51 @@ export default function Home({
           <View style={styles.infoCarte}>
             {info === 'serie' && (
               <>
-                <Text style={styles.statsTitre}>🔥 Série de victoires</Text>
+                <Text style={styles.statsTitre}>🔥 {tr('Série de victoires', 'Win streak')}</Text>
                 <Text style={styles.infoTexte}>
-                  C'est le nombre de parties gagnées d'affilée, tous modes confondus : mystère du jour, aventure et événements. Une défaite remet le compteur à zéro.
+                  {tr(
+                    "C'est le nombre de parties gagnées d'affilée, tous modes confondus : mystère du jour, aventure et événements. Une défaite remet le compteur à zéro.",
+                    'This is the number of games won in a row, across all modes: daily mystery, adventure and events. A defeat resets the counter to zero.',
+                  )}
                 </Text>
                 <Text style={styles.infoTexte}>
                   {prochainPalier(PALIERS_VICTOIRES, serieVictoires)
-                    ? `Prochain bonus : ${prochainPalier(PALIERS_VICTOIRES, serieVictoires)!.seuil} victoires d'affilée → +${prochainPalier(PALIERS_VICTOIRES, serieVictoires)!.jokers} ✨ joker(s).`
-                    : "Vous avez atteint tous les paliers de bonus !"}
+                    ? tr(
+                        "Prochain bonus : {n} victoires d'affilée → +{j} ✨ joker(s).",
+                        'Next bonus: {n} wins in a row → +{j} ✨ joker(s).',
+                        { n: prochainPalier(PALIERS_VICTOIRES, serieVictoires)!.seuil, j: prochainPalier(PALIERS_VICTOIRES, serieVictoires)!.jokers },
+                      )
+                    : tr('Vous avez atteint tous les paliers de bonus !', 'You have reached every bonus tier!')}
                 </Text>
-                <Text style={styles.infoNote}>Votre meilleure série : {stats.meilleureSerieVictoires}. Série de jours avec le mystère du jour : {serie} (détail dans 📊 Stats).</Text>
+                <Text style={styles.infoNote}>
+                  {tr(
+                    'Votre meilleure série : {m}. Série de jours avec le mystère du jour : {s} (détail dans 📊 Stats).',
+                    'Your best streak: {m}. Daily mystery day streak: {s} (details in 📊 Stats).',
+                    { m: stats.meilleureSerieVictoires, s: serie },
+                  )}
+                </Text>
               </>
             )}
             {info === 'jokers' && (
               <>
                 <Text style={styles.statsTitre}>✨ Jokers</Text>
                 <Text style={styles.infoTexte}>
-                  Un joker révèle un indice supplémentaire sans compter comme un essai. Vous en avez {jokers} en réserve : utilisez-les pendant une partie avec le bouton vert « Utiliser un joker ».
+                  {tr(
+                    'Un joker révèle un indice supplémentaire sans compter comme un essai. Vous en avez {n} en réserve : utilisez-les pendant une partie avec le bouton vert « Utiliser un joker ».',
+                    'A joker reveals an extra clue without counting as an attempt. You have {n} in reserve: use them during a game with the green “Use a joker” button.',
+                    { n: jokers },
+                  )}
                 </Text>
                 <Text style={styles.infoTexte}>
-                  Pour en gagner, enchaînez les séries : {PALIERS_JOURS.map((p) => p.seuil).join(', ')} jours de suite avec le mystère du jour, ou {PALIERS_VICTOIRES.map((p) => p.seuil).join(', ')} victoires d'affilée.
+                  {tr(
+                    "Pour en gagner, enchaînez les séries : {a} jours de suite avec le mystère du jour, ou {b} victoires d'affilée.",
+                    'To earn them, build streaks: {a} days in a row with the daily mystery, or {b} wins in a row.',
+                    { a: PALIERS_JOURS.map((p) => p.seuil).join(', '), b: PALIERS_VICTOIRES.map((p) => p.seuil).join(', ') },
+                  )}
                 </Text>
               </>
             )}
-            <Text style={styles.infoNote}>Touchez pour fermer</Text>
+            <Text style={styles.infoNote}>{tr('Touchez pour fermer', 'Tap to close')}</Text>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -161,29 +187,29 @@ export default function Home({
         <View style={styles.voile}>
           <View style={styles.statsCarte}>
             <ScrollView>
-              <Text style={styles.statsTitre}>Vos statistiques</Text>
+              <Text style={styles.statsTitre}>{tr('Vos statistiques', 'Your statistics')}</Text>
               <View style={styles.statsLigne}>
-                <Stat valeur={stats.parties} label="Parties" />
-                <Stat valeur={stats.victoires} label="Victoires" />
-                <Stat valeur={`${tauxVictoire}%`} label="Réussite" />
+                <Stat valeur={stats.parties} label={tr('Parties', 'Games')} />
+                <Stat valeur={stats.victoires} label={tr('Victoires', 'Wins')} />
+                <Stat valeur={`${tauxVictoire}%`} label={tr('Réussite', 'Win rate')} />
               </View>
 
-              <Text style={styles.repTitre}>Séries</Text>
+              <Text style={styles.repTitre}>{tr('Séries', 'Streaks')}</Text>
               <View style={styles.statsLigne}>
-                <Stat valeur={serie} label="Jours de suite" />
-                <Stat valeur={stats.meilleureSerie} label="Meilleure (jours)" />
+                <Stat valeur={serie} label={tr('Jours de suite', 'Days in a row')} />
+                <Stat valeur={stats.meilleureSerie} label={tr('Meilleure (jours)', 'Best (days)')} />
               </View>
               <View style={styles.statsLigne}>
-                <Stat valeur={stats.serieVictoires} label="Victoires d'affilée" />
-                <Stat valeur={stats.meilleureSerieVictoires} label="Meilleure série" />
+                <Stat valeur={stats.serieVictoires} label={tr("Victoires d'affilée", 'Wins in a row')} />
+                <Stat valeur={stats.meilleureSerieVictoires} label={tr('Meilleure série', 'Best streak')} />
               </View>
 
-              <Text style={styles.repTitre}>Par mode</Text>
+              <Text style={styles.repTitre}>{tr('Par mode', 'By mode')}</Text>
               {(
                 [
-                  ['📅 Mystère du jour', stats.modes.jour],
-                  ['🗺️ Aventure', stats.modes.aventure],
-                  ['🎉 Événements', stats.modes.evenement],
+                  [`📅 ${tr('Mystère du jour', 'Daily mystery')}`, stats.modes.jour],
+                  [`🗺️ ${tr('Aventure', 'Adventure')}`, stats.modes.aventure],
+                  [`🎉 ${tr('Événements', 'Events')}`, stats.modes.evenement],
                 ] as const
               ).map(([nom, c]) => (
                 <View key={nom} style={styles.modeLigne}>
@@ -193,20 +219,26 @@ export default function Home({
                   </Text>
                 </View>
               ))}
-              <Text style={styles.legende}>victoires/parties · indices demandés · réponses proposées</Text>
+              <Text style={styles.legende}>{tr('victoires/parties · indices demandés · réponses proposées', 'wins/games · clues requested · answers submitted')}</Text>
 
-              <Text style={styles.repTitre}>Bonus de série</Text>
-              <Text style={styles.bonusTexte}>✨ {jokers} joker{jokers > 1 ? 's' : ''} en réserve ({stats.jokersUtilises} utilisé{stats.jokersUtilises > 1 ? 's' : ''})</Text>
+              <Text style={styles.repTitre}>{tr('Bonus de série', 'Streak bonuses')}</Text>
+              <Text style={styles.bonusTexte}>
+                {tr(
+                  '✨ {n} joker{s} en réserve ({u} utilisé{us})',
+                  '✨ {n} joker{s} in reserve ({u} used)',
+                  { n: jokers, s: jokers > 1 ? 's' : '', u: stats.jokersUtilises, us: stats.jokersUtilises > 1 ? 's' : '' },
+                )}
+              </Text>
               {[
-                { nom: 'Jours de suite', palier: prochainPalier(PALIERS_JOURS, serie), courant: serie, unite: 'jours' },
-                { nom: "Victoires d'affilée", palier: prochainPalier(PALIERS_VICTOIRES, stats.serieVictoires), courant: stats.serieVictoires, unite: 'victoires' },
+                { nom: tr('Jours de suite', 'Days in a row'), palier: prochainPalier(PALIERS_JOURS, serie), courant: serie, unite: tr('jours', 'days') },
+                { nom: tr("Victoires d'affilée", 'Wins in a row'), palier: prochainPalier(PALIERS_VICTOIRES, stats.serieVictoires), courant: stats.serieVictoires, unite: tr('victoires', 'wins') },
               ].map((b) => (
                 <Text key={b.nom} style={styles.bonusTexte}>
-                  {b.palier ? `${b.nom} : ${b.courant}/${b.palier.seuil} ${b.unite} → +${b.palier.jokers} ✨` : `${b.nom} : tous les paliers atteints !`}
+                  {b.palier ? `${b.nom}${tr(' : ', ': ')}${b.courant}/${b.palier.seuil} ${b.unite} → +${b.palier.jokers} ✨` : tr('{nom} : tous les paliers atteints !', '{nom}: every tier reached!', { nom: b.nom })}
                 </Text>
               ))}
 
-              <Text style={styles.repTitre}>Victoires par nombre d'essais</Text>
+              <Text style={styles.repTitre}>{tr("Victoires par nombre d'essais", 'Wins by number of attempts')}</Text>
               {Array.from({ length: MAX_ESSAIS }, (_, i) => (
                 <View key={i} style={styles.repLigne}>
                   <Text style={styles.repIndex}>{i + 1}</Text>
@@ -218,7 +250,7 @@ export default function Home({
               ))}
             </ScrollView>
             <TouchableOpacity style={styles.fermer} onPress={() => setStatsOuvertes(false)} activeOpacity={0.85}>
-              <Text style={styles.fermerTexte}>Fermer</Text>
+              <Text style={styles.fermerTexte}>{tr('Fermer', 'Close')}</Text>
             </TouchableOpacity>
           </View>
         </View>

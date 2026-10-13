@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Difficulte, Langue, Preferences, TrancheAge } from '../game/preferences';
+import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
 
@@ -19,20 +20,21 @@ interface Choix<T> {
 
 const LANGUES: Choix<Langue>[] = [
   { valeur: 'fr', titre: 'Français' },
-  { valeur: 'en', titre: 'English', detail: 'Bientôt disponible', indisponible: true },
+  { valeur: 'en', titre: 'English' },
 ];
 
-const DIFFICULTES: Choix<Difficulte>[] = [
-  { valeur: 'facile', titre: 'Facile', detail: '2 indices dès le départ' },
-  { valeur: 'normal', titre: 'Normal', detail: '1 indice au départ, les autres à la demande' },
-  { valeur: 'difficile', titre: 'Difficile', detail: '1 indice au départ, sans bouton « Indice suivant »' },
+// Fonctions (et non constantes) : les textes suivent la langue choisie.
+const difficultes = (): Choix<Difficulte>[] => [
+  { valeur: 'facile', titre: tr('Facile', 'Easy'), detail: tr('2 indices dès le départ', '2 clues from the start') },
+  { valeur: 'normal', titre: tr('Normal', 'Normal'), detail: tr('1 indice au départ, les autres à la demande', '1 clue at the start, the others on request') },
+  { valeur: 'difficile', titre: tr('Difficile', 'Hard'), detail: tr('1 indice au départ, sans bouton « Indice suivant »', '1 clue at the start, no “Next clue” button') },
 ];
 
-const AGES: Choix<TrancheAge>[] = [
-  { valeur: 'tous', titre: 'Tous publics' },
-  { valeur: 'enfant', titre: 'Enfants', detail: '6 à 11 ans' },
-  { valeur: 'ado', titre: 'Ados', detail: '12 à 17 ans' },
-  { valeur: 'adulte', titre: 'Adultes', detail: '18 ans et plus' },
+const ages = (): Choix<TrancheAge>[] => [
+  { valeur: 'tous', titre: tr('Tous publics', 'All ages') },
+  { valeur: 'enfant', titre: tr('Enfants', 'Children'), detail: tr('6 à 11 ans', 'Ages 6 to 11') },
+  { valeur: 'ado', titre: tr('Ados', 'Teens'), detail: tr('12 à 17 ans', 'Ages 12 to 17') },
+  { valeur: 'adulte', titre: tr('Adultes', 'Adults'), detail: tr('18 ans et plus', '18 and over') },
 ];
 
 export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
@@ -41,21 +43,21 @@ export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
       <FondAnime />
       <View style={styles.entete}>
         <TouchableOpacity onPress={onRetour} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Text style={styles.retour}>‹ Accueil</Text>
+          <Text style={styles.retour}>{tr('‹ Accueil', '‹ Home')}</Text>
         </TouchableOpacity>
-        <Text style={styles.titre}>Préférences</Text>
+        <Text style={styles.titre}>{tr('Préférences', 'Settings')}</Text>
         <View style={styles.espaceur} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contenu}>
-        <Section titre="Langue">
+        <Section titre={tr('Langue', 'Language')}>
           {LANGUES.map((c) => (
             <Ligne key={c.valeur} choix={c} actif={prefs.langue === c.valeur} onPress={() => onChange({ ...prefs, langue: c.valeur })} />
           ))}
         </Section>
 
-        <Section titre="Difficulté">
-          {DIFFICULTES.map((c) => (
+        <Section titre={tr('Difficulté', 'Difficulty')}>
+          {difficultes().map((c) => (
             <Ligne
               key={c.valeur}
               choix={c}
@@ -65,12 +67,15 @@ export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
           ))}
         </Section>
 
-        <Section titre="Tranche d'âge">
-          {AGES.map((c) => (
+        <Section titre={tr("Tranche d'âge", 'Age group')}>
+          {ages().map((c) => (
             <Ligne key={c.valeur} choix={c} actif={prefs.age === c.valeur} onPress={() => onChange({ ...prefs, age: c.valeur })} />
           ))}
           <Text style={styles.note}>
-            Ce choix reste enregistré sur votre téléphone. Il servira à adapter les mystères proposés quand il y en aura davantage.
+            {tr(
+              'Ce choix reste enregistré sur votre téléphone. Il servira à adapter les mystères proposés quand il y en aura davantage.',
+              'This choice is stored on your phone. It will be used to adapt the mysteries offered once there are more of them.',
+            )}
           </Text>
         </Section>
       </ScrollView>

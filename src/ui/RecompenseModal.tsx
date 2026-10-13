@@ -3,6 +3,7 @@ import { Animated, Easing, Modal, StyleSheet, Text, TouchableOpacity, View } fro
 import { jouerEffet } from '../audio/effets';
 import { Carte } from '../data/cartes';
 import { Bonus } from '../game/bonus';
+import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import CarteVisuelle from './CarteVisuelle';
 import Eclat from './Eclat';
@@ -39,19 +40,19 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
       <View style={styles.voile}>
         {recompense?.type === 'carte' && (
           <>
-            <Text style={styles.titre}>🎉 Nouvelle carte !</Text>
+            <Text style={styles.titre}>🎉 {tr('Nouvelle carte !', 'New card!')}</Text>
             <Animated.View style={{ alignItems: 'center', transform: [{ scale: echelle }] }}>
               <CarteVisuelle carte={recompense.carte} largeur={190} />
               <View pointerEvents="none" style={styles.centre}>
                 <Eclat valeur={eclat} rayon={150} />
               </View>
             </Animated.View>
-            <Text style={styles.sous}>Retrouvez-la dans votre collection.</Text>
+            <Text style={styles.sous}>{tr('Retrouvez-la dans votre collection.', 'Find it in your collection.')}</Text>
           </>
         )}
         {recompense?.type === 'bonus' && (
           <>
-            <Text style={styles.titre}>🔥 Bonus de série !</Text>
+            <Text style={styles.titre}>🔥 {tr('Bonus de série !', 'Streak bonus!')}</Text>
             <Animated.View style={[styles.bonus, { transform: [{ scale: echelle }] }]}>
               <Text style={styles.bonusEmoji}>🎁</Text>
               <Text style={styles.bonusJokers}>
@@ -59,18 +60,18 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
               </Text>
               <Text style={styles.bonusSerie}>
                 {recompense.bonus.origine === 'jours'
-                  ? `${recompense.bonus.serie} jours de suite avec le mystère du jour !`
-                  : `${recompense.bonus.serie} victoires d'affilée !`}
+                  ? tr('{n} jours de suite avec le mystère du jour !', '{n} days in a row with the daily mystery!', { n: recompense.bonus.serie })
+                  : tr("{n} victoires d'affilée !", '{n} wins in a row!', { n: recompense.bonus.serie })}
               </Text>
               <View pointerEvents="none" style={styles.centre}>
                 <Eclat valeur={eclat} rayon={130} />
               </View>
             </Animated.View>
-            <Text style={styles.sous}>Un joker révèle un indice sans compter comme un essai.</Text>
+            <Text style={styles.sous}>{tr('Un joker révèle un indice sans compter comme un essai.', 'A joker reveals a clue without counting as an attempt.')}</Text>
           </>
         )}
         <TouchableOpacity style={styles.bouton} onPress={onFermer} activeOpacity={0.85}>
-          <Text style={styles.boutonTexte}>{suivantes > 0 ? 'Suivant' : 'Super !'}</Text>
+          <Text style={styles.boutonTexte}>{suivantes > 0 ? tr('Suivant', 'Next') : tr('Super !', 'Great!')}</Text>
         </TouchableOpacity>
       </View>
     </Modal>

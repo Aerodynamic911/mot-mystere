@@ -19,6 +19,7 @@ import {
   serieAffichee,
 } from './src/game/storage';
 import { PREFERENCES_PAR_DEFAUT, Preferences, chargerPreferences, sauverPreferences } from './src/game/preferences';
+import { definirLangue, tr } from './src/i18n';
 import {
   PROGRESSION_VIDE,
   Progression,
@@ -67,6 +68,8 @@ export default function App() {
   const [collection, setCollection] = useState<string[]>([]);
   const [recompenses, setRecompenses] = useState<Recompense[]>([]);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
+  // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
+  definirLangue(prefs.langue);
   const musique = useMusique();
   // Les bruitages suivent le bouton son de l'accueil.
   useEffect(() => definirEffetsActifs(musique.actif), [musique.actif]);
@@ -215,7 +218,7 @@ export default function App() {
           key={`jour-${cle}`}
           difficulte={prefs.difficulte}
           mystere={mystereJour}
-          titre={`Mystère n°${numero}`}
+          titre={tr('Mystère n°{n}', 'Mystery No.{n}', { n: numero })}
           numero={numero}
           propositionsInitiales={jourCourant?.propositions ?? []}
           onProgression={progression}
@@ -241,9 +244,9 @@ export default function App() {
           key={`av-${ecran.niveau}-${ecran.essai}`}
           difficulte={prefs.difficulte}
           mystere={ecran.mystere}
-          titre={`Niveau ${ecran.niveau}`}
+          titre={tr('Niveau {n}', 'Level {n}', { n: ecran.niveau })}
           maxEssais={essaisAventure(ecran.niveau)}
-          libellePartage={`Boxtery · Aventure niveau ${ecran.niveau}`}
+          libellePartage={tr('Boxtery · Aventure niveau {n}', 'Boxtery · Adventure level {n}', { n: ecran.niveau })}
           propositionsInitiales={[]}
           jokers={stats.jokers}
           onJoker={utiliserJoker}
@@ -258,8 +261,8 @@ export default function App() {
           onRetour={() => setEcran({ nom: 'aventure' })}
           actionFin={(gagne) =>
             gagne
-              ? { libelle: 'Avancer sur la carte 🗺️', onPress: () => setEcran({ nom: 'aventure' }) }
-              : { libelle: 'Réessayer ce niveau', onPress: () => lancerNiveau(ecran.niveau, ecran.essai + 1, true) }
+              ? { libelle: tr('Avancer sur la carte 🗺️', 'Move forward on the map 🗺️'), onPress: () => setEcran({ nom: 'aventure' }) }
+              : { libelle: tr('Réessayer ce niveau', 'Retry this level'), onPress: () => lancerNiveau(ecran.niveau, ecran.essai + 1, true) }
           }
         />
       )}
@@ -283,7 +286,7 @@ export default function App() {
           key={`etape-${ecran.id}-${ecran.etape}`}
           difficulte={prefs.difficulte}
           mystere={EVENEMENTS.find((e) => e.id === ecran.id)!.etapes[ecran.etape - 1]}
-          titre={`Étape ${ecran.etape}/${NB_ETAPES}`}
+          titre={tr('Étape {n}/{t}', 'Step {n}/{t}', { n: ecran.etape, t: NB_ETAPES })}
           maxEssais={essaisEtape(ecran.etape)}
           libellePartage={`Boxtery · ${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} ${ecran.etape}/${NB_ETAPES}`}
           propositionsInitiales={[]}
@@ -301,7 +304,7 @@ export default function App() {
           onRetour={() => setEcran({ nom: 'evenement', id: ecran.id })}
           // Après une victoire on repasse par la carte : l'étape se coche et la suivante s'illumine.
           actionFin={(gagne) => ({
-            libelle: !gagne ? 'Retour à la carte' : ecran.etape < NB_ETAPES ? 'Continuer 🗺️' : '🏆 Terminer',
+            libelle: !gagne ? tr('Retour à la carte', 'Back to the map') : ecran.etape < NB_ETAPES ? tr('Continuer 🗺️', 'Continue 🗺️') : tr('🏆 Terminer', '🏆 Finish'),
             onPress: () => setEcran({ nom: 'evenement', id: ecran.id }),
           })}
         />

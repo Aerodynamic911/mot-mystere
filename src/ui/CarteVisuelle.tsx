@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { tr } from '../i18n';
 import { Carte, RARETES } from '../data/cartes';
 
 /** Vrai si la couleur de fond (#RRGGBB) est claire : le texte doit alors être foncé. */
@@ -35,7 +36,7 @@ export default function CarteVisuelle({ carte, largeur, verrouillee = false, con
       ]}
     >
       <View style={[styles.rarete, { backgroundColor: verrouillee ? '#323963' : rarete.couleur, borderRadius: 6 * u, paddingHorizontal: 7 * u, paddingVertical: 2 * u }]}>
-        <Text style={[styles.rareteTexte, { fontSize: 7.5 * u }]}>{verrouillee ? 'À OBTENIR' : rarete.libelle.toUpperCase()}</Text>
+        <Text style={[styles.rareteTexte, { fontSize: 7.5 * u }]}>{verrouillee ? tr('À OBTENIR', 'LOCKED') : rarete.libelle.toUpperCase()}</Text>
       </View>
       <Text style={{ fontSize: 40 * u, opacity: verrouillee ? 0.35 : 1, marginTop: 6 * u }}>{verrouillee ? '❓' : carte.emoji}</Text>
       <Text style={[styles.titre, { color: texte, fontSize: 10.5 * u, lineHeight: 12.5 * u }]} numberOfLines={2}>

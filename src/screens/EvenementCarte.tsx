@@ -4,6 +4,7 @@ import { jouerEffet } from '../audio/effets';
 import { Evenement, NB_ETAPES } from '../data/evenements';
 import { essaisEtape } from '../game/aventure';
 import { ProgressionEvenement } from '../game/progression';
+import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import Eclat from '../ui/Eclat';
 import EnteteEcran from '../ui/EnteteEcran';
@@ -80,11 +81,11 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
   return (
     <View style={styles.racine}>
       <FondAnime />
-      <EnteteEcran titre="Événement" onRetour={onRetour} libelleRetour="‹ Retour" />
+      <EnteteEcran titre={tr('Événement', 'Event')} onRetour={onRetour} libelleRetour={tr('‹ Retour', '‹ Back')} />
       <ScrollView contentContainerStyle={styles.contenu}>
         <Text style={styles.emoji}>{evenement.emoji}</Text>
         <Text style={[styles.titreTheme, { color: evenement.couleur }]}>{surDeuxLignes(evenement.titre)}</Text>
-        <Text style={styles.statut}>{fini ? '🏆 Événement terminé !' : `Étape ${faites + 1} sur ${NB_ETAPES}`}</Text>
+        <Text style={styles.statut}>{fini ? tr('🏆 Événement terminé !', '🏆 Event completed!') : tr('Étape {n} sur {t}', 'Step {n} of {t}', { n: faites + 1, t: NB_ETAPES })}</Text>
 
         {lignes.map((ligne, i) => (
           <View key={i} style={styles.ligne}>
@@ -113,13 +114,13 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
                     !faite && !courante && styles.noeudVerrouille,
                   ]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Étape ${etape}${faite ? ', réussie' : courante ? ', à jouer' : ', verrouillée'}`}
+                  accessibilityLabel={`${tr('Étape', 'Step')} ${etape}${faite ? tr(', réussie', ', completed') : courante ? tr(', à jouer', ', ready to play') : tr(', verrouillée', ', locked')}`}
                 >
                   <Text style={[styles.noeudNumero, courante && styles.noeudNumeroCourant]}>
                     {!faite && !courante ? '🔒' : finale && !faite ? '🏆' : etape}
                   </Text>
                   {faite && <Text style={styles.noeudEtoiles}>{'⭐'.repeat(nbEtoiles)}</Text>}
-                  {finale && !faite && courante ? <Text style={styles.noeudFinale}>FINALE</Text> : null}
+                  {finale && !faite && courante ? <Text style={styles.noeudFinale}>{tr('FINALE', 'FINAL')}</Text> : null}
                 </TouchableOpacity>
                 {rebondit && (
                   <View pointerEvents="none" style={styles.centre}>
@@ -133,7 +134,11 @@ export default function EvenementCarte({ evenement, progression, onJouerEtape, o
         ))}
 
         <Text style={styles.note}>
-          Étoiles : ⭐⭐⭐ en 1 ou 2 essais, ⭐⭐ en 3 ou 4, ⭐ au-delà. La finale ne laisse que {essaisEtape(NB_ETAPES)} essais. Une étape réussie ne peut plus être rejouée.
+          {tr(
+            'Étoiles : ⭐⭐⭐ en 1 ou 2 essais, ⭐⭐ en 3 ou 4, ⭐ au-delà. La finale ne laisse que {n} essais. Une étape réussie ne peut plus être rejouée.',
+            'Stars: ⭐⭐⭐ in 1 or 2 attempts, ⭐⭐ in 3 or 4, ⭐ beyond that. The final leaves only {n} attempts. A completed step cannot be replayed.',
+            { n: essaisEtape(NB_ETAPES) },
+          )}
         </Text>
       </ScrollView>
     </View>

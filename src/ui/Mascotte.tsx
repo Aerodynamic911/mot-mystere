@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { jouerEffet } from '../audio/effets';
@@ -101,7 +102,7 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
   ];
 
   return (
-    <TouchableWithoutFeedback onPress={reagir} accessibilityRole="button" accessibilityLabel="Toucher la mascotte">
+    <TouchableWithoutFeedback onPress={reagir} accessibilityRole="button" accessibilityLabel={tr('Toucher la mascotte', 'Tap the mascot')}>
     <View style={{ width: l, height: hauteur, alignItems: 'center' }}>
       <Animated.Text
         style={[

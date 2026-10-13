@@ -12,7 +12,7 @@ export function normaliser(texte: string): string {
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9 ]/g, ' ')
-    .replace(/\b(le|la|les|l|de|du|des|d|un|une)\b/g, ' ')
+    .replace(/\b(le|la|les|l|de|du|des|d|un|une|the|a|an)\b/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }

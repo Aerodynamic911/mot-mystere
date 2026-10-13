@@ -4,6 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { jouerEffet } from '../audio/effets';
 import { NB_DECORS, decorAventure, decorParRang, essaisAventure, titreJoueur } from '../game/aventure';
 import { Progression } from '../game/progression';
+import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import Eclat from '../ui/Eclat';
 import EnteteEcran from '../ui/EnteteEcran';
@@ -168,8 +169,8 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
     }
     // Nouveau décor ou nouveau titre : une annonce apparaît un instant.
     const messages: string[] = [];
-    if ((niveau - 1) % 30 === 0 && niveau > 1) messages.push(`Nouveau titre : ${titreJoueur(niveau)} !`);
-    if ((niveau - 1) % 10 === 0 && niveau > 1) messages.push(`Nouveau décor : ${decor.nom}`);
+    if ((niveau - 1) % 30 === 0 && niveau > 1) messages.push(tr('Nouveau titre : {t} !', 'New title: {t}!', { t: titreJoueur(niveau) }));
+    if ((niveau - 1) % 10 === 0 && niveau > 1) messages.push(tr('Nouveau décor : {d}', 'New scenery: {d}', { d: decor.nom }));
     if (messages.length) {
       setNouveaute(messages.join('\n'));
       Animated.sequence([
@@ -239,13 +240,13 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
   return (
     <View style={styles.racine}>
       <FondAnime />
-      <EnteteEcran titre="Aventure" onRetour={onRetour} />
+      <EnteteEcran titre={tr('Aventure', 'Adventure')} onRetour={onRetour} />
 
       <View style={styles.titres}>
         <Text style={styles.titreJoueur}>{titreJoueur(niveau).toUpperCase()}</Text>
-        <Text style={styles.niveau}>Niveau {niveau}</Text>
+        <Text style={styles.niveau}>{tr('Niveau', 'Level')} {niveau}</Text>
         <Text style={styles.stats}>
-          {essais} essais · ⭐ {etoiles} · record {record}
+          {essais} {tr('essais', 'attempts')} · ⭐ {etoiles} · {tr('record', 'best')} {record}
         </Text>
       </View>
 
@@ -262,7 +263,9 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                     { color: encre, backgroundColor: sombre ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.72)' },
                   ]}
                 >
-                  {apercu ? `👁 ${decor.nom} (aperçu)` : `${decor.nom} · niveaux ${base + 1}–${base + PAR_CARTE}`}
+                  {apercu
+                    ? `👁 ${decor.nom} (${tr('aperçu', 'preview')})`
+                    : `${decor.nom} · ${tr('niveaux', 'levels')} ${base + 1}–${base + PAR_CARTE}`}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -359,7 +362,7 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
 
       <View style={styles.pied}>
         <TouchableOpacity style={styles.bouton} onPress={onJouer} activeOpacity={0.85}>
-          <Text style={styles.boutonTexte}>▶  Jouer le niveau {niveau}</Text>
+          <Text style={styles.boutonTexte}>▶  {tr('Jouer le niveau', 'Play level')} {niveau}</Text>
         </TouchableOpacity>
       </View>
     </View>
