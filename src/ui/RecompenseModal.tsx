@@ -52,7 +52,9 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
         )}
         {recompense?.type === 'bonus' && (
           <>
-            <Text style={styles.titre}>🔥 {tr('Bonus de série !', 'Streak bonus!')}</Text>
+            <Text style={styles.titre}>
+              {recompense.bonus.origine === 'partages' || recompense.bonus.origine === 'defi' ? `🎁 ${tr('Merci !', 'Thank you!')}` : `🔥 ${tr('Bonus de série !', 'Streak bonus!')}`}
+            </Text>
             <Animated.View style={[styles.bonus, { transform: [{ scale: echelle }] }]}>
               <Text style={styles.bonusEmoji}>🎁</Text>
               <Text style={styles.bonusJokers}>
@@ -61,7 +63,11 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
               <Text style={styles.bonusSerie}>
                 {recompense.bonus.origine === 'jours'
                   ? tr('{n} jours de suite avec le mystère du jour !', '{n} days in a row with the daily mystery!', { n: recompense.bonus.serie })
-                  : tr("{n} victoires d'affilée !", '{n} wins in a row!', { n: recompense.bonus.serie })}
+                  : recompense.bonus.origine === 'victoires'
+                    ? tr("{n} victoires d'affilée !", '{n} wins in a row!', { n: recompense.bonus.serie })
+                    : recompense.bonus.origine === 'partages'
+                      ? tr('Merci de faire connaître Quizzle ! {n} partages.', 'Thanks for spreading the word about Quizzle! {n} shares.', { n: recompense.bonus.serie })
+                      : tr('Défi relevé avec succès !', 'Challenge completed!')}
               </Text>
               <View pointerEvents="none" style={styles.centre}>
                 <Eclat valeur={eclat} rayon={130} />

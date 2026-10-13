@@ -14,7 +14,9 @@ import {
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
+import { LIEN_APP, PARTAGES_PAR_JOKER } from '../config';
 import { Difficulte, INDICES_DE_BASE } from '../game/preferences';
+import { genererCode } from '../game/social';
 import { langue, localiser, tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import EffetsJeu, { EffetEnCours, TypeEffet } from '../ui/EffetsJeu';
@@ -74,6 +76,10 @@ interface Props {
   /** Jokers en réserve (bonus de série) : chacun révèle un indice sans compter comme un essai. */
   jokers?: number;
   onJoker?: () => void;
+  /** Appelé quand le joueur a bien partagé (pour compter les partages qui rapportent un joker). */
+  onPartage?: () => void;
+  /** Phrase de fin de partie (par exemple la comparaison avec le score d'un ami). */
+  commentaireFin?: (gagne: boolean, essais: number) => string | null;
 }
 
 export default function Game({
@@ -90,6 +96,8 @@ export default function Game({
   actionFin,
   jokers = 0,
   onJoker,
+  onPartage,
+  commentaireFin,
 }: Props) {
   const mystere = localiser(mystereBrut);
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
@@ -196,9 +204,33 @@ export default function Game({
     const entete = libellePartage ?? (numero ? `Quizzle ${tr('n°', 'No.')}${numero}` : 'Quizzle');
     const resultat = gagne ? `${score}/${maxEssais}` : `X/${maxEssais}`;
     try {
-      await Share.share({ message: `${entete} ${resultat}\n${carres}` });
+      const r = await Share.share({ message: `${entete} ${resultat}\n${carres}` });
+      if (r.action === Share.sharedAction) onPartage?.();
     } catch {
       // Partage annulé : rien à faire.
+    }
+  }
+
+  /** Défi : l'ami reçoit un code, joue la même énigme et compare son score au nôtre. */
+  async function defier() {
+    const essais = gagne ? propositions.length : 0;
+    const code = genererCode(mystereBrut.id, essais);
+    const message = gagne
+      ? tr(
+          '🎯 Défi Quizzle ! J\'ai trouvé en {n} essai{s}. Saurez-vous faire mieux ?\nCode du défi : {code}\nDans Quizzle, touchez « Entre amis » puis entrez le code.',
+          '🎯 Quizzle challenge! I found it in {n} attempt{s}. Can you do better?\nChallenge code: {code}\nIn Quizzle, tap “With friends” and enter the code.',
+          { n: essais, s: essais > 1 ? 's' : '', code },
+        )
+      : tr(
+          '🎯 Défi Quizzle ! Je n\'ai pas trouvé celui-là. Saurez-vous le résoudre ?\nCode du défi : {code}\nDans Quizzle, touchez « Entre amis » puis entrez le code.',
+          '🎯 Quizzle challenge! I couldn\'t find this one. Can you solve it?\nChallenge code: {code}\nIn Quizzle, tap “With friends” and enter the code.',
+          { code },
+        );
+    try {
+      const r = await Share.share({ message: LIEN_APP ? `${message}\n${LIEN_APP}` : message });
+      if (r.action === Share.sharedAction) onPartage?.();
+    } catch {
+      // Partage annulé.
     }
   }
 
@@ -267,9 +299,21 @@ export default function Game({
             <Text style={styles.anecdoteTitre}>💡 {tr('Le saviez-vous ?', 'Did you know?')}</Text>
             <Text style={styles.anecdote}>{mystere.anecdote}</Text>
 
+            {commentaireFin && commentaireFin(gagne, propositions.length) !== null && (
+              <Text style={styles.commentaireFin}>{commentaireFin(gagne, propositions.length)}</Text>
+            )}
+
             <TouchableOpacity style={styles.bouton} onPress={partager} activeOpacity={0.85}>
-              <Text style={styles.boutonTexte}>{tr('Partager mon résultat', 'Share my result')}</Text>
+              <Text style={styles.boutonTexte}>📤 {tr('Partager mon résultat', 'Share my result')}</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={defier} activeOpacity={0.85}>
+              <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami', 'Challenge a friend')}</Text>
+            </TouchableOpacity>
+            {onPartage && (
+              <Text style={styles.noteJoker}>
+                {tr('✨ +1 joker tous les {n} partages (1 par jour)', '✨ +1 joker every {n} shares (1 per day)', { n: PARTAGES_PAR_JOKER })}
+              </Text>
+            )}
             {suite && (
               <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire]} onPress={suite.onPress} activeOpacity={0.85}>
                 <Text style={styles.boutonSecondaireTexte}>{suite.libelle}</Text>
@@ -423,6 +467,9 @@ const styles = StyleSheet.create({
   bouton: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
   boutonTexte: { color: '#1B1B1B', fontWeight: '700', fontSize: 16 },
   boutonSecondaire: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: couleurs.bordure, marginTop: 10 },
+  boutonDefi: { borderColor: couleurs.accent, marginTop: 10 },
+  commentaireFin: { color: couleurs.accent, fontSize: 15, fontWeight: '700', textAlign: 'center', marginTop: 4, marginBottom: 4 },
+  noteJoker: { color: couleurs.texteSecondaire, fontSize: 12, textAlign: 'center', marginTop: 10 },
   boutonSecondaireTexte: { color: couleurs.texte, fontWeight: '600', fontSize: 16 },
   saisieBarre: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
   encouragement: { color: couleurs.accent, fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'center' },

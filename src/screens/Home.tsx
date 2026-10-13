@@ -19,6 +19,7 @@ interface Props {
   onToggleMusique: () => void;
   onJouerDuJour: () => void;
   onPreferences: () => void;
+  onAmis: () => void;
   niveauAventure: number;
   etapesFaites: number;
   etapesTotal: number;
@@ -40,6 +41,7 @@ export default function Home({
   onToggleMusique,
   onJouerDuJour,
   onPreferences,
+  onAmis,
   niveauAventure,
   etapesFaites,
   etapesTotal,
@@ -124,9 +126,14 @@ export default function Home({
               : tr('À découvrir', 'To discover')}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.boutonPreferences} onPress={onPreferences} activeOpacity={0.85}>
-          <Text style={styles.boutonPreferencesTexte}>⚙️  {tr('Préférences', 'Settings')}</Text>
-        </TouchableOpacity>
+        <View style={styles.rangeeBoutons}>
+          <TouchableOpacity style={styles.boutonSecondaire} onPress={onAmis} activeOpacity={0.85}>
+            <Text style={styles.boutonPreferencesTexte}>👥  {tr('Entre amis', 'With friends')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.boutonSecondaire} onPress={onPreferences} activeOpacity={0.85}>
+            <Text style={styles.boutonPreferencesTexte}>⚙️  {tr('Préférences', 'Settings')}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <Modal visible={info !== null} transparent animationType="fade" onRequestClose={() => setInfo(null)}>
@@ -210,6 +217,7 @@ export default function Home({
                   [`📅 ${tr('Mystère du jour', 'Daily mystery')}`, stats.modes.jour],
                   [`🗺️ ${tr('Aventure', 'Adventure')}`, stats.modes.aventure],
                   [`🎉 ${tr('Événements', 'Events')}`, stats.modes.evenement],
+                  [`🎯 ${tr('Défis entre amis', 'Friend challenges')}`, stats.modes.defi],
                 ] as const
               ).map(([nom, c]) => (
                 <View key={nom} style={styles.modeLigne}>
@@ -370,10 +378,9 @@ const styles = StyleSheet.create({
   boutonPrincipalFait: { backgroundColor: 'transparent', borderWidth: 2, borderColor: couleurs.succes, paddingVertical: 12 },
   boutonPrincipalTexteFait: { color: couleurs.succes, fontSize: 17 },
   boutonPrincipalSousFait: { color: couleurs.texteSecondaire, opacity: 1 },
-  boutonPreferences: {
-    marginTop: 10,
-    alignSelf: 'center',
-    width: '78%',
+  rangeeBoutons: { flexDirection: 'row', marginTop: 10, justifyContent: 'space-between' },
+  boutonSecondaire: {
+    width: '48.5%',
     borderRadius: rayon,
     paddingVertical: 11,
     alignItems: 'center',

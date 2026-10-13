@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MAX_ESSAIS, PASSE, jourPrecedent } from './engine';
 import { Bonus, bonusAttribues } from './bonus';
 
-export type ModeJeu = 'jour' | 'aventure' | 'evenement';
+export type ModeJeu = 'jour' | 'aventure' | 'evenement' | 'defi';
 
 /** Compteurs d'un mode de jeu. */
 export interface Compteurs {
@@ -35,6 +35,11 @@ export interface Stats {
   jokers: number;
   /** Jokers utilisés depuis le début. */
   jokersUtilises: number;
+  /** Partages comptés (au plus un par jour) : 3 partages = 1 joker. */
+  partages: number;
+  dernierPartage: string | null;
+  /** Dernier jour où un défi d'ami gagné a rapporté un joker. */
+  dernierDefiJoker: string | null;
 }
 
 export interface EtatDuJour {
@@ -58,9 +63,12 @@ export const STATS_VIDES: Stats = {
   serieVictoires: 0,
   meilleureSerieVictoires: 0,
   repartition: Array(MAX_ESSAIS).fill(0),
-  modes: { jour: COMPTEURS_VIDES, aventure: COMPTEURS_VIDES, evenement: COMPTEURS_VIDES },
+  modes: { jour: COMPTEURS_VIDES, aventure: COMPTEURS_VIDES, evenement: COMPTEURS_VIDES, defi: COMPTEURS_VIDES },
   jokers: 0,
   jokersUtilises: 0,
+  partages: 0,
+  dernierPartage: null,
+  dernierDefiJoker: null,
 };
 
 export async function chargerStats(): Promise<Stats> {

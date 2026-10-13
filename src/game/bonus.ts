@@ -26,7 +26,7 @@ export const PALIERS_VICTOIRES: Palier[] = [
 ];
 
 export interface Bonus {
-  origine: 'jours' | 'victoires';
+  origine: 'jours' | 'victoires' | 'partages' | 'defi';
   serie: number;
   jokers: number;
 }

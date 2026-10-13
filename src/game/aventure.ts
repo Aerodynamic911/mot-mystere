@@ -14,6 +14,11 @@ const POOL: Mystere[] = (() => {
 
 export const TAILLE_POOL = POOL.length;
 
+/** Tous les mystères du jeu (pour retrouver celui d'un défi d'ami). */
+export function tousLesMysteres(): Mystere[] {
+  return POOL;
+}
+
 const poolsParAge = new Map<TrancheAge, Mystere[]>();
 /** Énigmes de l'aventure pour une tranche d'âge. */
 export function poolPour(age: TrancheAge): Mystere[] {

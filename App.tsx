@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
-import { Platform, SafeAreaView, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
+import { Platform, SafeAreaView, Share, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
-import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId } from './src/game/aventure';
+import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
+import { LIEN_APP } from './src/config';
+import { Bonus } from './src/game/bonus';
+import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
+import EntreAmis from './src/ui/EntreAmis';
 import { Mystere } from './src/data/mysteres';
-import { cleDuJour, mystereDuJour, numeroDuJour } from './src/game/engine';
+import { MAX_ESSAIS, cleDuJour, mystereDuJour, numeroDuJour } from './src/game/engine';
 import {
   EtatDuJour,
   ModeJeu,
@@ -49,6 +53,7 @@ type Ecran =
   | { nom: 'aventure' }
   | { nom: 'aventure-jeu'; niveau: number; essai: number; mystere: Mystere }
   | { nom: 'collection' }
+  | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number }
   | { nom: 'evenement'; id: string }
   | { nom: 'etape'; id: string; etape: number };
 
@@ -68,6 +73,7 @@ export default function App() {
   const [collection, setCollection] = useState<string[]>([]);
   const [recompenses, setRecompenses] = useState<Recompense[]>([]);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
+  const [amisOuvert, setAmisOuvert] = useState(false);
   // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
   definirLangue(prefs.langue);
   const musique = useMusique();
@@ -119,8 +125,18 @@ export default function App() {
    * Fin d'une partie, quel que soit le mode : statistiques, bonus de série et cartes gagnées.
    * `progApres` est la progression une fois la partie prise en compte.
    */
-  function finDePartie(mode: ModeJeu, propositions: string[], gagne: boolean, progApres: Progression) {
-    const { stats: nouvellesStats, bonus } = enregistrerPartie(stats, mode, cle, propositions, gagne);
+  function finDePartie(
+    mode: ModeJeu,
+    propositions: string[],
+    gagne: boolean,
+    progApres: Progression,
+    // Récompense supplémentaire à appliquer aux statistiques (défi d'ami gagné).
+    supplement?: (s: Stats) => { stats: Stats; bonus: Bonus | null },
+  ) {
+    const partie = enregistrerPartie(stats, mode, cle, propositions, gagne);
+    const extra = supplement ? supplement(partie.stats) : { stats: partie.stats, bonus: null };
+    const nouvellesStats = extra.stats;
+    const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : partie.bonus;
     setStats(nouvellesStats);
     sauverStats(nouvellesStats);
     const nouvelles = cartesMeritees(progApres, nouvellesStats, collection);
@@ -142,6 +158,38 @@ export default function App() {
     const s2 = { ...stats, jokers: stats.jokers - 1, jokersUtilises: stats.jokersUtilises + 1 };
     setStats(s2);
     sauverStats(s2);
+  }
+
+  /** Un partage réussi : compté une fois par jour, et un joker tous les 3 partages. */
+  function partageFait() {
+    const r = enregistrerPartage(stats, cle);
+    if (r.stats !== stats) {
+      setStats(r.stats);
+      sauverStats(r.stats);
+    }
+    if (r.bonus) setTimeout(() => setRecompenses((l) => [...l, { type: 'bonus' as const, bonus: r.bonus! }]), 800);
+  }
+
+  async function inviterUnAmi() {
+    const message = tr(
+      "Je joue à Quizzle, un jeu de mystères et de culture générale : on devine à partir d'indices ! Viens essayer, et dis-moi combien d'essais il te faut. 🔎",
+      "I'm playing Quizzle, a mystery and general-knowledge game: you guess from clues! Come and try it, and tell me how many attempts you need. 🔎",
+    );
+    try {
+      const r = await Share.share({ message: LIEN_APP ? `${message}\n${LIEN_APP}` : message });
+      if (r.action === Share.sharedAction) partageFait();
+    } catch {
+      // Partage annulé.
+    }
+  }
+
+  /** Lance le défi d'un ami à partir de son code ; renvoie un message si le code est invalide. */
+  function lancerDefi(code: string): string | null {
+    const lu = lireCode(code, tousLesMysteres());
+    if (!lu) return tr("Ce code n'est pas valide. Vérifiez-le et réessayez.", 'This code is not valid. Check it and try again.');
+    setAmisOuvert(false);
+    setEcran({ nom: 'defi', mystere: lu.mystere, essaisAmi: lu.essaisAmi, essai: 0 });
+    return null;
   }
 
   function terminee(propositions: string[], gagne: boolean) {
@@ -198,6 +246,7 @@ export default function App() {
           onToggleMusique={musique.basculer}
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
           onPreferences={() => setEcran({ nom: 'preferences' })}
+          onAmis={() => setAmisOuvert(true)}
           niveauAventure={prog.aventure.niveau}
           etapesFaites={evenementDe(prog, evenementEnCours().id).faites}
           etapesTotal={NB_ETAPES}
@@ -226,6 +275,7 @@ export default function App() {
           onTerminee={terminee}
           jokers={stats.jokers}
           onJoker={utiliserJoker}
+          onPartage={partageFait}
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
@@ -251,6 +301,7 @@ export default function App() {
           propositionsInitiales={[]}
           jokers={stats.jokers}
           onJoker={utiliserJoker}
+          onPartage={partageFait}
           onTerminee={(propositions, gagne) => {
             let apres = prog;
             if (gagne && ecran.niveau === prog.aventure.niveau) apres = niveauReussi(prog, propositions.length);
@@ -293,6 +344,7 @@ export default function App() {
           propositionsInitiales={[]}
           jokers={stats.jokers}
           onJoker={utiliserJoker}
+          onPartage={partageFait}
           onTerminee={(propositions, gagne) => {
             let apres = prog;
             if (gagne) {
@@ -311,9 +363,47 @@ export default function App() {
         />
       )}
 
+      {ecran.nom === 'defi' && (
+        <Game
+          key={`defi-${ecran.mystere.id}-${ecran.essai}`}
+          difficulte={prefs.difficulte}
+          mystere={ecran.mystere}
+          titre={tr('Défi d\'ami', 'Friend challenge')}
+          maxEssais={MAX_ESSAIS}
+          libellePartage={tr('Quizzle · Défi', 'Quizzle · Challenge')}
+          propositionsInitiales={[]}
+          jokers={stats.jokers}
+          onJoker={utiliserJoker}
+          onPartage={partageFait}
+          onTerminee={(propositions, gagne) => finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined)}
+          commentaireFin={(gagne, essais) => {
+            const ami = ecran.essaisAmi;
+            if (gagne) {
+              if (ami === 0 || essais < ami) return tr('🏆 Vous battez votre ami !', '🏆 You beat your friend!');
+              if (essais === ami) return tr('🤝 Égalité avec votre ami !', '🤝 A tie with your friend!');
+              return tr('Votre ami avait trouvé en {n} essai{s}. Revanche ?', 'Your friend found it in {n} attempt{s}. Rematch?', { n: ami, s: ami > 1 ? 's' : '' });
+            }
+            return ami === 0
+              ? tr('Même votre ami n\'avait pas trouvé celui-là !', 'Even your friend did not find this one!')
+              : tr('Votre ami avait trouvé en {n} essai{s}. Retentez votre chance !', 'Your friend found it in {n} attempt{s}. Try again!', { n: ami, s: ami > 1 ? 's' : '' });
+          }}
+          onRetour={() => setEcran({ nom: 'accueil' })}
+          actionFin={() => ({ libelle: tr("Retour à l'accueil", 'Back to home'), onPress: () => setEcran({ nom: 'accueil' }) })}
+        />
+      )}
+
       {ecran.nom === 'collection' && (
         <Collection possedees={collection} progression={prog} stats={stats} onRetour={() => setEcran({ nom: 'accueil' })} />
       )}
+
+      <EntreAmis
+        visible={amisOuvert}
+        partages={stats.partages}
+        partageAujourdhui={stats.dernierPartage === cle}
+        onFermer={() => setAmisOuvert(false)}
+        onInviter={inviterUnAmi}
+        onCode={lancerDefi}
+      />
 
       <RecompenseModal
         recompense={recompenses[0] ?? null}
