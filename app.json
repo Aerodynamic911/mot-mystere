@@ -12,7 +12,11 @@
       "bundleIdentifier": "com.example.motmystere"
     },
     "android": {
-      "package": "com.example.motmystere"
+      "package": "com.example.motmystere",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2A0A66"
+      }
     },
     "extra": {
       "eas": {
@@ -21,6 +25,7 @@
     },
     "plugins": [
       "expo-audio"
-    ]
+    ],
+    "icon": "./assets/icon.png"
   }
 }
