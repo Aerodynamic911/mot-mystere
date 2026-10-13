@@ -246,7 +246,7 @@ export default function App() {
           mystere={ecran.mystere}
           titre={tr('Niveau {n}', 'Level {n}', { n: ecran.niveau })}
           maxEssais={essaisAventure(ecran.niveau)}
-          libellePartage={tr('Boxtery · Aventure niveau {n}', 'Boxtery · Adventure level {n}', { n: ecran.niveau })}
+          libellePartage={tr('Quizzle · Aventure niveau {n}', 'Quizzle · Adventure level {n}', { n: ecran.niveau })}
           propositionsInitiales={[]}
           jokers={stats.jokers}
           onJoker={utiliserJoker}
@@ -288,7 +288,7 @@ export default function App() {
           mystere={EVENEMENTS.find((e) => e.id === ecran.id)!.etapes[ecran.etape - 1]}
           titre={tr('Étape {n}/{t}', 'Step {n}/{t}', { n: ecran.etape, t: NB_ETAPES })}
           maxEssais={essaisEtape(ecran.etape)}
-          libellePartage={`Boxtery · ${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} ${ecran.etape}/${NB_ETAPES}`}
+          libellePartage={`Quizzle · ${EVENEMENTS.find((e) => e.id === ecran.id)!.titre} ${ecran.etape}/${NB_ETAPES}`}
           propositionsInitiales={[]}
           jokers={stats.jokers}
           onJoker={utiliserJoker}

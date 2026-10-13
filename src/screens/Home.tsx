@@ -74,7 +74,7 @@ export default function Home({
       </TouchableOpacity>
 
       <View style={styles.haut}>
-        <TitreArc texte="BOXTERY" />
+        <TitreArc texte="QUIZZLE" />
         <View style={styles.ruban}>
           <Text style={styles.rubanTexte}>{tr('LE JEU DES MYSTÈRES', 'THE MYSTERY GAME')}</Text>
         </View>

@@ -4,6 +4,20 @@ import { couleurs } from '../theme';
 
 const PALETTE = ['#F5B942', '#FF8A5B', '#FF6B9D', '#B58CFF', '#6CB4FF', '#3DDC97', '#F5B942'];
 
+/** Décalages (vers le bas) des copies qui forment l'épaisseur de la lettre. */
+const EXTRUSION = [9, 8, 7, 6, 5, 4, 3, 2];
+/** Huit directions autour de la lettre pour dessiner le contour. */
+const CONTOUR: [number, number][] = [
+  [-3, 0], [3, 0], [0, -3], [0, 3], [-2.2, -2.2], [2.2, -2.2], [-2.2, 2.2], [2.2, 2.2],
+];
+
+/** Assombrit une couleur « #RRGGBB » (facteur entre 0 et 1 : 1 garde la couleur, 0 donne du noir). */
+function assombrir(hex: string, facteur: number): string {
+  const f = Math.max(0, Math.min(1, facteur));
+  const c = (i: number) => Math.round(parseInt(hex.slice(i, i + 2), 16) * f).toString(16).padStart(2, '0');
+  return `#${c(1)}${c(3)}${c(5)}`;
+}
+
 interface Props {
   texte: string;
   /** Taille des lettres. */
@@ -47,7 +61,7 @@ export default function TitreArc({ texte, taille = 46 }: Props) {
     const angle = (i - (n - 1) / 2) * (emplacement / rayon); // radians, 0 = sommet de l'arc
     return { angle, x: rayon * Math.sin(angle), y: rayon * (1 - Math.cos(angle)) };
   });
-  const hauteur = Math.max(...points.map((p) => p.y)) + taille * 1.3;
+  const hauteur = Math.max(...points.map((p) => p.y)) + taille * 1.3 + 12;
 
   return (
     <View style={{ width: largeur, height: hauteur, alignSelf: 'center' }}>
@@ -66,8 +80,20 @@ export default function TitreArc({ texte, taille = 46 }: Props) {
           ]}
         >
           <Animated.View style={{ transform: [{ translateY: ondes[i].interpolate({ inputRange: [0, 1], outputRange: [0, -taille * 0.1] }) }] }}>
-            {/* Relief : la même lettre en foncé, décalée vers le bas, derrière la lettre colorée. */}
-            <Text style={[styles.texte, styles.relief, { fontSize: taille }]}>{lettre}</Text>
+            {/* Extrusion : des copies décalées vers le bas, de plus en plus sombres, donnent l'épaisseur de la lettre. */}
+            {EXTRUSION.map((dy) => (
+              <Text key={`e${dy}`} style={[styles.texte, styles.calque, { fontSize: taille, top: dy, color: assombrir(PALETTE[i % PALETTE.length], 0.62 - dy * 0.012) }]}>
+                {lettre}
+              </Text>
+            ))}
+            {/* Contour : la lettre en très foncé tout autour. */}
+            {CONTOUR.map(([dx, dy]) => (
+              <Text key={`c${dx}${dy}`} style={[styles.texte, styles.calque, { fontSize: taille, left: dx, top: dy + 2, color: '#170844' }]}>
+                {lettre}
+              </Text>
+            ))}
+            {/* Reflet : une copie plus claire, décalée vers le haut à gauche, qui borde la lettre de lumière. */}
+            <Text style={[styles.texte, styles.calque, { fontSize: taille, left: -1.5, top: -1.5, color: '#FFFFFF', opacity: 0.85 }]}>{lettre}</Text>
             <Text style={[styles.texte, { fontSize: taille, color: PALETTE[i % PALETTE.length] }]}>{lettre}</Text>
           </Animated.View>
         </Animated.View>
@@ -78,18 +104,13 @@ export default function TitreArc({ texte, taille = 46 }: Props) {
 
 const styles = StyleSheet.create({
   lettre: { position: 'absolute', alignItems: 'center' },
+  calque: { position: 'absolute', textShadowColor: 'transparent', textShadowRadius: 0 },
   texte: {
     color: couleurs.accent,
-    fontWeight: '800',
+    fontWeight: '900',
     textShadowColor: 'rgba(245,185,66,0.45)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 14,
   },
-  relief: {
-    position: 'absolute',
-    top: 5,
-    color: '#241055',
-    textShadowColor: 'transparent',
-    textShadowRadius: 0,
-  },
+
 });

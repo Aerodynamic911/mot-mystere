@@ -67,7 +67,7 @@ interface Props {
   onRetour: () => void;
   /** Nombre d'essais autorisés (6 par défaut). */
   maxEssais?: number;
-  /** Début du message de partage, à la place de « Boxtery n°X ». */
+  /** Début du message de partage, à la place de « Quizzle n°X ». */
   libellePartage?: string;
   /** Bouton proposé en fin de partie (mystère suivant, niveau suivant, réessayer…). */
   actionFin?: (gagne: boolean) => { libelle: string; onPress: () => void } | null;
@@ -193,7 +193,7 @@ export default function Game({
     const carres =
       propositions.map((p) => (p === PASSE ? '🟨' : estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
       '⬛'.repeat(Math.max(0, maxEssais - propositions.length));
-    const entete = libellePartage ?? (numero ? `Boxtery ${tr('n°', 'No.')}${numero}` : 'Boxtery');
+    const entete = libellePartage ?? (numero ? `Quizzle ${tr('n°', 'No.')}${numero}` : 'Quizzle');
     const resultat = gagne ? `${score}/${maxEssais}` : `X/${maxEssais}`;
     try {
       await Share.share({ message: `${entete} ${resultat}\n${carres}` });
