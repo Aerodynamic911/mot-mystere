@@ -65,6 +65,16 @@ export default function Home({
     <View style={styles.racine}>
       <FondAnime />
       <TouchableOpacity
+        style={[styles.boutonSon, styles.boutonReglages]}
+        onPress={onPreferences}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={tr('Préférences', 'Settings')}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.boutonSonTexte}>⚙️</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
         style={styles.boutonSon}
         onPress={onToggleMusique}
         activeOpacity={0.8}
@@ -126,14 +136,9 @@ export default function Home({
               : tr('À découvrir', 'To discover')}
           </Text>
         </TouchableOpacity>
-        <View style={styles.rangeeBoutons}>
-          <TouchableOpacity style={styles.boutonSecondaire} onPress={onAmis} activeOpacity={0.85}>
-            <Text style={styles.boutonPreferencesTexte}>👥  {tr('Entre amis', 'With friends')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.boutonSecondaire} onPress={onPreferences} activeOpacity={0.85}>
-            <Text style={styles.boutonPreferencesTexte}>⚙️  {tr('Préférences', 'Settings')}</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.boutonSecondaire} onPress={onAmis} activeOpacity={0.85}>
+          <Text style={styles.boutonPreferencesTexte}>👥  {tr('Entre amis', 'With friends')}</Text>
+        </TouchableOpacity>
       </View>
 
       <Modal visible={info !== null} transparent animationType="fade" onRequestClose={() => setInfo(null)}>
@@ -306,6 +311,7 @@ const styles = StyleSheet.create({
     borderColor: couleurs.bordure,
   },
   boutonSonTexte: { fontSize: 18 },
+  boutonReglages: { right: 64 },
   haut: { paddingTop: 28, alignItems: 'center' },
   ruban: {
     marginTop: 4,
@@ -378,9 +384,10 @@ const styles = StyleSheet.create({
   boutonPrincipalFait: { backgroundColor: 'transparent', borderWidth: 2, borderColor: couleurs.succes, paddingVertical: 12 },
   boutonPrincipalTexteFait: { color: couleurs.succes, fontSize: 17 },
   boutonPrincipalSousFait: { color: couleurs.texteSecondaire, opacity: 1 },
-  rangeeBoutons: { flexDirection: 'row', marginTop: 10, justifyContent: 'space-between' },
   boutonSecondaire: {
-    width: '48.5%',
+    marginTop: 10,
+    alignSelf: 'center',
+    width: '78%',
     borderRadius: rayon,
     paddingVertical: 11,
     alignItems: 'center',
