@@ -9,10 +9,10 @@
     "backgroundColor": "#0F1224",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.example.motmystere"
+      "bundleIdentifier": "com.occitangames.quizzle"
     },
     "android": {
-      "package": "com.example.motmystere",
+      "package": "com.occitangames.quizzle",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2A0A66"
