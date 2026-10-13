@@ -39,6 +39,8 @@ export interface Stats {
 
 export interface EtatDuJour {
   cle: string;
+  /** Mystère proposé ce jour-là (absent sur les anciennes sauvegardes). */
+  id?: string;
   propositions: string[];
   terminee: boolean;
   gagnee: boolean;

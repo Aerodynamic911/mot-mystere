@@ -4,7 +4,8 @@ import { Langue, langueAppareil } from '../i18n';
 
 export type { Langue };
 export type Difficulte = 'facile' | 'normal' | 'difficile';
-export type TrancheAge = 'tous' | 'enfant' | 'ado' | 'adulte';
+/** Tranches d'âge : « ado » 13–17 ans, « a18 » 18–30 ans, « a30 » 30–50 ans, « a50 » 50 ans et plus. */
+export type TrancheAge = 'tous' | 'ado' | 'a18' | 'a30' | 'a50';
 
 export interface Preferences {
   langue: Langue;
@@ -21,7 +22,7 @@ const CLE = 'cluebox:preferences';
 
 const LANGUES: Langue[] = ['fr', 'en'];
 const DIFFICULTES: Difficulte[] = ['facile', 'normal', 'difficile'];
-const AGES: TrancheAge[] = ['tous', 'enfant', 'ado', 'adulte'];
+const AGES: TrancheAge[] = ['tous', 'ado', 'a18', 'a30', 'a50'];
 
 /** Garde uniquement les valeurs connues : une préférence abîmée ne doit jamais empêcher de jouer. */
 function valider(brut: Partial<Preferences> | null): Preferences {

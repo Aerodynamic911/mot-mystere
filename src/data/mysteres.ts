@@ -1,3 +1,5 @@
+import type { TrancheAge } from '../game/preferences';
+
 export type Categorie = string;
 
 export interface Mystere {
@@ -10,6 +12,8 @@ export interface Mystere {
   indices: [string, string, string, string, string, string];
   /** Le « le saviez-vous ? » affiché en fin de partie. */
   anecdote: string;
+  /** Tranches d'âge visées (absent ou « tous » : pour tout le monde). */
+  publics?: TrancheAge[];
 }
 
 export const MYSTERES: Mystere[] = [

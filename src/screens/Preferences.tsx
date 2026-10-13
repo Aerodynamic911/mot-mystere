@@ -32,9 +32,10 @@ const difficultes = (): Choix<Difficulte>[] => [
 
 const ages = (): Choix<TrancheAge>[] => [
   { valeur: 'tous', titre: tr('Tous publics', 'All ages') },
-  { valeur: 'enfant', titre: tr('Enfants', 'Children'), detail: tr('6 à 11 ans', 'Ages 6 to 11') },
-  { valeur: 'ado', titre: tr('Ados', 'Teens'), detail: tr('12 à 17 ans', 'Ages 12 to 17') },
-  { valeur: 'adulte', titre: tr('Adultes', 'Adults'), detail: tr('18 ans et plus', '18 and over') },
+  { valeur: 'ado', titre: tr('Ados', 'Teens'), detail: tr('13 à 17 ans', 'Ages 13 to 17') },
+  { valeur: 'a18', titre: tr('18 – 30 ans', 'Ages 18 to 30') },
+  { valeur: 'a30', titre: tr('30 – 50 ans', 'Ages 30 to 50') },
+  { valeur: 'a50', titre: tr('50 ans et plus', '50 and over') },
 ];
 
 export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
@@ -73,8 +74,8 @@ export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
           ))}
           <Text style={styles.note}>
             {tr(
-              'Ce choix reste enregistré sur votre téléphone. Il servira à adapter les mystères proposés quand il y en aura davantage.',
-              'This choice is stored on your phone. It will be used to adapt the mysteries offered once there are more of them.',
+              'Ce choix reste enregistré sur votre téléphone. Les énigmes proposées sont adaptées à votre tranche d\'âge, avec toujours un tronc commun pour tous.',
+              'This choice is stored on your phone. The riddles offered are adapted to your age group, always with a common base for everyone.',
             )}
           </Text>
         </Section>

@@ -1,15 +1,31 @@
 import { ImageSourcePropType } from 'react-native';
 import { EVENEMENTS, NB_ETAPES } from '../data/evenements';
+import { NOUVELLES } from '../data/enigmes';
 import { MYSTERES, Mystere } from '../data/mysteres';
+import type { TrancheAge } from './preferences';
+import { filtrerPublic } from './public';
 import { tr } from '../i18n';
 
-/** Tous les mystères disponibles : la base du jeu et ceux des événements. */
+/** Tous les mystères disponibles : la base du jeu, les nouvelles énigmes et celles des événements. */
 const POOL: Mystere[] = (() => {
   const vus = new Set<string>();
-  return [...MYSTERES, ...EVENEMENTS.flatMap((e) => e.etapes)].filter((m) => !vus.has(m.id) && vus.add(m.id));
+  return [...MYSTERES, ...NOUVELLES, ...EVENEMENTS.flatMap((e) => e.etapes)].filter((m) => !vus.has(m.id) && vus.add(m.id));
 })();
 
 export const TAILLE_POOL = POOL.length;
+
+const poolsParAge = new Map<TrancheAge, Mystere[]>();
+/** Énigmes de l'aventure pour une tranche d'âge. */
+export function poolPour(age: TrancheAge): Mystere[] {
+  let p = poolsParAge.get(age);
+  if (!p) {
+    p = filtrerPublic(POOL, age);
+    poolsParAge.set(age, p);
+  }
+  return p;
+}
+
+const INDICE_AGE: Record<TrancheAge, number> = { tous: 0, ado: 1, a18: 2, a30: 3, a50: 4 };
 
 /** Petit générateur pseudo-aléatoire : le même numéro donne toujours le même mélange. */
 function graine(seed: number) {
@@ -24,27 +40,28 @@ function graine(seed: number) {
 }
 
 /** Ordre de passage des mystères pour un « tour » complet de la liste. */
-function ordre(tour: number): Mystere[] {
-  const alea = graine(tour * 7919 + 17);
-  const liste = [...POOL];
+function ordre(tour: number, age: TrancheAge): Mystere[] {
+  const alea = graine(tour * 7919 + 17 + INDICE_AGE[age] * 104729);
+  const liste = [...poolPour(age)];
   for (let i = liste.length - 1; i > 0; i--) {
     const j = Math.floor(alea() * (i + 1));
     [liste[i], liste[j]] = [liste[j], liste[i]];
   }
   if (tour > 0) {
     // Évite de retrouver tout de suite le dernier mystère du tour précédent.
-    const dernier = ordre(tour - 1)[liste.length - 1];
+    const dernier = ordreCache(tour - 1, age)[liste.length - 1];
     if (liste[0].id === dernier.id) [liste[0], liste[1]] = [liste[1], liste[0]];
   }
   return liste;
 }
 
-const cache = new Map<number, Mystere[]>();
-function ordreCache(tour: number): Mystere[] {
-  let o = cache.get(tour);
+const cache = new Map<string, Mystere[]>();
+function ordreCache(tour: number, age: TrancheAge): Mystere[] {
+  const cle = `${age}-${tour}`;
+  let o = cache.get(cle);
   if (!o) {
-    o = ordre(tour);
-    cache.set(tour, o);
+    o = ordre(tour, age);
+    cache.set(cle, o);
   }
   return o;
 }
@@ -53,11 +70,12 @@ function ordreCache(tour: number): Mystere[] {
  * Mystère d'un niveau d'aventure. `reessai` change de mystère après un échec,
  * sans jamais retomber sur celui qu'on vient de rater.
  */
-export function mystereAventure(niveau: number, reessai = 0): Mystere {
+export function mystereAventure(niveau: number, reessai = 0, age: TrancheAge = 'tous'): Mystere {
+  const taille = poolPour(age).length;
   const rang = niveau - 1;
-  const tour = Math.floor(rang / TAILLE_POOL);
-  const position = (rang % TAILLE_POOL + reessai) % TAILLE_POOL;
-  return ordreCache(tour)[position];
+  const tour = Math.floor(rang / taille);
+  const position = ((rang % taille) + reessai) % taille;
+  return ordreCache(tour, age)[position];
 }
 
 /** Retrouve un mystère de la liste par son identifiant (pour reprendre un niveau en cours). */
@@ -65,8 +83,6 @@ export function mystereParId(id: string): Mystere | null {
   return POOL.find((m) => m.id === id) ?? null;
 }
 
-/** Combien de derniers mystères vus on évite de reproposer (toujours bien moins que la liste entière). */
-export const NB_VUS_EVITES = Math.max(0, Math.min(20, TAILLE_POOL - 8));
 /** Combien d'identifiants on garde en mémoire. */
 export const NB_VUS_GARDES = 40;
 
@@ -74,13 +90,14 @@ export const NB_VUS_GARDES = 40;
  * Choisit le mystère d'un niveau en évitant ceux qu'on vient de voir (y compris celui qu'on vient de rater) :
  * un réessai ne ressort pas au niveau suivant. Sans effet de bord : l'appelant mémorise le choix.
  */
-export function choisirMystereAventure(niveau: number, vus: string[]): Mystere {
-  const evites = new Set(vus.slice(-NB_VUS_EVITES));
-  for (let k = 0; k < TAILLE_POOL; k++) {
-    const m = mystereAventure(niveau, k);
+export function choisirMystereAventure(niveau: number, vus: string[], age: TrancheAge = 'tous'): Mystere {
+  const taille = poolPour(age).length;
+  const evites = new Set(vus.slice(-Math.max(0, Math.min(20, taille - 8))));
+  for (let k = 0; k < taille; k++) {
+    const m = mystereAventure(niveau, k, age);
     if (!evites.has(m.id)) return m;
   }
-  return mystereAventure(niveau, 0);
+  return mystereAventure(niveau, 0, age);
 }
 
 /** Nombre d'essais autorisés : de plus en plus serré à mesure qu'on avance. */

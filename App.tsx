@@ -75,7 +75,8 @@ export default function App() {
   useEffect(() => definirEffetsActifs(musique.actif), [musique.actif]);
 
   const cle = cleDuJour();
-  const mystereJour = mystereDuJour(cle);
+  // Si la partie du jour est commencée, on garde son mystère même si la tranche d'âge change entre-temps.
+  const mystereJour = (jour && jour.cle === cle && jour.id ? mystereParId(jour.id) : null) ?? mystereDuJour(cle, prefs.age);
   const numero = numeroDuJour(cle);
 
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function App() {
   const jourCourant = jour && jour.cle === cle ? jour : null;
 
   function progression(propositions: string[]) {
-    const etat: EtatDuJour = { cle, propositions, terminee: false, gagnee: false };
+    const etat: EtatDuJour = { cle, id: mystereJour.id, propositions, terminee: false, gagnee: false };
     setJour(etat);
     sauverJour(etat);
   }
@@ -144,7 +145,7 @@ export default function App() {
   }
 
   function terminee(propositions: string[], gagne: boolean) {
-    const etat: EtatDuJour = { cle, propositions, terminee: true, gagnee: gagne };
+    const etat: EtatDuJour = { cle, id: mystereJour.id, propositions, terminee: true, gagnee: gagne };
     setJour(etat);
     sauverJour(etat);
     finDePartie('jour', propositions, gagne, prog);
@@ -155,7 +156,7 @@ export default function App() {
     const enCours = prog.aventure.enCours;
     let mystere = !nouveau && enCours?.niveau === niveau ? mystereParId(enCours.id) : null;
     if (!mystere) {
-      mystere = choisirMystereAventure(niveau, prog.aventure.vus);
+      mystere = choisirMystereAventure(niveau, prog.aventure.vus, prefs.age);
       changerProgression({
         ...prog,
         aventure: { ...prog.aventure, vus: [...prog.aventure.vus, mystere.id].slice(-NB_VUS_GARDES), enCours: { niveau, id: mystere.id } },
