@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MAX_ESSAIS, PASSE, jourPrecedent } from './engine';
 import { Bonus, bonusAttribues } from './bonus';
+import { gainPieces } from './boutique';
 
 export type ModeJeu = 'jour' | 'aventure' | 'evenement' | 'defi';
 
@@ -43,6 +44,12 @@ export interface Stats {
   /** Combien de fois on a proposé de noter l'appli, et quand la dernière fois. */
   avisDemandes: number;
   dernierAvis: string | null;
+  /** Pièces en réserve (gagnées en jouant), à dépenser dans la boutique. */
+  pieces: number;
+  /** Glaçons en réserve : chacun sauve la série de jours si on manque un jour. */
+  glacons: number;
+  dernierAchatJoker: string | null;
+  dernierAchatGlacon: string | null;
 }
 
 export interface EtatDuJour {
@@ -74,6 +81,10 @@ export const STATS_VIDES: Stats = {
   dernierDefiJoker: null,
   avisDemandes: 0,
   dernierAvis: null,
+  pieces: 0,
+  glacons: 0,
+  dernierAchatJoker: null,
+  dernierAchatGlacon: null,
 };
 
 export async function chargerStats(): Promise<Stats> {
@@ -126,7 +137,7 @@ export function enregistrerPartie(
   cle: string,
   propositions: string[],
   gagne: boolean,
-): { stats: Stats; bonus: Bonus[] } {
+): { stats: Stats; bonus: Bonus[]; glaconUtilise: boolean } {
   const indices = propositions.filter((p) => p === PASSE).length;
   const reponses = propositions.length - indices;
   const m = stats.modes[mode];
@@ -143,7 +154,9 @@ export function enregistrerPartie(
       },
     },
     parties: stats.parties + 1,
+    pieces: stats.pieces + gainPieces(mode, propositions.length, gagne),
   };
+  let glaconUtilise = false;
   let serieJours: number | null = null;
   if (gagne) {
     s.victoires += 1;
@@ -152,7 +165,14 @@ export function enregistrerPartie(
     const i = Math.min(propositions.length, s.repartition.length) - 1;
     if (i >= 0) s.repartition[i] += 1;
     if (mode === 'jour') {
-      s.serie = stats.dernierJourGagne === jourPrecedent(cle) ? stats.serie + 1 : 1;
+      const hier = jourPrecedent(cle);
+      if (stats.dernierJourGagne === hier) s.serie = stats.serie + 1;
+      else if (stats.dernierJourGagne === jourPrecedent(hier) && stats.serie > 0 && stats.glacons > 0) {
+        // Un jour manqué : un glaçon sauve la série.
+        s.serie = stats.serie + 1;
+        s.glacons = stats.glacons - 1;
+        glaconUtilise = true;
+      } else s.serie = 1;
       s.meilleureSerie = Math.max(s.meilleureSerie, s.serie);
       s.dernierJourGagne = cle;
       serieJours = s.serie;
@@ -163,7 +183,7 @@ export function enregistrerPartie(
   }
   const bonus = bonusAttribues(serieJours, gagne ? s.serieVictoires : null);
   s.jokers += bonus.reduce((t, b) => t + b.jokers, 0);
-  return { stats: s, bonus };
+  return { stats: s, bonus, glaconUtilise };
 }
 
 /** Série à afficher : tombe à 0 si le dernier succès date de plus d'hier. */
@@ -171,5 +191,7 @@ export function serieAffichee(stats: Stats, cleAujourdhui: string): number {
   if (stats.dernierJourGagne === cleAujourdhui || stats.dernierJourGagne === jourPrecedent(cleAujourdhui)) {
     return stats.serie;
   }
+  // Un seul jour manqué et un glaçon en réserve : la série est encore sauvée.
+  if (stats.glacons > 0 && stats.dernierJourGagne === jourPrecedent(jourPrecedent(cleAujourdhui))) return stats.serie;
   return 0;
 }

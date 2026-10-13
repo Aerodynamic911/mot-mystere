@@ -38,7 +38,9 @@ import {
 import { carteParId } from './src/data/cartes';
 import { cartesMeritees, chargerCollection, sauverCollection } from './src/game/collection';
 import Aventure from './src/screens/Aventure';
+import Boutique from './src/screens/Boutique';
 import Collection from './src/screens/Collection';
+import { acheterGlacon, acheterJoker } from './src/game/boutique';
 import RecompenseModal, { Recompense } from './src/ui/RecompenseModal';
 import EvenementCarte from './src/screens/EvenementCarte';
 import Game from './src/screens/Game';
@@ -55,6 +57,7 @@ type Ecran =
   | { nom: 'aventure' }
   | { nom: 'aventure-jeu'; niveau: number; essai: number; mystere: Mystere }
   | { nom: 'collection' }
+  | { nom: 'boutique' }
   | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number }
   | { nom: 'evenement'; id: string }
   | { nom: 'etape'; id: string; etape: number };
@@ -136,6 +139,7 @@ export default function App() {
     supplement?: (s: Stats) => { stats: Stats; bonus: Bonus | null },
   ) {
     const partie = enregistrerPartie(stats, mode, cle, propositions, gagne);
+    const serieAvant = partie.stats.serie;
     const extra = supplement ? supplement(partie.stats) : { stats: partie.stats, bonus: null };
     let nouvellesStats = extra.stats;
     // Après une victoire, on propose de noter l'appli (fenêtre native, rarement).
@@ -159,11 +163,19 @@ export default function App() {
       sauverCollection(liste);
     }
     const recomp: Recompense[] = [
+      ...(partie.glaconUtilise ? [{ type: 'glacon' as const, serie: serieAvant }] : []),
       ...bonus.map((b) => ({ type: 'bonus' as const, bonus: b })),
       ...nouvelles.map((id) => carteParId(id)).filter((c) => !!c).map((carte) => ({ type: 'carte' as const, carte: carte! })),
     ];
     // Un instant après la fin de la partie, pour laisser jouer les animations de résultat.
     if (recomp.length) setTimeout(() => setRecompenses((r) => [...r, ...recomp]), 1500);
+  }
+
+  /** Applique un achat de la boutique (null = achat refusé). */
+  function acheter(apres: Stats | null) {
+    if (!apres) return;
+    setStats(apres);
+    sauverStats(apres);
   }
 
   function utiliserJoker() {
@@ -260,6 +272,8 @@ export default function App() {
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
           onPreferences={() => setEcran({ nom: 'preferences' })}
           onAmis={() => setAmisOuvert(true)}
+          pieces={stats.pieces}
+          onBoutique={() => setEcran({ nom: 'boutique' })}
           niveauAventure={prog.aventure.niveau}
           etapesFaites={evenementDe(prog, evenementEnCours().id).faites}
           etapesTotal={NB_ETAPES}
@@ -289,6 +303,7 @@ export default function App() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          mode="jour"
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
@@ -315,6 +330,7 @@ export default function App() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          mode="aventure"
           onTerminee={(propositions, gagne) => {
             let apres = prog;
             if (gagne && ecran.niveau === prog.aventure.niveau) apres = niveauReussi(prog, propositions.length);
@@ -358,6 +374,7 @@ export default function App() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          mode="evenement"
           onTerminee={(propositions, gagne) => {
             let apres = prog;
             if (gagne) {
@@ -388,6 +405,7 @@ export default function App() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          mode="defi"
           onTerminee={(propositions, gagne) => finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined)}
           commentaireFin={(gagne, essais) => {
             const ami = ecran.essaisAmi;
@@ -402,6 +420,16 @@ export default function App() {
           }}
           onRetour={() => setEcran({ nom: 'accueil' })}
           actionFin={() => ({ libelle: tr("Retour à l'accueil", 'Back to home'), onPress: () => setEcran({ nom: 'accueil' }) })}
+        />
+      )}
+
+      {ecran.nom === 'boutique' && (
+        <Boutique
+          stats={stats}
+          cle={cle}
+          onAcheterJoker={() => acheter(acheterJoker(stats, cle))}
+          onAcheterGlacon={() => acheter(acheterGlacon(stats, cle))}
+          onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
 

@@ -8,7 +8,7 @@ import { couleurs, rayon } from '../theme';
 import CarteVisuelle from './CarteVisuelle';
 import Eclat from './Eclat';
 
-export type Recompense = { type: 'carte'; carte: Carte } | { type: 'bonus'; bonus: Bonus };
+export type Recompense = { type: 'carte'; carte: Carte } | { type: 'bonus'; bonus: Bonus } | { type: 'glacon'; serie: number };
 
 interface Props {
   recompense: Recompense | null;
@@ -21,7 +21,13 @@ interface Props {
 export default function RecompenseModal({ recompense, suivantes, onFermer }: Props) {
   const entree = useRef(new Animated.Value(0)).current;
   const eclat = useRef(new Animated.Value(0)).current;
-  const cle = recompense ? (recompense.type === 'carte' ? recompense.carte.id : `bonus-${recompense.bonus.origine}-${recompense.bonus.serie}`) : '';
+  const cle = recompense
+    ? recompense.type === 'carte'
+      ? recompense.carte.id
+      : recompense.type === 'glacon'
+        ? `glacon-${recompense.serie}`
+        : `bonus-${recompense.bonus.origine}-${recompense.bonus.serie}`
+    : '';
 
   useEffect(() => {
     if (!recompense) return;
@@ -48,6 +54,17 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
               </View>
             </Animated.View>
             <Text style={styles.sous}>{tr('Retrouvez-la dans votre collection.', 'Find it in your collection.')}</Text>
+          </>
+        )}
+        {recompense?.type === 'glacon' && (
+          <>
+            <Text style={styles.titre}>🧊 {tr('Série sauvée !', 'Streak saved!')}</Text>
+            <Animated.View style={[styles.bonus, { transform: [{ scale: echelle }] }]}>
+              <Text style={styles.bonusEmoji}>🧊</Text>
+              <Text style={styles.bonusSerie}>
+                {tr('Un glaçon a gardé votre série au frais : {n} jours de suite !', 'An ice cube kept your streak on ice: {n} days in a row!', { n: recompense.serie })}
+              </Text>
+            </Animated.View>
           </>
         )}
         {recompense?.type === 'bonus' && (

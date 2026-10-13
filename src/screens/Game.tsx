@@ -16,7 +16,9 @@ import { Mystere } from '../data/mysteres';
 import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
 import { LIEN_APP, PARTAGES_PAR_JOKER } from '../config';
 import { Difficulte, INDICES_DE_BASE } from '../game/preferences';
+import { gainPieces } from '../game/boutique';
 import { genererCode } from '../game/social';
+import type { ModeJeu } from '../game/storage';
 import { langue, localiser, tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import EffetsJeu, { EffetEnCours, TypeEffet } from '../ui/EffetsJeu';
@@ -78,6 +80,8 @@ interface Props {
   onJoker?: () => void;
   /** Appelé quand le joueur a bien partagé (pour compter les partages qui rapportent un joker). */
   onPartage?: () => void;
+  /** Mode de jeu, pour afficher les pièces gagnées. */
+  mode?: ModeJeu;
   /** Phrase de fin de partie (par exemple la comparaison avec le score d'un ami). */
   commentaireFin?: (gagne: boolean, essais: number) => string | null;
 }
@@ -97,6 +101,7 @@ export default function Game({
   jokers = 0,
   onJoker,
   onPartage,
+  mode,
   commentaireFin,
 }: Props) {
   const mystere = localiser(mystereBrut);
@@ -295,6 +300,7 @@ export default function Game({
             {!gagne && <Text style={styles.consolation}>{consolation}</Text>}
             <Text style={styles.reponse}>{mystere.reponse}</Text>
             {gagne && <Text style={styles.score}>{tr('Score', 'Score')} : {score}/{maxEssais}</Text>}
+            {gagne && mode && <Text style={styles.pieces}>+{gainPieces(mode, propositions.length, true)} 🪙</Text>}
 
             <Text style={styles.anecdoteTitre}>💡 {tr('Le saviez-vous ?', 'Did you know?')}</Text>
             <Text style={styles.anecdote}>{mystere.anecdote}</Text>
@@ -467,6 +473,7 @@ const styles = StyleSheet.create({
   bouton: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
   boutonTexte: { color: '#1B1B1B', fontWeight: '700', fontSize: 16 },
   boutonSecondaire: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: couleurs.bordure, marginTop: 10 },
+  pieces: { color: couleurs.accent, fontSize: 16, fontWeight: '800', textAlign: 'center', marginBottom: 10 },
   boutonDefi: { borderColor: couleurs.accent, marginTop: 10 },
   commentaireFin: { color: couleurs.accent, fontSize: 15, fontWeight: '700', textAlign: 'center', marginTop: 4, marginBottom: 4 },
   noteJoker: { color: couleurs.texteSecondaire, fontSize: 12, textAlign: 'center', marginTop: 10 },

@@ -20,6 +20,8 @@ interface Props {
   onJouerDuJour: () => void;
   onPreferences: () => void;
   onAmis: () => void;
+  pieces: number;
+  onBoutique: () => void;
   niveauAventure: number;
   etapesFaites: number;
   etapesTotal: number;
@@ -42,6 +44,8 @@ export default function Home({
   onJouerDuJour,
   onPreferences,
   onAmis,
+  pieces,
+  onBoutique,
   niveauAventure,
   etapesFaites,
   etapesTotal,
@@ -64,6 +68,16 @@ export default function Home({
   return (
     <View style={styles.racine}>
       <FondAnime />
+      <TouchableOpacity
+        style={[styles.boutonSon, styles.boutonStats]}
+        onPress={() => setStatsOuvertes(true)}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={tr('Statistiques', 'Statistics')}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.boutonSonTexte}>📊</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={[styles.boutonSon, styles.boutonReglages]}
         onPress={onPreferences}
@@ -99,7 +113,7 @@ export default function Home({
           <Puce icone="🔥" valeur={serieVictoires} libelle={tr('Série', 'Streak')} onPress={() => setInfo('serie')} />
           <Puce icone="✨" valeur={jokers} libelle={tr('Jokers', 'Jokers')} onPress={() => setInfo('jokers')} />
           <Puce icone="🃏" valeur={nbCartes} libelle={tr('Cartes', 'Cards')} onPress={onCollection} />
-          <Puce icone="📊" valeur="" libelle={tr('Stats', 'Stats')} onPress={() => setStatsOuvertes(true)} />
+          <Puce icone="🪙" valeur={pieces} libelle={tr('Boutique', 'Shop')} onPress={onBoutique} />
         </View>
       </View>
 
@@ -242,6 +256,9 @@ export default function Home({
                   { n: jokers, s: jokers > 1 ? 's' : '', u: stats.jokersUtilises, us: stats.jokersUtilises > 1 ? 's' : '' },
                 )}
               </Text>
+              <Text style={styles.bonusTexte}>
+                {tr('🧊 {n} glaçon{s} en réserve', '🧊 {n} ice cube{s} in stock', { n: stats.glacons, s: stats.glacons > 1 ? 's' : '' })}
+              </Text>
               {[
                 { nom: tr('Jours de suite', 'Days in a row'), palier: prochainPalier(PALIERS_JOURS, serie), courant: serie, unite: tr('jours', 'days') },
                 { nom: tr("Victoires d'affilée", 'Wins in a row'), palier: prochainPalier(PALIERS_VICTOIRES, stats.serieVictoires), courant: stats.serieVictoires, unite: tr('victoires', 'wins') },
@@ -312,6 +329,7 @@ const styles = StyleSheet.create({
   },
   boutonSonTexte: { fontSize: 18 },
   boutonReglages: { right: 64 },
+  boutonStats: { left: 16, right: undefined },
   haut: { paddingTop: 28, alignItems: 'center' },
   ruban: {
     marginTop: 4,
