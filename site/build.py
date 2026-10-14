@@ -408,11 +408,11 @@ LEGAL = {
         corps=f'''
 <h2>Éditeur du site</h2>
 <p>Le jeu Quizzle est édité sous la marque Occitan Games par <strong>Solauw Sound</strong>, entrepreneur individuel.<br>
-Entrepreneur individuel : <span class="a-completer">[prénom et nom]</span><br>
+Entrepreneur individuel : Julien Benichou<br>
 SIRET : 452 394 174 00034<br>
-Adresse : <span class="a-completer">[adresse professionnelle]</span><br>
+Adresse : Limoux (Aude), France<br>
 Contact : <a href="mailto:{CONTACT}">{CONTACT}</a></p>
-<p>Directeur de la publication : <span class="a-completer">[prénom et nom]</span>.</p>
+<p>Directeur de la publication : Julien Benichou.</p>
 
 <h2>Hébergeur</h2>
 <p>Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis — <a href="https://www.cloudflare.com">cloudflare.com</a></p>
@@ -429,11 +429,11 @@ Contact : <a href="mailto:{CONTACT}">{CONTACT}</a></p>
         corps=f'''
 <h2>Publisher</h2>
 <p>The game Quizzle is published under the Occitan Games brand by <strong>Solauw Sound</strong>, sole proprietor (France).<br>
-Sole proprietor: <span class="a-completer">[first and last name]</span><br>
+Sole proprietor: Julien Benichou<br>
 SIRET: 452 394 174 00034<br>
-Address: <span class="a-completer">[business address]</span><br>
+Address: Limoux (Aude), France<br>
 Contact: <a href="mailto:{CONTACT}">{CONTACT}</a></p>
-<p>Publication director: <span class="a-completer">[first and last name]</span>.</p>
+<p>Publication director: Julien Benichou.</p>
 
 <h2>Hosting</h2>
 <p>Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, USA — <a href="https://www.cloudflare.com">cloudflare.com</a></p>
