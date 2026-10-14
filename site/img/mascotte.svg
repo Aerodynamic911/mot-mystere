@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -8 224 208">
+<defs>
+  <linearGradient id="gCorps" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFE08A"/><stop offset="0.5" stop-color="#FBBC3E"/><stop offset="1" stop-color="#E8941C"/>
+  </linearGradient>
+  <radialGradient id="gLuisant" cx="0.28" cy="0.2" r="0.75">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.6"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="gOmbre" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9A5200" stop-opacity="0"/><stop offset="1" stop-color="#9A5200" stop-opacity="0.45"/>
+  </linearGradient>
+  <linearGradient id="gCouvercle" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#B49CFF"/><stop offset="0.5" stop-color="#7A58F0"/><stop offset="1" stop-color="#4B2FB8"/>
+  </linearGradient>
+  <linearGradient id="gPied" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8C6BFF"/><stop offset="1" stop-color="#4328A8"/>
+  </linearGradient>
+  <linearGradient id="gOr" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FFF0B8"/><stop offset="0.5" stop-color="#F5B942"/><stop offset="1" stop-color="#B97A0A"/>
+  </linearGradient>
+  <radialGradient id="gOeil" cx="0.5" cy="0.38" r="0.65">
+    <stop offset="0" stop-color="#8F72F0"/><stop offset="0.55" stop-color="#4A2FB5"/><stop offset="1" stop-color="#1E1245"/>
+  </radialGradient>
+  <radialGradient id="gJoue" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#FF6B8A" stop-opacity="0.85"/><stop offset="1" stop-color="#FF6B8A" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="gAmpoule" cx="0.4" cy="0.35" r="0.65">
+    <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.45" stop-color="#FFF1A8"/><stop offset="1" stop-color="#F5B942"/>
+  </radialGradient>
+  <radialGradient id="gHalo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#FFF1A8" stop-opacity="0.75"/><stop offset="1" stop-color="#FFF1A8" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="gGant" cx="0.35" cy="0.3" r="0.8">
+    <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.7" stop-color="#EDE8FF"/><stop offset="1" stop-color="#B9AEE8"/>
+  </radialGradient>
+</defs>
+
+<!-- Ombre au sol -->
+<ellipse cx="100" cy="179" rx="64" ry="9" fill="#000" fill-opacity="0.2"/>
+<ellipse cx="100" cy="179" rx="40" ry="5" fill="#000" fill-opacity="0.22"/>
+
+<!-- Pieds -->
+<rect x="52" y="155" width="36" height="21" rx="10.5" fill="url(#gPied)" stroke="#2F1C80" stroke-width="1.5"/>
+<rect x="112" y="155" width="36" height="21" rx="10.5" fill="url(#gPied)" stroke="#2F1C80" stroke-width="1.5"/>
+<rect x="58" y="158.5" width="15" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.4"/>
+<rect x="118" y="158.5" width="15" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.4"/>
+
+<!-- Bras -->
+<path d="M34 114 Q8 106 14 80" stroke="#A8620A" stroke-width="16" stroke-linecap="round" fill="none"/>
+<path d="M34 114 Q8 106 14 80" stroke="#F5B03A" stroke-width="12" stroke-linecap="round" fill="none"/>
+<path d="M33 111 Q11 104 16 82" stroke="#FFE08A" stroke-width="4" stroke-linecap="round" fill="none" stroke-opacity="0.8"/>
+<path d="M166 114 Q194 122 188 98" stroke="#A8620A" stroke-width="16" stroke-linecap="round" fill="none"/>
+<path d="M166 114 Q194 122 188 98" stroke="#F5B03A" stroke-width="12" stroke-linecap="round" fill="none"/>
+<path d="M167 111 Q191 118 186 99" stroke="#FFE08A" stroke-width="4" stroke-linecap="round" fill="none" stroke-opacity="0.8"/>
+<!-- Gants -->
+<circle cx="14" cy="74" r="12" fill="url(#gGant)" stroke="#8E82C8" stroke-width="1.2"/>
+<circle cx="6" cy="72" r="4.5" fill="url(#gGant)" stroke="#8E82C8" stroke-width="1"/>
+<circle cx="189" cy="92" r="12" fill="url(#gGant)" stroke="#8E82C8" stroke-width="1.2"/>
+<circle cx="197" cy="90" r="4.5" fill="url(#gGant)" stroke="#8E82C8" stroke-width="1"/>
+
+<!-- Corps : face arrière en retrait pour donner du volume -->
+<rect x="33" y="66" width="144" height="102" rx="26" fill="#9C5A08"/>
+<rect x="28" y="58" width="144" height="106" rx="26" fill="url(#gCorps)" stroke="#B97410" stroke-width="2"/>
+<rect x="28" y="58" width="144" height="106" rx="26" fill="url(#gLuisant)"/>
+<rect x="28" y="108" width="144" height="56" rx="26" fill="url(#gOmbre)"/>
+<rect x="35" y="84" width="7" height="58" rx="3.5" fill="#FFFFFF" fill-opacity="0.3"/>
+<rect x="35" y="147" width="14" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.22"/>
+<!-- Rivets -->
+<circle cx="42" cy="152" r="5" fill="#8A5206"/><circle cx="42" cy="151.5" r="3.8" fill="url(#gOr)"/>
+<circle cx="158" cy="152" r="5" fill="#8A5206"/><circle cx="158" cy="151.5" r="3.8" fill="url(#gOr)"/>
+<circle cx="40" cy="92" r="4.2" fill="#8A5206"/><circle cx="40" cy="91.6" r="3.2" fill="url(#gOr)"/>
+<circle cx="160" cy="92" r="4.2" fill="#8A5206"/><circle cx="160" cy="91.6" r="3.2" fill="url(#gOr)"/>
+
+<!-- Ombre portée du couvercle sur le corps -->
+<rect x="26" y="70" width="148" height="16" rx="8" fill="#6B3A00" fill-opacity="0.28"/>
+
+<!-- Couvercle -->
+<rect x="18" y="52" width="164" height="26" rx="13" fill="#2F1C80"/>
+<rect x="18" y="40" width="164" height="35" rx="17" fill="url(#gCouvercle)" stroke="#2F1C80" stroke-width="2"/>
+<rect x="31" y="45" width="66" height="7" rx="3.5" fill="#FFFFFF" fill-opacity="0.42"/>
+<circle cx="105" cy="48.5" r="2" fill="#FFFFFF" fill-opacity="0.5"/>
+<rect x="26" y="66" width="148" height="4" rx="2" fill="#2F1C80" fill-opacity="0.35"/>
+<circle cx="34" cy="58" r="3.4" fill="url(#gOr)" stroke="#8A5206" stroke-width="1"/>
+<circle cx="166" cy="58" r="3.4" fill="url(#gOr)" stroke="#8A5206" stroke-width="1"/>
+
+<!-- Fermoir doré -->
+<rect x="86" y="58" width="28" height="27" rx="7" fill="url(#gOr)" stroke="#8A5206" stroke-width="1.6"/>
+<rect x="90" y="61" width="20" height="5" rx="2.5" fill="#FFFFFF" fill-opacity="0.5"/>
+<circle cx="100" cy="72" r="4" fill="#5A3200"/>
+<rect x="98.4" y="72" width="3.2" height="8" rx="1.6" fill="#5A3200"/>
+
+<!-- Antenne et ampoule -->
+<rect x="97.5" y="26" width="5" height="15" rx="2.5" fill="#4B2FB8"/>
+<circle cx="100" cy="20" r="17" fill="url(#gHalo)"/>
+<circle cx="100" cy="20" r="9" fill="url(#gAmpoule)" stroke="#C98812" stroke-width="1.4"/>
+<path d="M96.5 22 Q98 17 100 22 Q102 17 103.5 22" stroke="#C98812" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+<circle cx="96.5" cy="16.5" r="2.2" fill="#FFFFFF" fill-opacity="0.9"/>
+
+<!-- Sourcils -->
+<path d="M57 93 Q72 84 88 92" stroke="#8A4B05" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+<path d="M112 92 Q128 84 143 93" stroke="#8A4B05" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+
+<g id="yeux-ouverts">
+  <ellipse cx="73" cy="113" rx="16" ry="19" fill="#FFFFFF" stroke="#C98812" stroke-width="1.5"/>
+  <ellipse cx="127" cy="113" rx="16" ry="19" fill="#FFFFFF" stroke="#C98812" stroke-width="1.5"/>
+  <path d="M58 108 Q73 96 88 108 Q73 101 58 108 Z" fill="#B8A8E8" fill-opacity="0.55"/>
+  <path d="M112 108 Q127 96 142 108 Q127 101 112 108 Z" fill="#B8A8E8" fill-opacity="0.55"/>
+  <circle cx="76" cy="115" r="11" fill="url(#gOeil)"/>
+  <circle cx="124" cy="115" r="11" fill="url(#gOeil)"/>
+  <circle cx="76.5" cy="115.5" r="5.2" fill="#0F0828"/>
+  <circle cx="123.5" cy="115.5" r="5.2" fill="#0F0828"/>
+  <circle cx="80.5" cy="109.5" r="3.8" fill="#FFFFFF"/>
+  <circle cx="127.5" cy="109.5" r="3.8" fill="#FFFFFF"/>
+  <circle cx="72" cy="121" r="1.9" fill="#FFFFFF" fill-opacity="0.85"/>
+  <circle cx="120" cy="121" r="1.9" fill="#FFFFFF" fill-opacity="0.85"/>
+</g>
+
+
+<!-- Joues -->
+<ellipse cx="49" cy="138" rx="13" ry="8" fill="url(#gJoue)"/>
+<ellipse cx="151" cy="138" rx="13" ry="8" fill="url(#gJoue)"/>
+
+<!-- Bouche -->
+<path d="M79 134 Q100 130 121 134 Q118 159 100 159 Q82 159 79 134 Z" fill="#2A1B5C" stroke="#2A1B5C" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M82 135 Q100 132 118 135 L117 141 Q100 138 83 141 Z" fill="#FFFFFF"/>
+<path d="M89 154 Q100 145 111 154 Q100 161 89 154 Z" fill="#FF7A9A"/>
+<path d="M95 150 Q100 148 105 150" stroke="#FFB3C6" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+
+<!-- Étincelles sur le corps -->
+<path d="M154 108 L156 114 L162 116 L156 118 L154 124 L152 118 L146 116 L152 114 Z" fill="#FFFFFF" fill-opacity="0.75"/>
+</svg>
