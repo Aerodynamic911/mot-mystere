@@ -407,14 +407,15 @@ LEGAL = {
         h1='Mentions légales',
         corps=f'''
 <h2>Éditeur du site</h2>
-<p>Occitan Games, nom de marque de <span class="a-completer">[prénom et nom de l’entrepreneur individuel]</span>, entrepreneur individuel.<br>
-SIRET : <span class="a-completer">[numéro SIRET]</span><br>
+<p>Le jeu Quizzle est édité sous la marque Occitan Games par <strong>Solauw Sound</strong>, entrepreneur individuel.<br>
+Entrepreneur individuel : <span class="a-completer">[prénom et nom]</span><br>
+SIRET : 452 394 174 00034<br>
 Adresse : <span class="a-completer">[adresse professionnelle]</span><br>
 Contact : <a href="mailto:{CONTACT}">{CONTACT}</a></p>
 <p>Directeur de la publication : <span class="a-completer">[prénom et nom]</span>.</p>
 
 <h2>Hébergeur</h2>
-<p><span class="a-completer">[nom, adresse et téléphone de l’hébergeur du site]</span></p>
+<p>Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis — <a href="https://www.cloudflare.com">cloudflare.com</a></p>
 
 <h2>Propriété intellectuelle</h2>
 <p>Le jeu Quizzle, son nom, son logo, sa mascotte et les contenus de ce site sont la propriété d’Occitan Games. Toute reproduction sans autorisation est interdite.</p>
@@ -427,14 +428,15 @@ Contact : <a href="mailto:{CONTACT}">{CONTACT}</a></p>
         h1='Legal notice',
         corps=f'''
 <h2>Publisher</h2>
-<p>Occitan Games, a trade name of <span class="a-completer">[first and last name of the sole proprietor]</span>, sole proprietor (France).<br>
-SIRET: <span class="a-completer">[SIRET number]</span><br>
+<p>The game Quizzle is published under the Occitan Games brand by <strong>Solauw Sound</strong>, sole proprietor (France).<br>
+Sole proprietor: <span class="a-completer">[first and last name]</span><br>
+SIRET: 452 394 174 00034<br>
 Address: <span class="a-completer">[business address]</span><br>
 Contact: <a href="mailto:{CONTACT}">{CONTACT}</a></p>
 <p>Publication director: <span class="a-completer">[first and last name]</span>.</p>
 
 <h2>Hosting</h2>
-<p><span class="a-completer">[name, address and phone number of the website host]</span></p>
+<p>Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, USA — <a href="https://www.cloudflare.com">cloudflare.com</a></p>
 
 <h2>Intellectual property</h2>
 <p>The game Quizzle, its name, logo, mascot and the content of this site are the property of Occitan Games. Reproduction without permission is prohibited.</p>
