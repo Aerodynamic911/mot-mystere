@@ -485,6 +485,7 @@ const styles = StyleSheet.create({
   saisieLigne: { flexDirection: 'row', alignItems: 'center' },
   input: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: couleurs.carte,
     color: couleurs.texte,
     borderRadius: rayon,
@@ -494,6 +495,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
-  envoyer: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingHorizontal: 18, paddingVertical: 13, marginLeft: 10 },
+  envoyer: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingHorizontal: 18, paddingVertical: 13, marginLeft: 10, flexShrink: 0 },
   envoyerTexte: { color: '#1B1B1B', fontWeight: '700', fontSize: 16 },
 });
