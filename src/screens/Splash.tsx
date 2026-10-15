@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 import { EDITEUR } from '../config';
 import { tr } from '../i18n';
 import LogoEditeur from '../ui/LogoEditeur';
@@ -18,7 +19,9 @@ export default function Splash() {
   const lueur = useRef(new Animated.Value(0)).current;
   const progres = useRef(new Animated.Value(0)).current;
   const [pourcent, setPourcent] = useState(0);
-  const version = Constants.expoConfig?.version ?? '1.0.0';
+  // Numéro de version + numéro de build (incrémenté automatiquement à chaque build de publication).
+  const numeroBuild = Application.nativeBuildVersion;
+  const version = `${Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? '1.0.0'}${numeroBuild ? ` (${numeroBuild})` : ''}`;
 
   useEffect(() => {
     Animated.timing(apparition, { toValue: 1, duration: 700, useNativeDriver: true }).start();
