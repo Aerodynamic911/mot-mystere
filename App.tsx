@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
-import { Platform, SafeAreaView, Share, StatusBar as BarreAndroid, StyleSheet } from 'react-native';
+import { Share, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
@@ -63,6 +64,15 @@ type Ecran =
   | { nom: 'etape'; id: string; etape: number };
 
 export default function App() {
+  return (
+    <SafeAreaProvider>
+      <Application />
+    </SafeAreaProvider>
+  );
+}
+
+function Application() {
+  const insets = useSafeAreaInsets();
   const [pret, setPret] = useState(false);
   // L'écran de chargement reste affiché au moins ce temps, même si les données sont prêtes plus tôt.
   const [delaiEcoule, setDelaiEcoule] = useState(false);
@@ -250,15 +260,15 @@ export default function App() {
 
   if (!pret || !delaiEcoule) {
     return (
-      <SafeAreaView style={[styles.racine, { backgroundColor: FOND_SPLASH }]}>
+      <View style={[styles.racine, { backgroundColor: FOND_SPLASH, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <StatusBar style="light" />
         <Splash />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.racine}>
+    <View style={[styles.racine, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <StatusBar style="light" />
       {ecran.nom === 'accueil' && (
         <Home
@@ -451,15 +461,14 @@ export default function App() {
         suivantes={Math.max(0, recompenses.length - 1)}
         onFermer={() => setRecompenses((r) => r.slice(1))}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // SafeAreaView ne protège que iOS : sur Android, on laisse la place de la barre d'état (heure, batterie).
+  // Les marges (barre d'état, barre de navigation Android) sont appliquées via useSafeAreaInsets.
   racine: {
     flex: 1,
     backgroundColor: couleurs.fond,
-    paddingTop: Platform.OS === 'android' ? (BarreAndroid.currentHeight ?? 24) : 0,
   },
 });
