@@ -22,7 +22,7 @@
     "expo-status-bar": "~2.2.3",
     "expo-store-review": "~8.1.5",
     "react": "19.0.0",
-    "react-native": "0.79.5",
+    "react-native": "0.79.6",
     "react-native-safe-area-context": "5.4.0",
     "react-native-svg": "15.11.2"
   },
