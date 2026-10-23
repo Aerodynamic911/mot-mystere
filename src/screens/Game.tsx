@@ -115,6 +115,7 @@ export default function Game({
   const [offerts, setOfferts] = useState(0);
   const secousse = useRef(new Animated.Value(0)).current;
   const apparitionResultat = useRef(new Animated.Value(0)).current;
+  const defilement = useRef<ScrollView>(null);
 
   function declencher(type: TypeEffet) {
     setEffet((e) => ({ type, cle: (e?.cle ?? 0) + 1 }));
@@ -138,6 +139,9 @@ export default function Game({
     if (!termine) return;
     apparitionResultat.setValue(0);
     Animated.spring(apparitionResultat, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
+    // La fiche de résultat est longue : on descend tout seul pour la montrer en entier.
+    const t = setTimeout(() => defilement.current?.scrollToEnd({ animated: true }), 450);
+    return () => clearTimeout(t);
   }, [termine, apparitionResultat]);
 
   const suite = termine ? (actionFin?.(gagne) ?? null) : null;
@@ -251,7 +255,7 @@ export default function Game({
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
+      <ScrollView ref={defilement} contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
         <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>
 
         {mystere.indices.map((indice, i) => {
@@ -320,14 +324,18 @@ export default function Game({
                 {tr('✨ +1 joker tous les {n} partages (1 par jour)', '✨ +1 joker every {n} shares (1 per day)', { n: PARTAGES_PAR_JOKER })}
               </Text>
             )}
-            {suite && (
-              <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire]} onPress={suite.onPress} activeOpacity={0.85}>
-                <Text style={styles.boutonSecondaireTexte}>{suite.libelle}</Text>
-              </TouchableOpacity>
-            )}
           </Animated.View>
         )}
       </ScrollView>
+
+      {/* Le bouton pour continuer reste toujours visible en bas : le joueur n'a pas à défiler pour le trouver. */}
+      {termine && suite && (
+        <View style={styles.barreSuite}>
+          <TouchableOpacity style={[styles.bouton, styles.boutonSuite]} onPress={suite.onPress} activeOpacity={0.85}>
+            <Text style={styles.boutonTexte}>{suite.libelle}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {!termine && (
         <View style={styles.saisieBarre}>
@@ -478,6 +486,8 @@ const styles = StyleSheet.create({
   commentaireFin: { color: couleurs.accent, fontSize: 15, fontWeight: '700', textAlign: 'center', marginTop: 4, marginBottom: 4 },
   noteJoker: { color: couleurs.texteSecondaire, fontSize: 12, textAlign: 'center', marginTop: 10 },
   boutonSecondaireTexte: { color: couleurs.texte, fontWeight: '600', fontSize: 16 },
+  barreSuite: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
+  boutonSuite: { marginTop: 0 },
   saisieBarre: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
   encouragement: { color: couleurs.accent, fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
   consolation: { color: couleurs.texte, fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 8 },
