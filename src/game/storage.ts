@@ -3,7 +3,7 @@ import { MAX_ESSAIS, PASSE, jourPrecedent } from './engine';
 import { Bonus, bonusAttribues } from './bonus';
 import { gainPieces } from './boutique';
 
-export type ModeJeu = 'jour' | 'aventure' | 'evenement' | 'defi';
+export type ModeJeu = 'jour' | 'aventure' | 'evenement' | 'defi' | 'image';
 
 /** Compteurs d'un mode de jeu. */
 export interface Compteurs {
@@ -50,6 +50,16 @@ export interface Stats {
   glacons: number;
   dernierAchatJoker: string | null;
   dernierAchatGlacon: string | null;
+  /** Sprint : parties jouées et meilleur score. */
+  sprints: number;
+  recordSprint: number;
+  /** Vrai ou faux : séries jouées, meilleur score sur 10 et réponses justes au total. */
+  vfParties: number;
+  vfMeilleur: number;
+  vfBonnes: number;
+  vfTotal: number;
+  /** Boss vaincus depuis le début. */
+  bossVaincus: number;
 }
 
 export interface EtatDuJour {
@@ -73,7 +83,7 @@ export const STATS_VIDES: Stats = {
   serieVictoires: 0,
   meilleureSerieVictoires: 0,
   repartition: Array(MAX_ESSAIS).fill(0),
-  modes: { jour: COMPTEURS_VIDES, aventure: COMPTEURS_VIDES, evenement: COMPTEURS_VIDES, defi: COMPTEURS_VIDES },
+  modes: { jour: COMPTEURS_VIDES, aventure: COMPTEURS_VIDES, evenement: COMPTEURS_VIDES, defi: COMPTEURS_VIDES, image: COMPTEURS_VIDES },
   jokers: 0,
   jokersUtilises: 0,
   partages: 0,
@@ -85,6 +95,13 @@ export const STATS_VIDES: Stats = {
   glacons: 0,
   dernierAchatJoker: null,
   dernierAchatGlacon: null,
+  sprints: 0,
+  recordSprint: 0,
+  vfParties: 0,
+  vfMeilleur: 0,
+  vfBonnes: 0,
+  vfTotal: 0,
+  bossVaincus: 0,
 };
 
 export async function chargerStats(): Promise<Stats> {

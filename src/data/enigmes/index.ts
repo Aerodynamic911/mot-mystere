@@ -9,10 +9,14 @@ import ado from './ado';
 import a18 from './a18';
 import a30 from './a30';
 import a50 from './a50';
+import plus1 from './plus1';
+import plus2 from './plus2';
+import plus3 from './plus3';
+import plus4 from './plus4';
 
-const TOUTES: Brut[] = [...tous1, ...tous2, ...tous3, ...tous4, ...ado, ...a18, ...a30, ...a50];
+const TOUTES: Brut[] = [...tous1, ...tous2, ...tous3, ...tous4, ...ado, ...a18, ...a30, ...a50, ...plus1, ...plus2, ...plus3, ...plus4];
 
-/** Les 148 énigmes ajoutées (en français). */
+/** Les énigmes ajoutées (en français). */
 export const NOUVELLES: Mystere[] = TOUTES.map((b) => b.fr);
 /** Leurs traductions anglaises, par identifiant. */
 export const EN_NOUVELLES: Record<string, MystereEn> = Object.fromEntries(TOUTES.map((b) => [b.fr.id, b.en]));

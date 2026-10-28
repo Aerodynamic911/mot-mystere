@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Image,
+  ImageSourcePropType,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -84,6 +86,8 @@ interface Props {
   mode?: ModeJeu;
   /** Phrase de fin de partie (par exemple la comparaison avec le score d'un ami). */
   commentaireFin?: (gagne: boolean, essais: number) => string | null;
+  /** Mode image : la photo se dévoile peu à peu à la place des indices écrits. */
+  image?: ImageSourcePropType;
 }
 
 export default function Game({
@@ -103,6 +107,7 @@ export default function Game({
   onPartage,
   mode,
   commentaireFin,
+  image,
 }: Props) {
   const mystere = localiser(mystereBrut);
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
@@ -258,7 +263,9 @@ export default function Game({
       <ScrollView ref={defilement} contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
         <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>
 
-        {mystere.indices.map((indice, i) => {
+        {image && <ImageDevoilee source={image} etape={indicesVisibles - 1} />}
+
+        {!image && mystere.indices.map((indice, i) => {
           const visible = i < indicesVisibles;
           const dernier = visible && i === indicesVisibles - 1 && !termine;
           return (
@@ -316,9 +323,11 @@ export default function Game({
             <TouchableOpacity style={styles.bouton} onPress={partager} activeOpacity={0.85}>
               <Text style={styles.boutonTexte}>📤 {tr('Partager mon résultat', 'Share my result')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={defier} activeOpacity={0.85}>
-              <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami', 'Challenge a friend')}</Text>
-            </TouchableOpacity>
+            {!image && (
+              <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={defier} activeOpacity={0.85}>
+                <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami', 'Challenge a friend')}</Text>
+              </TouchableOpacity>
+            )}
             {onPartage && (
               <Text style={styles.noteJoker}>
                 {tr('✨ +1 joker tous les {n} partages (1 par jour)', '✨ +1 joker every {n} shares (1 per day)', { n: PARTAGES_PAR_JOKER })}
@@ -386,6 +395,22 @@ export default function Game({
 }
 
 /** Une carte d'indice : celle qui vient d'être débloquée glisse en place avec un éclat. */
+/** Photo mystère : zoomée et floue au départ, elle se révèle à chaque indice demandé ou essai manqué. */
+const ZOOMS = [2.8, 2.3, 1.85, 1.45, 1.15, 1];
+const FLOUS = [28, 20, 13, 7, 3, 0];
+
+function ImageDevoilee({ source, etape }: { source: ImageSourcePropType; etape: number }) {
+  const i = Math.max(0, Math.min(ZOOMS.length - 1, etape));
+  return (
+    <View style={{ width: '100%', aspectRatio: 1, borderRadius: 18, overflow: 'hidden', marginBottom: 12, backgroundColor: '#0E0B26' }}>
+      <Image source={source} blurRadius={FLOUS[i]} resizeMode="cover" style={{ width: '100%', height: '100%', transform: [{ scale: ZOOMS[i] }] }} />
+      <View style={{ position: 'absolute', right: 10, bottom: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
+        <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>{i + 1}/{ZOOMS.length}</Text>
+      </View>
+    </View>
+  );
+}
+
 function IndiceCarte({ visible, recent, numero, texte }: { visible: boolean; recent: boolean; numero: number; texte: string }) {
   const arrivee = useRef(new Animated.Value(visible ? 1 : 0)).current;
   const dejaVu = useRef(visible);

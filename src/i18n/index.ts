@@ -1,6 +1,7 @@
 import { Mystere } from '../data/mysteres';
 import { EN_NOUVELLES } from '../data/enigmes';
 import { MYSTERES_EN } from '../data/mysteres_en';
+import { EN_IMAGES } from '../data/images';
 
 export type Langue = 'fr' | 'en';
 
@@ -39,7 +40,7 @@ export function localeActive(): string {
 /** Mystère dans la langue active. En anglais, les réponses françaises restent acceptées. */
 export function localiser(m: Mystere): Mystere {
   if (courante !== 'en') return m;
-  const en = MYSTERES_EN[m.id] ?? EN_NOUVELLES[m.id];
+  const en = MYSTERES_EN[m.id] ?? EN_NOUVELLES[m.id] ?? EN_IMAGES[m.id];
   if (!en) return m;
   return {
     id: m.id,

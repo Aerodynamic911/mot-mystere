@@ -293,7 +293,7 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
                     ]}
                   >
                     <Text style={[styles.noeudTexte, { color: fait || courant ? '#1B1B1B' : encre }]}>
-                      {fait ? '✓' : tresor ? decor.tresor : niveauNoeud}
+                      {fait ? '✓' : tresor ? '👹' : niveauNoeud}
                     </Text>
                   </View>
                   {tresor && !fait && <Text style={[styles.etiquetteTresor, { color: encre }]}>{niveauNoeud}</Text>}
@@ -362,7 +362,9 @@ export default function Aventure({ progression, depuis, onArrive, onJouer, onRet
 
       <View style={styles.pied}>
         <TouchableOpacity style={styles.bouton} onPress={onJouer} activeOpacity={0.85}>
-          <Text style={styles.boutonTexte}>▶  {tr('Jouer le niveau', 'Play level')} {niveau}</Text>
+          <Text style={styles.boutonTexte}>
+            {niveau % PAR_CARTE === 0 ? `⚔️  ${tr('Affronter le boss', 'Face the boss')}` : `▶  ${tr('Jouer le niveau', 'Play level')} ${niveau}`}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

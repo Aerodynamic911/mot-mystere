@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
 import { Share, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -48,8 +48,28 @@ import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
+import Quetes from './src/screens/Quetes';
+import Sprint, { piecesSprint } from './src/screens/Sprint';
+import VraiFaux, { piecesVraiFaux } from './src/screens/VraiFaux';
+import { IMAGES, ImageMystere, imagesDisponibles } from './src/data/images';
+import {
+  EtatQuetes,
+  EvenementQuete,
+  QUETES_VIDES,
+  appliquer,
+  chargerQuetes,
+  crediter,
+  nbARecuperer,
+  reclamer,
+  sauverQuetes,
+} from './src/game/quetes';
 import Splash, { DUREE_CHARGEMENT, FOND_SPLASH } from './src/screens/Splash';
 import { couleurs } from './src/theme';
+
+const NIVEAUX_BOSS = 10;
+const MANCHES_BOSS = 3;
+const VIES_BOSS = 3;
+const BOSS_PIECES = 25;
 
 type Ecran =
   | { nom: 'accueil' }
@@ -58,6 +78,11 @@ type Ecran =
   | { nom: 'aventure' }
   | { nom: 'aventure-jeu'; niveau: number; essai: number; mystere: Mystere }
   | { nom: 'collection' }
+  | { nom: 'quetes' }
+  | { nom: 'image'; item: ImageMystere; essai: number }
+  | { nom: 'boss'; niveau: number; manche: number; vies: number; essai: number; mystere: Mystere; vus: string[] }
+  | { nom: 'sprint' }
+  | { nom: 'vf' }
   | { nom: 'boutique' }
   | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number }
   | { nom: 'evenement'; id: string }
@@ -87,6 +112,10 @@ function Application() {
   // Cartes obtenues et récompenses à montrer au joueur (cartes, bonus de série).
   const [collection, setCollection] = useState<string[]>([]);
   const [recompenses, setRecompenses] = useState<Recompense[]>([]);
+  const [quetes, setQuetes] = useState<EtatQuetes>(QUETES_VIDES);
+  const quetesRef = useRef<EtatQuetes>(QUETES_VIDES);
+  const imagesDispo = imagesDisponibles();
+  const imagesVues = useRef<string[]>([]);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const [amisOuvert, setAmisOuvert] = useState(false);
   // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
@@ -102,13 +131,16 @@ function Application() {
 
   useEffect(() => {
     (async () => {
-      const [s, j, p, pr, col] = await Promise.all([
+      const [s, j, p, pr, col, qu] = await Promise.all([
         chargerStats(),
         chargerJour(),
         chargerPreferences(),
         chargerProgression(),
         chargerCollection(),
+        chargerQuetes(),
       ]);
+      quetesRef.current = qu;
+      setQuetes(qu);
       setStats(s);
       setJour(j);
       setPrefs(p);
@@ -148,6 +180,7 @@ function Application() {
     // Récompense supplémentaire à appliquer aux statistiques (défi d'ami gagné).
     supplement?: (s: Stats) => { stats: Stats; bonus: Bonus | null },
   ) {
+    evenementQuete({ type: 'partie', mode, gagne, essais: propositions.length });
     const partie = enregistrerPartie(stats, mode, cle, propositions, gagne);
     const serieAvant = partie.stats.serie;
     const extra = supplement ? supplement(partie.stats) : { stats: partie.stats, bonus: null };
@@ -181,6 +214,25 @@ function Application() {
     if (recomp.length) setTimeout(() => setRecompenses((r) => [...r, ...recomp]), 1500);
   }
 
+  /** Fait avancer les quêtes du jour et de la semaine. */
+  function evenementQuete(evt: EvenementQuete) {
+    const suivant = appliquer(quetesRef.current, cle, evt, imagesDispo);
+    quetesRef.current = suivant;
+    setQuetes(suivant);
+    sauverQuetes(suivant);
+  }
+
+  function reclamerQuete(id: string) {
+    const r = reclamer(quetesRef.current, cle, id, imagesDispo);
+    if (!r) return;
+    quetesRef.current = r.etat;
+    setQuetes(r.etat);
+    sauverQuetes(r.etat);
+    const s2 = crediter(stats, r.recompense);
+    setStats(s2);
+    sauverStats(s2);
+  }
+
   /** Applique un achat de la boutique (null = achat refusé). */
   function acheter(apres: Stats | null) {
     if (!apres) return;
@@ -197,6 +249,7 @@ function Application() {
 
   /** Un partage réussi : compté une fois par jour, et un joker tous les 3 partages. */
   function partageFait() {
+    evenementQuete({ type: 'partage' });
     const r = enregistrerPartage(stats, cle);
     if (r.stats !== stats) {
       setStats(r.stats);
@@ -248,6 +301,21 @@ function Application() {
     setEcran({ nom: 'aventure-jeu', niveau, essai, mystere });
   }
 
+  /** Boss de fin de zone : 3 mystères à trouver avec 3 vies partagées. */
+  function lancerBoss(niveau: number, manche: number, vies: number, essai: number, vus: string[]) {
+    const mystere = choisirMystereAventure(niveau * 7 + essai, [...prog.aventure.vus, ...vus], prefs.age);
+    setEcran({ nom: 'boss', niveau, manche, vies, essai, mystere, vus: [...vus, mystere.id] });
+  }
+
+  /** Mode image : une photo au hasard, en évitant les dernières déjà jouées. */
+  function lancerImage(essai: number) {
+    const libres = IMAGES.filter((i) => !imagesVues.current.includes(i.mystere.id));
+    const reserve = libres.length ? libres : IMAGES;
+    const item = reserve[Math.floor(Math.random() * reserve.length)];
+    imagesVues.current = [...imagesVues.current, item.mystere.id].slice(-Math.max(1, Math.min(15, IMAGES.length - 2)));
+    setEcran({ nom: 'image', item, essai });
+  }
+
   function changerPreferences(p: Preferences) {
     setPrefs(p);
     sauverPreferences(p);
@@ -293,6 +361,11 @@ function Application() {
           jokers={stats.jokers}
           nbCartes={collection.length}
           onCollection={() => setEcran({ nom: 'collection' })}
+          quetesARecuperer={nbARecuperer(quetes, cle, imagesDispo)}
+          onQuetes={() => setEcran({ nom: 'quetes' })}
+          onSprint={() => setEcran({ nom: 'sprint' })}
+          onVraiFaux={() => setEcran({ nom: 'vf' })}
+          onImage={imagesDispo ? () => lancerImage(0) : undefined}
         />
       )}
 
@@ -323,7 +396,11 @@ function Application() {
           progression={prog}
           depuis={niveauVu}
           onArrive={() => setNiveauVu(prog.aventure.niveau)}
-          onJouer={() => lancerNiveau(prog.aventure.niveau, 0, false)}
+          onJouer={() =>
+            prog.aventure.niveau % NIVEAUX_BOSS === 0
+              ? lancerBoss(prog.aventure.niveau, 0, VIES_BOSS, 0, [])
+              : lancerNiveau(prog.aventure.niveau, 0, false)
+          }
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
@@ -357,6 +434,54 @@ function Application() {
           }
         />
       )}
+
+      {ecran.nom === 'boss' && (() => {
+        const b = ecran;
+        const viesApres = (gagne: boolean) => (gagne ? b.vies : b.vies - 1);
+        const coeurs = (n: number) => '❤️'.repeat(Math.max(0, n)) + '🖤'.repeat(Math.max(0, VIES_BOSS - n));
+        const derniere = (gagne: boolean) => gagne && b.manche === MANCHES_BOSS - 1;
+        return (
+          <Game
+            key={`boss-${b.niveau}-${b.essai}`}
+            difficulte={prefs.difficulte}
+            mystere={b.mystere}
+            titre={`👹 ${tr('Boss', 'Boss')} ${b.manche + 1}/${MANCHES_BOSS}  ${coeurs(b.vies)}`}
+            maxEssais={4}
+            libellePartage={tr('Quizzle · Boss du niveau {n}', 'Quizzle · Level {n} boss', { n: b.niveau })}
+            propositionsInitiales={[]}
+            jokers={stats.jokers}
+            onJoker={utiliserJoker}
+            onPartage={partageFait}
+            mode="aventure"
+            onTerminee={(propositions, gagne) => {
+              if (derniere(gagne)) {
+                const apres = niveauReussi(prog, propositions.length);
+                changerProgression(apres);
+                evenementQuete({ type: 'boss' });
+                finDePartie('aventure', propositions, true, apres, (st) => ({
+                  stats: { ...st, bossVaincus: st.bossVaincus + 1, pieces: st.pieces + BOSS_PIECES, jokers: st.jokers + 1 },
+                  bonus: null,
+                }));
+              } else {
+                finDePartie('aventure', propositions, gagne, prog);
+              }
+            }}
+            commentaireFin={(gagne) => {
+              if (derniere(gagne)) return tr('🏆 Boss vaincu ! +{p} pièces et +1 joker', '🏆 Boss defeated! +{p} coins and +1 joker', { p: BOSS_PIECES });
+              if (gagne) return tr('Bien joué ! Plus que {n} mystère(s).', 'Well done! {n} mystery(ies) to go.', { n: MANCHES_BOSS - b.manche - 1 });
+              const v = viesApres(false);
+              return v > 0 ? tr('Une vie perdue : {c}', 'A life lost: {c}', { c: coeurs(v) }) : tr('Le boss est le plus fort cette fois…', 'The boss won this time…');
+            }}
+            onRetour={() => setEcran({ nom: 'aventure' })}
+            actionFin={(gagne) => {
+              if (derniere(gagne)) return { libelle: tr('Avancer sur la carte 🗺️', 'Move forward on the map 🗺️'), onPress: () => setEcran({ nom: 'aventure' }) };
+              const v = viesApres(gagne);
+              if (v <= 0) return { libelle: tr('Réaffronter le boss', 'Face the boss again'), onPress: () => lancerBoss(b.niveau, 0, VIES_BOSS, b.essai + 1, b.vus) };
+              return { libelle: tr('Mystère suivant ⚔️', 'Next mystery ⚔️'), onPress: () => lancerBoss(b.niveau, gagne ? b.manche + 1 : b.manche, v, b.essai + 1, b.vus) };
+            }}
+          />
+        );
+      })()}
 
       {ecran.nom === 'evenement' && (
         <EvenementCarte
@@ -440,6 +565,77 @@ function Application() {
           onAcheterJoker={() => acheter(acheterJoker(stats, cle))}
           onAcheterGlacon={() => acheter(acheterGlacon(stats, cle))}
           onRetour={() => setEcran({ nom: 'accueil' })}
+        />
+      )}
+
+      {ecran.nom === 'quetes' && (
+        <Quetes
+          etat={quetes}
+          cle={cle}
+          imagesDispo={imagesDispo}
+          onReclamer={reclamerQuete}
+          onRetour={() => setEcran({ nom: 'accueil' })}
+        />
+      )}
+
+      {ecran.nom === 'sprint' && (
+        <Sprint
+          age={prefs.age}
+          record={stats.recordSprint}
+          onPartage={partageFait}
+          onRetour={() => setEcran({ nom: 'accueil' })}
+          onTerminee={({ points, trouves }) => {
+            const record = points > stats.recordSprint;
+            const pieces = piecesSprint(points);
+            const s2 = { ...stats, sprints: stats.sprints + 1, recordSprint: Math.max(stats.recordSprint, points), pieces: stats.pieces + pieces };
+            setStats(s2);
+            sauverStats(s2);
+            evenementQuete({ type: 'sprint', trouves, points });
+            return { points, trouves, record, pieces };
+          }}
+        />
+      )}
+
+      {ecran.nom === 'vf' && (
+        <VraiFaux
+          meilleur={stats.vfMeilleur}
+          onPartage={partageFait}
+          onRetour={() => setEcran({ nom: 'accueil' })}
+          onTerminee={({ bonnes, total }) => {
+            const record = bonnes > stats.vfMeilleur;
+            const pieces = piecesVraiFaux(bonnes, total);
+            const s2 = {
+              ...stats,
+              vfParties: stats.vfParties + 1,
+              vfMeilleur: Math.max(stats.vfMeilleur, bonnes),
+              vfBonnes: stats.vfBonnes + bonnes,
+              vfTotal: stats.vfTotal + total,
+              pieces: stats.pieces + pieces,
+            };
+            setStats(s2);
+            sauverStats(s2);
+            evenementQuete({ type: 'vf', bonnes, total });
+            return { bonnes, total, record, pieces };
+          }}
+        />
+      )}
+
+      {ecran.nom === 'image' && (
+        <Game
+          key={`img-${ecran.item.mystere.id}-${ecran.essai}`}
+          difficulte={prefs.difficulte}
+          mystere={ecran.item.mystere}
+          image={ecran.item.source}
+          titre={tr('Image mystère', 'Mystery picture')}
+          libellePartage={tr('Quizzle · Image mystère', 'Quizzle · Mystery picture')}
+          propositionsInitiales={[]}
+          jokers={stats.jokers}
+          onJoker={utiliserJoker}
+          onPartage={partageFait}
+          mode="image"
+          onTerminee={(propositions, gagne) => finDePartie('image', propositions, gagne, prog)}
+          onRetour={() => setEcran({ nom: 'accueil' })}
+          actionFin={() => ({ libelle: tr('Image suivante 🖼️', 'Next picture 🖼️'), onPress: () => lancerImage(ecran.essai + 1) })}
         />
       )}
 

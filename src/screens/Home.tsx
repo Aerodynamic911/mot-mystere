@@ -31,6 +31,13 @@ interface Props {
   jokers: number;
   nbCartes: number;
   onCollection: () => void;
+  /** Récompenses de quêtes à récupérer (pastille sur le bouton Quêtes). */
+  quetesARecuperer: number;
+  onQuetes: () => void;
+  onSprint: () => void;
+  onVraiFaux: () => void;
+  /** Absent tant que le jeu n'a pas assez d'images : le mode n'est alors pas proposé. */
+  onImage?: () => void;
 }
 
 export default function Home({
@@ -55,6 +62,11 @@ export default function Home({
   jokers,
   nbCartes,
   onCollection,
+  quetesARecuperer,
+  onQuetes,
+  onSprint,
+  onVraiFaux,
+  onImage,
 }: Props) {
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   // Infobulle ouverte en touchant la série ou les jokers.
@@ -132,6 +144,12 @@ export default function Home({
         </TouchableOpacity>
       </View>
 
+      <View style={styles.modesPetits}>
+        <PetitMode emoji="⚡" titre="Sprint" onPress={onSprint} />
+        <PetitMode emoji="✅" titre={tr('Vrai ou faux', 'True or false')} onPress={onVraiFaux} />
+        {onImage && <PetitMode emoji="🖼️" titre={tr('Image', 'Picture')} onPress={onImage} />}
+      </View>
+
       <View style={styles.pied}>
         {/* Tant que le mystère du jour n'est pas fait, c'est le bouton principal ; ensuite il s'efface devant les autres modes. */}
         <TouchableOpacity
@@ -150,9 +168,19 @@ export default function Home({
               : tr('À découvrir', 'To discover')}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.boutonSecondaire} onPress={onAmis} activeOpacity={0.85}>
-          <Text style={styles.boutonPreferencesTexte}>👥  {tr('Entre amis', 'With friends')}</Text>
-        </TouchableOpacity>
+        <View style={styles.ligneSecondaire}>
+          <TouchableOpacity style={styles.boutonSecondaire} onPress={onAmis} activeOpacity={0.85}>
+            <Text style={styles.boutonPreferencesTexte}>👥  {tr('Entre amis', 'With friends')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.boutonSecondaire} onPress={onQuetes} activeOpacity={0.85}>
+            <Text style={styles.boutonPreferencesTexte}>🎯  {tr('Quêtes', 'Quests')}</Text>
+            {quetesARecuperer > 0 && (
+              <View style={styles.pastille}>
+                <Text style={styles.pastilleTexte}>{quetesARecuperer}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <Modal visible={info !== null} transparent animationType="fade" onRequestClose={() => setInfo(null)}>
@@ -237,6 +265,7 @@ export default function Home({
                   [`🗺️ ${tr('Aventure', 'Adventure')}`, stats.modes.aventure],
                   [`🎉 ${tr('Événements', 'Events')}`, stats.modes.evenement],
                   [`🎯 ${tr('Défis entre amis', 'Friend challenges')}`, stats.modes.defi],
+                  [`🖼️ ${tr('Images', 'Pictures')}`, stats.modes.image],
                 ] as const
               ).map(([nom, c]) => (
                 <View key={nom} style={styles.modeLigne}>
@@ -247,6 +276,22 @@ export default function Home({
                 </View>
               ))}
               <Text style={styles.legende}>{tr('victoires/parties · indices demandés · réponses proposées', 'wins/games · clues requested · answers submitted')}</Text>
+              <View style={styles.modeLigne}>
+                <Text style={styles.modeNom}>⚡ Sprint</Text>
+                <Text style={styles.modeDetailTexte}>
+                  {tr('record', 'best')} {stats.recordSprint} · {stats.sprints} {tr('parties', 'games')}
+                </Text>
+              </View>
+              <View style={styles.modeLigne}>
+                <Text style={styles.modeNom}>✅ {tr('Vrai ou faux', 'True or false')}</Text>
+                <Text style={styles.modeDetailTexte}>
+                  {tr('meilleur', 'best')} {stats.vfMeilleur}/10 · {stats.vfBonnes}/{stats.vfTotal}
+                </Text>
+              </View>
+              <View style={styles.modeLigne}>
+                <Text style={styles.modeNom}>👹 {tr('Boss vaincus', 'Bosses defeated')}</Text>
+                <Text style={styles.modeDetailTexte}>{stats.bossVaincus}</Text>
+              </View>
 
               <Text style={styles.repTitre}>{tr('Bonus de série', 'Streak bonuses')}</Text>
               <Text style={styles.bonusTexte}>
@@ -298,6 +343,18 @@ function Puce({ icone, valeur, libelle, onPress }: { icone: string; valeur: numb
         {valeur !== '' ? ` ${valeur}` : ''}
       </Text>
       <Text style={styles.puceLibelle}>{libelle}</Text>
+    </TouchableOpacity>
+  );
+}
+
+/** Petite tuile pour les modes rapides (Sprint, Vrai ou faux, Image). */
+function PetitMode({ emoji, titre, onPress }: { emoji: string; titre: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.petitMode} onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={titre}>
+      <Text style={styles.petitModeEmoji}>{emoji}</Text>
+      <Text style={styles.petitModeTitre} numberOfLines={1}>
+        {titre}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -402,17 +459,34 @@ const styles = StyleSheet.create({
   boutonPrincipalFait: { backgroundColor: 'transparent', borderWidth: 2, borderColor: couleurs.succes, paddingVertical: 12 },
   boutonPrincipalTexteFait: { color: couleurs.succes, fontSize: 17 },
   boutonPrincipalSousFait: { color: couleurs.texteSecondaire, opacity: 1 },
+  ligneSecondaire: { flexDirection: 'row', marginTop: 10 },
   boutonSecondaire: {
-    marginTop: 10,
-    alignSelf: 'center',
-    width: '78%',
+    flex: 1,
+    marginHorizontal: 4,
     borderRadius: rayon,
     paddingVertical: 11,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
     borderWidth: 1.5,
     borderColor: couleurs.bordure,
     backgroundColor: 'rgba(26,31,58,0.82)',
   },
+  pastille: { marginLeft: 8, minWidth: 20, height: 20, borderRadius: 10, backgroundColor: couleurs.erreur, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
+  pastilleTexte: { color: '#fff', fontSize: 12, fontWeight: '800' },
+  modesPetits: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 12 },
+  petitMode: {
+    flex: 1,
+    marginHorizontal: 4,
+    alignItems: 'center',
+    paddingVertical: 9,
+    borderRadius: rayon,
+    backgroundColor: 'rgba(26,31,58,0.88)',
+    borderWidth: 1.5,
+    borderColor: couleurs.bordure,
+  },
+  petitModeEmoji: { fontSize: 20 },
+  petitModeTitre: { color: couleurs.texte, fontSize: 13, fontWeight: '800', marginTop: 1 },
   boutonPreferencesTexte: { color: couleurs.texte, fontSize: 15, fontWeight: '600' },
   voile: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', padding: 20 },
   statsCarte: {
