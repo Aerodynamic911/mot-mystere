@@ -1,5 +1,7 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CREDITS_IMAGES } from '../data/imagesCredits';
+import { IMAGES } from '../data/images';
 import { Difficulte, Langue, Preferences, TrancheAge } from '../game/preferences';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
@@ -39,6 +41,7 @@ const ages = (): Choix<TrancheAge>[] => [
 ];
 
 export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
+  const [creditsOuverts, setCreditsOuverts] = useState(false);
   return (
     <View style={styles.racine}>
       <FondAnime />
@@ -79,6 +82,26 @@ export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
             )}
           </Text>
         </Section>
+
+        {CREDITS_IMAGES.length > 0 && (
+          <Section titre={tr('Crédits des images', 'Picture credits')}>
+            <TouchableOpacity onPress={() => setCreditsOuverts((o) => !o)} activeOpacity={0.8}>
+              <Text style={styles.note}>
+                {creditsOuverts
+                  ? tr('Masquer les crédits ▲', 'Hide credits ▲')
+                  : tr('Photos et œuvres du mode Image, via Wikimedia Commons. Afficher les crédits ▼', 'Photos and artworks in Picture mode, via Wikimedia Commons. Show credits ▼')}
+              </Text>
+            </TouchableOpacity>
+            {creditsOuverts &&
+              CREDITS_IMAGES.map((c) => (
+                <TouchableOpacity key={c.id} onPress={() => Linking.openURL(c.lien).catch(() => {})} activeOpacity={0.8}>
+                  <Text style={styles.note}>
+                    {IMAGES.find((i) => i.mystere.id === `img-${c.id}`)?.mystere.reponse ?? c.id} · {c.auteur} · {c.licence}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </Section>
+        )}
       </ScrollView>
     </View>
   );

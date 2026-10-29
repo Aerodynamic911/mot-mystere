@@ -16,3 +16,17 @@ ${lignes.join('\n')}
 `;
 fs.writeFileSync(path.join(__dirname, '..', 'src', 'data', 'imagesFichiers.ts'), code);
 console.log(fichiers.length + ' image(s) référencée(s).');
+
+// Crédits des photos : assets/images/credits.txt (une ligne par image : identifiant ; auteur ; licence ; lien).
+const fcred = path.join(dossier, 'credits.txt');
+const credits = fs.existsSync(fcred)
+  ? fs.readFileSync(fcred, 'utf8').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => l.split(';').map((x) => x.trim()))
+  : [];
+const codeCredits = `/** Crédits des photos du mode image. Fichier généré par \`node scripts/gen-images.js\` à partir de assets/images/credits.txt. */
+export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien: string }[] = ${JSON.stringify(
+  credits.filter((c) => c.length >= 4).map((c) => ({ id: c[0], auteur: c[1], licence: c[2], lien: c[3] })),
+  null,
+  2,
+)};
+`;
+fs.writeFileSync(path.join(__dirname, '..', 'src', 'data', 'imagesCredits.ts'), codeCredits);

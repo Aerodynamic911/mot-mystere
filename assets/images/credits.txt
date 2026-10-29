@@ -1,0 +1,39 @@
+aigle ; AngMoKio ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:Weisskopf_Seeadler_haliaeetus_leucocephalus_8_amk.jpg
+baleine ; Giles Laurent ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:001_Humpback_whale_breaching_in_Ballena_Marine_National_Park_Photo_by_Giles_Laurent.jpg
+beethoven ; Joseph Karl Stieler ; Public domain ; https://commons.wikimedia.org/wiki/File:Joseph_Karl_Stieler%27s_Beethoven_mit_dem_Manuskript_der_Missa_solemnis.jpg
+big-ben ; Colin ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Big_Ben_at_sunset_-_2014-10-27_17-30.jpg
+colisee ; Wilfredor ; CC0 ; https://commons.wikimedia.org/wiki/File:Colosseum_of_Rome_and_Roman_forum.jpg
+darwin ; Elliott &amp, Fry ; Public domain ; https://commons.wikimedia.org/wiki/File:Charles_Darwin_in_1881.jpg
+einstein ; Oren Jack Turner ; Public domain ; https://commons.wikimedia.org/wiki/File:Albert_Einstein_Head_cleaned.jpg
+elephant ; Charles J. Sharp ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:African_bush_elephants_(Loxodonta_africana)_female_with_six-week-old_baby.jpg
+girafe ; Byrdyak ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Three_giraffes_01.jpg
+grande-muraille ; CEphoto, Uwe Aranas ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:Badaling_China_Great-Wall-of-China-01.jpg
+grande-vague ; Katsushika Hokusai ; Public domain ; https://commons.wikimedia.org/wiki/File:Tsunami_by_hokusai_19th_century.jpg
+jeune-fille-perle ; Johannes Vermeer ; Public domain ; https://commons.wikimedia.org/wiki/File:1665_Girl_with_a_Pearl_Earring.jpg
+joconde ; Leonardo da Vinci ; Public domain ; https://commons.wikimedia.org/wiki/File:Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg
+kangourou ; PotMart186 ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Red_Kangaroos_at_Sturt_National_Park_NSW.jpg
+le-cri ; Edvard Munch ; Public domain ; https://commons.wikimedia.org/wiki/File:Edvard_Munch_-_The_Scream_-_Google_Art_Project.jpg
+liberte-guidant-peuple ; Eugène Delacroix ; Public domain ; https://commons.wikimedia.org/wiki/File:La_Libert%C3%A9_guidant_le_peuple_-_Eug%C3%A8ne_Delacroix_-_Mus%C3%A9e_du_Louvre_Peintures_RF_129_-_apr%C3%A8s_restauration_2024.jpg
+lion ; Charles J. Sharp ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Lion_(Panthera_leo)_male_6y.jpg
+louis-xiv ; Hyacinthe Rigaud ; CC0 ; https://commons.wikimedia.org/wiki/File:Louis_XIV_Rigaud_Cond%C3%A9_Chantilly.jpg
+lune ; Luc Viatour ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:Full_Moon_Luc_Viatour.jpg
+machu-picchu ; Martin St-Amant (S23678) ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:80_-_Machu_Picchu_-_Juin_2009_-_edit.jpg
+manchot ; Christopher Michel ; CC BY 2.0 ; https://commons.wikimedia.org/wiki/File:Penguin_in_Antarctica_jumping_out_of_the_water.jpg
+mont-saint-michel ; Benh LIEU SONG ; CC BY 2.5 ; https://commons.wikimedia.org/wiki/File:MSM_sunset_02.JPG
+mozart ; Barbara Krafft ; Public domain ; https://commons.wikimedia.org/wiki/File:Barbara_Krafft_-_Portr%C3%A4t_Wolfgang_Amadeus_Mozart_(1819).jpg
+napoleon ; Jacques-Louis David ; Public domain ; https://commons.wikimedia.org/wiki/File:Napoleon_at_the_Great_St._Bernard_-_Jacques-Louis_David_-_Google_Cultural_Institute.jpg
+newton ; John Scott ; Public domain ; https://commons.wikimedia.org/wiki/File:Portrait_of_Sir_Isaac_Newton_(4670222).jpg
+nuit-etoilee ; Vincent van Gogh ; Public domain ; https://commons.wikimedia.org/wiki/File:VanGogh-starry_night_ballance1.jpg
+panda ; Medium69; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Ailuropoda_melanoleuca_(Panda_g%C3%A9ant)_-_445.jpg
+parthenon ; Thermos ; CC BY-SA 2.5 ; https://commons.wikimedia.org/wiki/File:Parthenon_from_south.jpg
+pyramides-gizeh ; Ricardo Liberato ; CC BY-SA 2.0 ; https://commons.wikimedia.org/wiki/File:All_Gizah_Pyramids.jpg
+saturne ; NASA/JPL-Caltech/SSI/Cornell ; Public domain ; https://commons.wikimedia.org/wiki/File:Top_view_of_the_rings_of_Saturn_by_Cassini_-_October_10,_2013.jpg
+soleil ; NASA/SDO (AIA) ; Public domain ; https://commons.wikimedia.org/wiki/File:The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg
+statue-liberte ; William Warby ; CC BY 2.0 ; https://commons.wikimedia.org/wiki/File:Statue_of_Liberty,_NY.jpg
+taj-mahal ; Yann, edited by King of Hearts ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Taj_Mahal,_Agra,_India_edit2.jpg
+terre ; NASA/Apollo 17 ; Public domain ; https://commons.wikimedia.org/wiki/File:The_Earth_seen_from_Apollo_17.jpg
+tigre ; Dave Pape ; Public domain ; https://commons.wikimedia.org/wiki/File:Panthera_tigris_altaica_13_-_Buffalo_Zoo.jpg
+tour-de-pise ; Saffron Blaze ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:The_Leaning_Tower_of_Pisa_SB.jpeg
+tour-eiffel ; Benh LIEU SONG ; Public domain ; https://commons.wikimedia.org/wiki/File:Tour_Eiffel_Wikimedia_Commons.jpg
+tournesols ; Vincent van Gogh ; Public domain ; https://commons.wikimedia.org/wiki/File:Vincent_Willem_van_Gogh_128.jpg
+zebre ; Charles J. Sharp ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Plains_zebras_(Equus_quagga)_Maputo.jpg

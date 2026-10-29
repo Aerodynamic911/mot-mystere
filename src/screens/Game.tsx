@@ -397,7 +397,7 @@ export default function Game({
 /** Une carte d'indice : celle qui vient d'être débloquée glisse en place avec un éclat. */
 /** Photo mystère : zoomée et floue au départ, elle se révèle à chaque indice demandé ou essai manqué. */
 const ZOOMS = [2.8, 2.3, 1.85, 1.45, 1.15, 1];
-const FLOUS = [28, 20, 13, 7, 3, 0];
+const FLOUS = [24, 16, 10, 5, 2, 0];
 
 function ImageDevoilee({ source, etape }: { source: ImageSourcePropType; etape: number }) {
   const i = Math.max(0, Math.min(ZOOMS.length - 1, etape));
