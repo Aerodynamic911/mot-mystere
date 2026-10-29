@@ -34,6 +34,7 @@ export const FICHIERS: Record<string, ImageSourcePropType> = {
   'panda': require('../../assets/images/panda.jpg'),
   'parthenon': require('../../assets/images/parthenon.jpg'),
   'pyramides-gizeh': require('../../assets/images/pyramides-gizeh.jpg'),
+  'sagrada-familia': require('../../assets/images/sagrada-familia.jpg'),
   'saturne': require('../../assets/images/saturne.jpg'),
   'soleil': require('../../assets/images/soleil.jpg'),
   'statue-liberte': require('../../assets/images/statue-liberte.jpg'),

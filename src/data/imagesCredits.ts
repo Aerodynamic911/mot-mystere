@@ -175,6 +175,12 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "lien": "https://commons.wikimedia.org/wiki/File:All_Gizah_Pyramids.jpg"
   },
   {
+    "id": "sagrada-familia",
+    "auteur": "Bernard Gagnon",
+    "licence": "CC BY-SA 3.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Sagrada_Familia_03.jpg"
+  },
+  {
     "id": "saturne",
     "auteur": "NASA/JPL-Caltech/SSI/Cornell",
     "licence": "Public domain",
