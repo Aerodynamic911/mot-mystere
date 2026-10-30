@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, Share, StyleSheet, Text, Te
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { poolPour } from '../game/aventure';
+import { SECONDES_JOKER_TEMPS } from '../game/boutique';
 import { estCorrect, normaliser } from '../game/engine';
 import type { TrancheAge } from '../game/preferences';
 import { localiser, tr } from '../i18n';
@@ -49,6 +50,9 @@ interface Props {
   /** Meilleur score enregistré avant cette manche. */
   record: number;
   onTerminee: (r: { points: number; trouves: number }) => ResultatSprint;
+  /** Jokers temps en réserve : chacun ajoute des secondes au chrono. */
+  jokersTemps: number;
+  onJokerTemps: () => void;
   onPartage: () => void;
   onRetour: () => void;
 }
@@ -63,7 +67,7 @@ function melangerHasard<T>(liste: T[]): T[] {
 }
 
 /** Sprint : 90 secondes pour trouver un maximum de mystères. Moins on utilise d'indices, plus on marque de points. */
-export default function Sprint({ age, record, onTerminee, onPartage, onRetour }: Props) {
+export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTerminee, onPartage, onRetour }: Props) {
   const [phase, setPhase] = useState<'regles' | 'jeu' | 'fin'>('regles');
   const [ordre, setOrdre] = useState<Mystere[]>(() => melangerHasard(poolPour(age)));
   const [rang, setRang] = useState(0);
@@ -186,6 +190,16 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
       jouerEffet('echec');
       setSaisie('');
     }
+    setTimeout(() => champ.current?.focus(), 0);
+  }
+
+  function ajouterTemps() {
+    if (jokersTemps <= 0 || phase !== 'jeu' || dejaFini.current) return;
+    fin.current += SECONDES_JOKER_TEMPS * 1000;
+    setReste(Math.max(0, Math.ceil((fin.current - Date.now()) / 1000)));
+    setBandeau({ texte: `⏳ +${SECONDES_JOKER_TEMPS} s`, ok: true });
+    jouerEffet('indice');
+    onJokerTemps();
     setTimeout(() => champ.current?.focus(), 0);
   }
 
@@ -325,6 +339,11 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
           >
             <Text style={styles.petitTexte}>💡 {tr('Indice', 'Clue')}</Text>
           </TouchableOpacity>
+          {jokersTemps > 0 && (
+            <TouchableOpacity style={styles.petit} onPress={ajouterTemps} activeOpacity={0.85}>
+              <Text style={styles.petitTexte}>⏳ +{SECONDES_JOKER_TEMPS} s ({jokersTemps})</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={[styles.petit, styles.petitPasser]} onPress={passer} activeOpacity={0.85}>
             <Text style={styles.petitTexte}>⏭ {tr('Passer (−{n} s)', 'Skip (−{n} s)', { n: PENALITE_PASSER })}</Text>
           </TouchableOpacity>

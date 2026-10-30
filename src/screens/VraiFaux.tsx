@@ -23,12 +23,15 @@ interface Props {
   /** Meilleur score enregistré avant cette série. */
   meilleur: number;
   onTerminee: (r: { bonnes: number; total: number }) => ResultatVraiFaux;
+  /** Jokers passe en réserve : chacun remplace l'affirmation en cours par une autre, sans pénalité. */
+  jokersPasser: number;
+  onJokerPasser: () => void;
   onPartage: () => void;
   onRetour: () => void;
 }
 
 /** Vrai ou faux : une série de 10 affirmations, avec une explication après chaque réponse. */
-export default function VraiFaux({ meilleur, onTerminee, onPartage, onRetour }: Props) {
+export default function VraiFaux({ meilleur, jokersPasser, onJokerPasser, onTerminee, onPartage, onRetour }: Props) {
   const [phase, setPhase] = useState<'regles' | 'jeu' | 'fin'>('regles');
   const [serie, setSerie] = useState<Affirmation[]>([]);
   const [rang, setRang] = useState(0);
@@ -52,6 +55,17 @@ export default function VraiFaux({ meilleur, onTerminee, onPartage, onRetour }: 
     setReponse(choix);
     if (juste) setBonnes((n) => n + 1);
     jouerEffet(juste ? 'pop' : 'echec');
+  }
+
+  /** Joker passe : l'affirmation en cours est remplacée par une autre qui n'est pas déjà dans la série. */
+  function passer() {
+    if (jokersPasser <= 0 || reponse !== null) return;
+    const deja = new Set(serie.map((a) => a.id));
+    const remplacante = tirerSerie().find((a) => !deja.has(a.id));
+    if (!remplacante) return;
+    setSerie((liste) => liste.map((a, i) => (i === rang ? remplacante : a)));
+    jouerEffet('indice');
+    onJokerPasser();
   }
 
   function suite() {
@@ -178,6 +192,11 @@ export default function VraiFaux({ meilleur, onTerminee, onPartage, onRetour }: 
             <Text style={styles.explication}>{a.explication}</Text>
           </View>
         )}
+        {!aRepondu && jokersPasser > 0 && (
+          <TouchableOpacity style={styles.passer} onPress={passer} activeOpacity={0.85}>
+            <Text style={styles.passerTexte}>⏭️ {tr('Passer cette affirmation ({n})', 'Skip this statement ({n})', { n: jokersPasser })}</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
       {aRepondu && (
         <View style={styles.barreSuite}>
@@ -211,6 +230,8 @@ const styles = StyleSheet.create({
   titreEntete: { color: couleurs.texte, fontSize: 17, fontWeight: '700' },
   compteur: { color: couleurs.accent, fontSize: 16, fontWeight: '700', width: 90, textAlign: 'right' },
   contenu: { padding: 20, paddingTop: 8 },
+  passer: { alignSelf: 'center', marginTop: 18, paddingVertical: 10, paddingHorizontal: 18, borderRadius: rayon, borderWidth: 1.5, borderColor: couleurs.bordure },
+  passerTexte: { color: couleurs.texteSecondaire, fontSize: 14, fontWeight: '700' },
   categorie: { color: couleurs.accent, fontSize: 12, fontWeight: '700', letterSpacing: 1.2, marginBottom: 12 },
   carte: { backgroundColor: couleurs.carte, borderRadius: rayon, borderWidth: 1, borderColor: couleurs.bordure, padding: 22, minHeight: 130, justifyContent: 'center' },
   affirmation: { color: couleurs.texte, fontSize: 20, lineHeight: 28, fontWeight: '600', textAlign: 'center' },

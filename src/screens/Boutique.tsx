@@ -3,11 +3,18 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import {
   JOURS_ENTRE_GLACONS,
   MAX_GLACONS,
+  MAX_JOKERS_SPECIAUX,
   PRIX_GLACON,
   PRIX_JOKER,
+  PRIX_JOKER_PASSER,
+  PRIX_JOKER_TEMPS,
+  SECONDES_JOKER_TEMPS,
   jokerDisponible,
   joursAvantGlacon,
+  possedeSkin,
 } from '../game/boutique';
+import { SKINS, Skin, nomSkin } from '../game/skins';
+import CorpsMascotte from '../ui/CorpsMascotte';
 import { Stats } from '../game/storage';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
@@ -19,11 +26,25 @@ interface Props {
   cle: string;
   onAcheterJoker: () => void;
   onAcheterGlacon: () => void;
+  onAcheterJokerTemps: () => void;
+  onAcheterJokerPasser: () => void;
+  onAcheterSkin: (id: string) => void;
+  onEquiperSkin: (id: string) => void;
   onRetour: () => void;
 }
 
 /** La boutique : on y dépense les pièces gagnées en jouant. */
-export default function Boutique({ stats, cle, onAcheterJoker, onAcheterGlacon, onRetour }: Props) {
+export default function Boutique({
+  stats,
+  cle,
+  onAcheterJoker,
+  onAcheterGlacon,
+  onAcheterJokerTemps,
+  onAcheterJokerPasser,
+  onAcheterSkin,
+  onEquiperSkin,
+  onRetour,
+}: Props) {
   const [merci, setMerci] = useState('');
   const jokerOk = jokerDisponible(stats, cle);
   const attente = joursAvantGlacon(stats, cle);
@@ -86,8 +107,98 @@ export default function Boutique({ stats, cle, onAcheterJoker, onAcheterGlacon, 
             setMerci(tr('🧊 Glaçon ajouté ! Il servira tout seul si vous manquez un jour.', '🧊 Ice cube added! It will be used automatically if you miss a day.'));
           }}
         />
+        <Article
+          emoji="⏳"
+          nom={tr('Joker temps', 'Time joker')}
+          description={tr('Ajoute {n} secondes au chrono du Sprint, à utiliser pendant la manche.', 'Adds {n} seconds to the Sprint timer, to use during a round.', { n: SECONDES_JOKER_TEMPS })}
+          possede={tr('En réserve : {n}/{m}', 'In stock: {n}/{m}', { n: stats.jokersTemps, m: MAX_JOKERS_SPECIAUX })}
+          prix={PRIX_JOKER_TEMPS}
+          bloque={stats.jokersTemps >= MAX_JOKERS_SPECIAUX ? tr('Réserve pleine', 'Stock full') : stats.pieces < PRIX_JOKER_TEMPS ? tr('Il vous manque {n} 🪙', 'You need {n} more 🪙', { n: PRIX_JOKER_TEMPS - stats.pieces }) : null}
+          onAcheter={() => {
+            onAcheterJokerTemps();
+            setMerci(tr('⏳ Joker temps ajouté !', '⏳ Time joker added!'));
+          }}
+        />
+        <Article
+          emoji="⏭️"
+          nom={tr('Joker passe', 'Skip joker')}
+          description={tr('Passe une affirmation de Vrai ou faux : elle est remplacée par une autre, sans pénalité.', 'Skips a True or false statement: it is replaced by another one, with no penalty.')}
+          possede={tr('En réserve : {n}/{m}', 'In stock: {n}/{m}', { n: stats.jokersPasser, m: MAX_JOKERS_SPECIAUX })}
+          prix={PRIX_JOKER_PASSER}
+          bloque={stats.jokersPasser >= MAX_JOKERS_SPECIAUX ? tr('Réserve pleine', 'Stock full') : stats.pieces < PRIX_JOKER_PASSER ? tr('Il vous manque {n} 🪙', 'You need {n} more 🪙', { n: PRIX_JOKER_PASSER - stats.pieces }) : null}
+          onAcheter={() => {
+            onAcheterJokerPasser();
+            setMerci(tr('⏭️ Joker passe ajouté !', '⏭️ Skip joker added!'));
+          }}
+        />
+
+        <Text style={styles.section}>{tr('Skins de la mascotte', 'Mascot skins')}</Text>
+        <Text style={styles.aide}>
+          {tr(
+            'Habillez votre mascotte. Les costumes et couleurs s’achètent ; les skins spéciaux s’obtiennent en terminant un événement.',
+            'Dress up your mascot. Costumes and colours can be bought; special skins are earned by completing an event.',
+          )}
+        </Text>
+        <View style={styles.grille}>
+          {SKINS.map((sk) => (
+            <CarteSkin
+              key={sk.id}
+              skin={sk}
+              possede={possedeSkin(stats, sk.id)}
+              equipe={stats.skinEquipe === sk.id}
+              pieces={stats.pieces}
+              onAcheter={() => {
+                onAcheterSkin(sk.id);
+                setMerci(tr('{e} Skin « {n} » acheté et équipé !', '{e} “{n}” skin bought and equipped!', { e: sk.emoji, n: nomSkin(sk) }));
+              }}
+              onEquiper={() => onEquiperSkin(sk.id)}
+            />
+          ))}
+        </View>
         {merci !== '' && <Text style={styles.merci}>{merci}</Text>}
       </ScrollView>
+    </View>
+  );
+}
+
+function CarteSkin({
+  skin,
+  possede,
+  equipe,
+  pieces,
+  onAcheter,
+  onEquiper,
+}: {
+  skin: Skin;
+  possede: boolean;
+  equipe: boolean;
+  pieces: number;
+  onAcheter: () => void;
+  onEquiper: () => void;
+}) {
+  const evenement = skin.origine === 'evenement';
+  const trop = !possede && !evenement && pieces < skin.prix;
+  return (
+    <View style={[styles.carteSkin, equipe && styles.carteSkinEquipee]}>
+      <View style={!possede && evenement ? styles.apercuVerrou : undefined}>
+        <CorpsMascotte largeur={84} hauteur={80} skin={skin.id} />
+      </View>
+      <Text style={styles.skinNom} numberOfLines={1}>
+        {skin.emoji} {nomSkin(skin)}
+      </Text>
+      {equipe ? (
+        <Text style={styles.skinEquipe}>{tr('✓ Équipé', '✓ Equipped')}</Text>
+      ) : possede ? (
+        <TouchableOpacity style={styles.skinBouton} onPress={onEquiper} activeOpacity={0.85}>
+          <Text style={styles.acheterTexte}>{tr('Équiper', 'Equip')}</Text>
+        </TouchableOpacity>
+      ) : evenement ? (
+        <Text style={styles.skinVerrou}>🔒 {tr('Terminez l’événement', 'Complete the event')}</Text>
+      ) : (
+        <TouchableOpacity style={[styles.skinBouton, trop && styles.acheterInactif]} onPress={onAcheter} disabled={trop} activeOpacity={0.85}>
+          <Text style={styles.acheterTexte}>🪙 {skin.prix}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -151,5 +262,14 @@ const styles = StyleSheet.create({
   acheter: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingHorizontal: 14, paddingVertical: 11, marginLeft: 10 },
   acheterInactif: { opacity: 0.4 },
   acheterTexte: { color: '#1B1B1B', fontWeight: '800', fontSize: 15 },
+  section: { color: couleurs.accent, fontSize: 13, fontWeight: '800', letterSpacing: 1.1, textTransform: 'uppercase', marginTop: 14, marginBottom: 6, textAlign: 'center' },
+  grille: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  carteSkin: { width: '48%', backgroundColor: 'rgba(26,31,58,0.88)', borderRadius: rayon, borderWidth: 1, borderColor: couleurs.bordure, padding: 10, marginBottom: 12, alignItems: 'center' },
+  carteSkinEquipee: { borderColor: couleurs.accent, borderWidth: 2 },
+  apercuVerrou: { opacity: 0.35 },
+  skinNom: { color: couleurs.texte, fontSize: 14, fontWeight: '800', marginTop: 6 },
+  skinEquipe: { color: couleurs.succes, fontSize: 13, fontWeight: '800', marginTop: 8 },
+  skinVerrou: { color: couleurs.texteSecondaire, fontSize: 11, fontWeight: '600', marginTop: 8, textAlign: 'center' },
+  skinBouton: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingHorizontal: 16, paddingVertical: 8, marginTop: 8 },
   merci: { color: couleurs.succes, fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 8 },
 });

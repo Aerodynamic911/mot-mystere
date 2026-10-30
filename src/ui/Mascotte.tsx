@@ -3,12 +3,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { jouerEffet } from '../audio/effets';
 import CorpsMascotte from './CorpsMascotte';
+import { useSkin } from './SkinContext';
 
 /**
  * Cluby, la mascotte : une petite boîte-mystère qui flotte, cligne des yeux
  * et laisse s'échapper un point d'interrogation lumineux.
  */
 export default function Mascotte({ taille = 220 }: { taille?: number }) {
+  const skin = useSkin();
   const flotte = useRef(new Animated.Value(0)).current;
   const point = useRef(new Animated.Value(0)).current;
   const [yeuxFermes, setYeuxFermes] = useState(false);
@@ -135,7 +137,7 @@ export default function Mascotte({ taille = 220 }: { taille?: number }) {
           ],
         }}
       >
-        <CorpsMascotte largeur={l} hauteur={l * 0.95} yeuxFermes={yeuxFermes || content} />
+        <CorpsMascotte largeur={l} hauteur={l * 0.95} yeuxFermes={yeuxFermes || content} skin={skin} />
       </Animated.View>
 
       {ETINCELLES.map((et, i) => (

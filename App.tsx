@@ -41,7 +41,9 @@ import { cartesMeritees, chargerCollection, sauverCollection } from './src/game/
 import Aventure from './src/screens/Aventure';
 import Boutique from './src/screens/Boutique';
 import Collection from './src/screens/Collection';
-import { acheterGlacon, acheterJoker } from './src/game/boutique';
+import { acheterGlacon, acheterJoker, acheterJokerPasser, acheterJokerTemps, acheterSkin, equiperSkin } from './src/game/boutique';
+import { skinDEvenement, skinParId } from './src/game/skins';
+import { SkinContext } from './src/ui/SkinContext';
 import RecompenseModal, { Recompense } from './src/ui/RecompenseModal';
 import EvenementCarte from './src/screens/EvenementCarte';
 import Game from './src/screens/Game';
@@ -240,6 +242,20 @@ function Application() {
     sauverStats(apres);
   }
 
+  function utiliserJokerTemps() {
+    if (stats.jokersTemps <= 0) return;
+    const s2 = { ...stats, jokersTemps: stats.jokersTemps - 1 };
+    setStats(s2);
+    sauverStats(s2);
+  }
+
+  function utiliserJokerPasser() {
+    if (stats.jokersPasser <= 0) return;
+    const s2 = { ...stats, jokersPasser: stats.jokersPasser - 1 };
+    setStats(s2);
+    sauverStats(s2);
+  }
+
   function utiliserJoker() {
     if (stats.jokers <= 0) return;
     const s2 = { ...stats, jokers: stats.jokers - 1, jokersUtilises: stats.jokersUtilises + 1 };
@@ -336,6 +352,7 @@ function Application() {
   }
 
   return (
+    <SkinContext.Provider value={stats.skinEquipe}>
     <View style={[styles.racine, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <StatusBar style="light" />
       {ecran.nom === 'accueil' && (
@@ -517,7 +534,18 @@ function Application() {
               changerProgression(apres);
               setEtapeAnimee({ id: ecran.id, etape: ecran.etape });
             }
-            finDePartie('evenement', propositions, gagne, apres);
+            // Dernière étape réussie : le skin de l'événement est offert (une seule fois).
+            const idEvt = ecran.id;
+            const skinOffert = gagne && evenementDe(apres, idEvt).faites >= NB_ETAPES ? skinDEvenement(idEvt) : undefined;
+            const nouveauSkin = skinOffert && !stats.skins.includes(skinOffert.id) ? skinOffert : undefined;
+            finDePartie(
+              'evenement',
+              propositions,
+              gagne,
+              apres,
+              nouveauSkin ? (st) => ({ stats: { ...st, skins: [...st.skins, nouveauSkin.id] }, bonus: null }) : undefined,
+            );
+            if (nouveauSkin) setTimeout(() => setRecompenses((r) => [...r, { type: 'skin' as const, skin: nouveauSkin }]), 2200);
           }}
           onRetour={() => setEcran({ nom: 'evenement', id: ecran.id })}
           // Après une victoire on repasse par la carte : l'étape se coche et la suivante s'illumine.
@@ -564,6 +592,10 @@ function Application() {
           cle={cle}
           onAcheterJoker={() => acheter(acheterJoker(stats, cle))}
           onAcheterGlacon={() => acheter(acheterGlacon(stats, cle))}
+          onAcheterJokerTemps={() => acheter(acheterJokerTemps(stats))}
+          onAcheterJokerPasser={() => acheter(acheterJokerPasser(stats))}
+          onAcheterSkin={(id) => acheter(acheterSkin(stats, skinParId(id)))}
+          onEquiperSkin={(id) => acheter(equiperSkin(stats, id))}
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
       )}
@@ -582,6 +614,8 @@ function Application() {
         <Sprint
           age={prefs.age}
           record={stats.recordSprint}
+          jokersTemps={stats.jokersTemps}
+          onJokerTemps={utiliserJokerTemps}
           onPartage={partageFait}
           onRetour={() => setEcran({ nom: 'accueil' })}
           onTerminee={({ points, trouves }) => {
@@ -599,6 +633,8 @@ function Application() {
       {ecran.nom === 'vf' && (
         <VraiFaux
           meilleur={stats.vfMeilleur}
+          jokersPasser={stats.jokersPasser}
+          onJokerPasser={utiliserJokerPasser}
           onPartage={partageFait}
           onRetour={() => setEcran({ nom: 'accueil' })}
           onTerminee={({ bonnes, total }) => {
@@ -658,6 +694,7 @@ function Application() {
         onFermer={() => setRecompenses((r) => r.slice(1))}
       />
     </View>
+    </SkinContext.Provider>
   );
 }
 

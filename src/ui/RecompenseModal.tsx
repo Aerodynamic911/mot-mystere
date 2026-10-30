@@ -3,12 +3,18 @@ import { Animated, Easing, Modal, StyleSheet, Text, TouchableOpacity, View } fro
 import { jouerEffet } from '../audio/effets';
 import { Carte } from '../data/cartes';
 import { Bonus } from '../game/bonus';
+import { Skin, nomSkin } from '../game/skins';
+import CorpsMascotte from './CorpsMascotte';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import CarteVisuelle from './CarteVisuelle';
 import Eclat from './Eclat';
 
-export type Recompense = { type: 'carte'; carte: Carte } | { type: 'bonus'; bonus: Bonus } | { type: 'glacon'; serie: number };
+export type Recompense =
+  | { type: 'carte'; carte: Carte }
+  | { type: 'bonus'; bonus: Bonus }
+  | { type: 'glacon'; serie: number }
+  | { type: 'skin'; skin: Skin };
 
 interface Props {
   recompense: Recompense | null;
@@ -26,7 +32,9 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
       ? recompense.carte.id
       : recompense.type === 'glacon'
         ? `glacon-${recompense.serie}`
-        : `bonus-${recompense.bonus.origine}-${recompense.bonus.serie}`
+        : recompense.type === 'skin'
+          ? `skin-${recompense.skin.id}`
+          : `bonus-${recompense.bonus.origine}-${recompense.bonus.serie}`
     : '';
 
   useEffect(() => {
@@ -54,6 +62,21 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
               </View>
             </Animated.View>
             <Text style={styles.sous}>{tr('Retrouvez-la dans votre collection.', 'Find it in your collection.')}</Text>
+          </>
+        )}
+        {recompense?.type === 'skin' && (
+          <>
+            <Text style={styles.titre}>🎉 {tr('Nouveau skin !', 'New skin!')}</Text>
+            <Animated.View style={[styles.bonus, { transform: [{ scale: echelle }] }]}>
+              <CorpsMascotte largeur={190} hauteur={180} skin={recompense.skin.id} />
+              <Text style={styles.bonusSerie}>
+                {recompense.skin.emoji} {nomSkin(recompense.skin)}
+              </Text>
+              <View pointerEvents="none" style={styles.centre}>
+                <Eclat valeur={eclat} rayon={130} />
+              </View>
+            </Animated.View>
+            <Text style={styles.sous}>{tr('Récompense de l’événement. Équipez-le dans la boutique !', 'Event reward. Equip it in the shop!')}</Text>
           </>
         )}
         {recompense?.type === 'glacon' && (

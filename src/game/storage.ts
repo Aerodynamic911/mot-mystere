@@ -60,6 +60,12 @@ export interface Stats {
   vfTotal: number;
   /** Boss vaincus depuis le début. */
   bossVaincus: number;
+  /** Skins de mascotte possédés et skin équipé. */
+  skins: string[];
+  skinEquipe: string;
+  /** Jokers spécifiques : +10 secondes au Sprint, et passer une question de Vrai ou faux. */
+  jokersTemps: number;
+  jokersPasser: number;
 }
 
 export interface EtatDuJour {
@@ -102,6 +108,10 @@ export const STATS_VIDES: Stats = {
   vfBonnes: 0,
   vfTotal: 0,
   bossVaincus: 0,
+  skins: ['classique'],
+  skinEquipe: 'classique',
+  jokersTemps: 0,
+  jokersPasser: 0,
 };
 
 export async function chargerStats(): Promise<Stats> {
