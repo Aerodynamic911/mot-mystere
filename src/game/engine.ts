@@ -24,7 +24,42 @@ export function estCorrect(mystere: Mystere, proposition: string): boolean {
   if (proposition === PASSE) return false;
   const p = normaliser(proposition);
   if (!p) return false;
-  return [mystere.reponse, ...mystere.alias].some((a) => normaliser(a) === p);
+  return [mystere.reponse, ...mystere.alias].some((a) => memeReponse(normaliser(a), p));
+}
+
+/** Distance d'édition (Levenshtein avec inversion de lettres) entre deux chaînes. */
+function distance(a: string, b: string): number {
+  if (a === b) return 0;
+  const m: number[][] = [];
+  for (let i = 0; i <= a.length; i++) {
+    m[i] = [i];
+    for (let j = 1; j <= b.length; j++) {
+      if (i === 0) {
+        m[i][j] = j;
+        continue;
+      }
+      m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      // lettres inversées (« tiger » pour « tigre ») : une seule faute
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        m[i][j] = Math.min(m[i][j], m[i - 2][j - 2] + 1);
+      }
+    }
+  }
+  return m[a.length][b.length];
+}
+
+/**
+ * Accepte une faute de frappe ou d'orthographe sur une réponse assez longue :
+ * 0 faute jusqu'à 4 lettres, 1 faute de 5 à 8 lettres, 2 fautes au-delà de 8.
+ * Les réponses avec des chiffres (dates, nombres) restent exactes.
+ */
+function memeReponse(attendu: string, propose: string): boolean {
+  if (attendu === propose) return true;
+  if (/[0-9]/.test(attendu) || /[0-9]/.test(propose)) return false;
+  const n = attendu.replace(/ /g, '').length;
+  const tolerance = n <= 4 ? 0 : n <= 8 ? 1 : 2;
+  if (tolerance === 0) return false;
+  return distance(attendu, propose) <= tolerance;
 }
 
 /** Clé de jour locale, au format AAAA-MM-JJ. */
