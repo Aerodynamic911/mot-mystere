@@ -11,7 +11,10 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.occitangames.quizzle",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "fr",
+        "CFBundleLocalizations": ["fr", "en"],
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
