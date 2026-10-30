@@ -30,6 +30,13 @@ export function piecesSprint(points: number): number {
   return Math.min(40, Math.round(points / 2));
 }
 
+/** Une ligne du récapitulatif de fin de manche. */
+interface LigneBilan {
+  reponse: string;
+  anecdote: string;
+  etat: 'trouve' | 'passe' | 'temps';
+}
+
 export interface ResultatSprint {
   points: number;
   trouves: number;
@@ -73,10 +80,18 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
   const trouvesRef = useRef(0);
   const dejaFini = useRef(false);
   const essayes = useRef<string[]>([]);
+  const bilanRef = useRef<LigneBilan[]>([]);
+  const [bilan, setBilan] = useState<LigneBilan[]>([]);
   const champ = useRef<TextInput>(null);
 
   const brut = ordre[rang % ordre.length];
   const mystere = useMemo(() => localiser(brut), [brut]);
+  const courantRef = useRef(mystere);
+  courantRef.current = mystere;
+
+  function noter(etat: LigneBilan['etat'], m: Mystere = courantRef.current) {
+    bilanRef.current.push({ reponse: m.reponse, anecdote: m.anecdote ?? '', etat });
+  }
 
   function demarrer() {
     setOrdre(melangerHasard(poolPour(age)));
@@ -88,6 +103,8 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
     setBandeau(null);
     setMalus(0);
     setResultat(null);
+    setBilan([]);
+    bilanRef.current = [];
     pointsRef.current = 0;
     trouvesRef.current = 0;
     dejaFini.current = false;
@@ -101,6 +118,8 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
   function terminer() {
     if (dejaFini.current) return;
     dejaFini.current = true;
+    noter('temps'); // le mystère en cours quand le temps est écoulé
+    setBilan([...bilanRef.current]);
     const r = onTerminee({ points: pointsRef.current, trouves: trouvesRef.current });
     setResultat(r);
     setPhase('fin');
@@ -155,6 +174,7 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
       trouvesRef.current += 1;
       setPoints(pointsRef.current);
       setTrouves(trouvesRef.current);
+      noter('trouve');
       setBandeau({ texte: `✓ ${mystere.reponse}  +${gain}`, ok: true });
       jouerEffet('pop');
       suivant();
@@ -178,6 +198,7 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
   function passer() {
     setBandeau({ texte: `${tr('C’était', 'It was')} : ${mystere.reponse}`, ok: false });
     retirer(PENALITE_PASSER);
+    noter('passe');
     suivant();
     setTimeout(() => champ.current?.focus(), 0);
   }
@@ -236,6 +257,22 @@ export default function Sprint({ age, record, onTerminee, onPartage, onRetour }:
           <TouchableOpacity style={styles.go} onPress={demarrer} activeOpacity={0.85}>
             <Text style={styles.goTexte}>{tr('Rejouer', 'Play again')}</Text>
           </TouchableOpacity>
+          {bilan.length > 0 && (
+            <View style={styles.bilan}>
+              <Text style={styles.bilanTitre}>{tr('Récapitulatif des réponses', 'Answers recap')}</Text>
+              {bilan.map((l, i) => (
+                <View key={i} style={styles.bilanLigne}>
+                  <Text style={styles.bilanReponse}>
+                    {l.etat === 'trouve' ? '✅' : l.etat === 'passe' ? '⏭' : '⏱'} {l.reponse}
+                  </Text>
+                  {l.etat !== 'trouve' && (
+                    <Text style={styles.bilanEtat}>{l.etat === 'passe' ? tr('Passé', 'Skipped') : tr('Pas trouvé à temps', 'Not found in time')}</Text>
+                  )}
+                  {!!l.anecdote && <Text style={styles.bilanAnecdote}>{l.anecdote}</Text>}
+                </View>
+              ))}
+            </View>
+          )}
           <TouchableOpacity style={[styles.go, styles.secondaire]} onPress={partager} activeOpacity={0.85}>
             <Text style={styles.secondaireTexte}>📤 {tr('Partager mon score', 'Share my score')}</Text>
           </TouchableOpacity>
@@ -333,6 +370,12 @@ const styles = StyleSheet.create({
   nouveauRecord: { color: couleurs.succes, fontSize: 18, fontWeight: '800', marginTop: 10 },
   recordFin: { color: couleurs.texteSecondaire, fontSize: 15, marginTop: 10 },
   pieces: { color: couleurs.accent, fontSize: 24, fontWeight: '900', marginTop: 12 },
+  bilan: { alignSelf: 'stretch', marginTop: 26 },
+  bilanTitre: { color: couleurs.accent, fontSize: 13, fontWeight: '800', letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 10 },
+  bilanLigne: { backgroundColor: couleurs.carte, borderRadius: rayon, borderWidth: 1, borderColor: couleurs.bordure, padding: 12, marginBottom: 8 },
+  bilanReponse: { color: couleurs.texte, fontSize: 16, fontWeight: '800' },
+  bilanEtat: { color: couleurs.texteSecondaire, fontSize: 12, marginTop: 2 },
+  bilanAnecdote: { color: couleurs.texteSecondaire, fontSize: 13, lineHeight: 18, marginTop: 6 },
   entete: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
   retour: { color: couleurs.texteSecondaire, fontSize: 16, width: 90 },
   chrono: { color: couleurs.texte, fontSize: 22, fontWeight: '900' },
