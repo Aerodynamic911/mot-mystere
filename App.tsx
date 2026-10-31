@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
-import { Share, StyleSheet, View } from 'react-native';
+import { Linking, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
 import { LIEN_PARTAGE } from './src/game/partage';
 import { Bonus } from './src/game/bonus';
-import { DELAI_AVIS_MS, MomentAvis, demanderAvisNatif, doitDemanderAvis } from './src/game/avis';
+import { DELAI_AVIS_MS, MomentAvis, bandeauAvisMasque, bandeauAvisVisible, demanderAvisNatif, doitDemanderAvis, masquerBandeauAvis } from './src/game/avis';
+import { LIEN_AVIS } from './src/config';
 import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
 import EntreAmis from './src/ui/EntreAmis';
 import { Mystere } from './src/data/mysteres';
@@ -118,6 +119,7 @@ function Application() {
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const ecranRef = useRef(ecran);
   ecranRef.current = ecran;
+  const [avisMasque, setAvisMasque] = useState(true);
   const [amisOuvert, setAmisOuvert] = useState(false);
   // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
   definirLangue(prefs.langue);
@@ -141,6 +143,7 @@ function Application() {
         chargerQuetes(),
       ]);
       quetesRef.current = qu;
+      setAvisMasque(await bandeauAvisMasque());
       setQuetes(qu);
       setStats(s);
       setJour(j);
@@ -264,6 +267,17 @@ function Application() {
     if (r.bonus) setTimeout(() => setRecompenses((l) => [...l, { type: 'bonus' as const, bonus: r.bonus! }]), 800);
   }
 
+  /** Bandeau de l'accueil : ouvre la page d'avis du store, puis ne revient plus. */
+  function donnerMonAvis() {
+    Linking.openURL(LIEN_AVIS).catch(() => {});
+    fermerBandeauAvis();
+  }
+
+  function fermerBandeauAvis() {
+    setAvisMasque(true);
+    masquerBandeauAvis();
+  }
+
   async function inviterUnAmi() {
     const message = tr(
       "Je joue à Quizzle, un jeu de mystères et de culture générale : on devine à partir d'indices ! Viens essayer, et dis-moi combien d'essais il te faut. 🔎",
@@ -370,6 +384,9 @@ function Application() {
           quetesARecuperer={nbARecuperer(quetes, cle, imagesDispo)}
           onQuetes={() => setEcran({ nom: 'quetes' })}
           onSprint={() => setEcran({ nom: 'sprint' })}
+          avisVisible={LIEN_AVIS !== '' && bandeauAvisVisible(stats, avisMasque)}
+          onAvis={donnerMonAvis}
+          onFermerAvis={fermerBandeauAvis}
           onVraiFaux={() => setEcran({ nom: 'vf' })}
           onImage={imagesDispo ? () => lancerImage(0) : undefined}
         />

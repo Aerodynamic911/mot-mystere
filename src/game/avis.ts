@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as StoreReview from 'expo-store-review';
 import type { Stats } from './storage';
 
@@ -37,4 +38,28 @@ export async function demanderAvisNatif(): Promise<void> {
   } catch {
     // Pas disponible (émulateur, boutique absente) : on ignore.
   }
+}
+
+const CLE_BANDEAU = 'motmystere:avisBandeau';
+
+/** Le bandeau « Donner mon avis » de l'accueil a-t-il été fermé, ou son bouton touché ? Alors on ne le remontre plus. */
+export async function bandeauAvisMasque(): Promise<boolean> {
+  try {
+    return (await AsyncStorage.getItem(CLE_BANDEAU)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export async function masquerBandeauAvis(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(CLE_BANDEAU, '1');
+  } catch {
+    // Non enregistré : le bandeau reviendra au prochain lancement, ce n'est pas grave.
+  }
+}
+
+/** Le bandeau de l'accueil est proposé une fois le joueur lancé (quelques parties) et tant qu'il ne l'a pas écarté. */
+export function bandeauAvisVisible(stats: Stats, masque: boolean): boolean {
+  return !masque && partiesJouees(stats) >= PARTIES_MIN;
 }
