@@ -7,7 +7,7 @@ import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
 import { LIEN_PARTAGE } from './src/game/partage';
 import { Bonus, CADEAU_MERCI, PARTIES_CADEAU_MERCI } from './src/game/bonus';
-import { DELAI_AVIS_MS, MomentAvis, bandeauAvisMasque, bandeauAvisVisible, demanderAvisNatif, doitDemanderAvis, masquerBandeauAvis, partiesJouees } from './src/game/avis';
+import { DELAI_AVIS_MS, MomentAvis, EtatAvis, bandeauAvisVisible, boutonAvisVisible, chargerEtatAvis, demanderAvisNatif, doitDemanderAvis, partiesJouees, sauverEtatAvis } from './src/game/avis';
 import { LIEN_AVIS } from './src/config';
 import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
 import EntreAmis from './src/ui/EntreAmis';
@@ -119,7 +119,7 @@ function Application() {
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
   const ecranRef = useRef(ecran);
   ecranRef.current = ecran;
-  const [avisMasque, setAvisMasque] = useState(true);
+  const [etatAvis, setEtatAvis] = useState<EtatAvis>('ouvert');
   const [amisOuvert, setAmisOuvert] = useState(false);
   // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
   definirLangue(prefs.langue);
@@ -143,7 +143,7 @@ function Application() {
         chargerQuetes(),
       ]);
       quetesRef.current = qu;
-      setAvisMasque(await bandeauAvisMasque());
+      setEtatAvis(await chargerEtatAvis());
       setQuetes(qu);
       setStats(s);
       setJour(j);
@@ -278,19 +278,22 @@ function Application() {
     if (r.bonus) setTimeout(() => setRecompenses((l) => [...l, { type: 'bonus' as const, bonus: r.bonus! }]), 800);
   }
 
-  /** Bandeau de l'accueil : ouvre la page d'avis du store, puis ne revient plus. */
+  /** Bandeau de l'accueil ou fin de partie : ouvre la page d'avis du store, puis on ne propose plus. */
   function donnerMonAvis() {
     Linking.openURL(LIEN_AVIS).catch(() => {});
-    fermerBandeauAvis();
+    setEtatAvis('ouvert');
+    sauverEtatAvis('ouvert');
   }
 
-  // Bouton de fin de partie gagnée : tant que le joueur n'a pas déjà été invité (bandeau ou bouton).
-  const avisFinPartie = LIEN_AVIS !== '' && bandeauAvisVisible(stats, avisMasque) ? donnerMonAvis : undefined;
-
+  /** Croix du bandeau : « pas maintenant ». Le bouton de fin de partie gagnée reste proposé. */
   function fermerBandeauAvis() {
-    setAvisMasque(true);
-    masquerBandeauAvis();
+    if (etatAvis === 'ouvert') return;
+    setEtatAvis('ferme');
+    sauverEtatAvis('ferme');
   }
+
+  // Bouton de fin de partie gagnée.
+  const avisFinPartie = LIEN_AVIS !== '' && boutonAvisVisible(stats, etatAvis) ? donnerMonAvis : undefined;
 
   async function inviterUnAmi() {
     const message = tr(
@@ -398,7 +401,7 @@ function Application() {
           quetesARecuperer={nbARecuperer(quetes, cle, imagesDispo)}
           onQuetes={() => setEcran({ nom: 'quetes' })}
           onSprint={() => setEcran({ nom: 'sprint' })}
-          avisVisible={LIEN_AVIS !== '' && bandeauAvisVisible(stats, avisMasque)}
+          avisVisible={LIEN_AVIS !== '' && bandeauAvisVisible(stats, etatAvis)}
           onAvis={donnerMonAvis}
           onFermerAvis={fermerBandeauAvis}
           onVraiFaux={() => setEcran({ nom: 'vf' })}

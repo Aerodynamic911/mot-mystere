@@ -42,24 +42,37 @@ export async function demanderAvisNatif(): Promise<void> {
 
 const CLE_BANDEAU = 'motmystere:avisBandeau';
 
-/** Le bandeau « Donner mon avis » de l'accueil a-t-il été fermé, ou son bouton touché ? Alors on ne le remontre plus. */
-export async function bandeauAvisMasque(): Promise<boolean> {
+/**
+ * Où en est l'invitation à laisser un avis ?
+ * - « aucun » : le joueur n'a encore rien fait ;
+ * - « ferme » : il a fermé le bandeau de l'accueil (« pas maintenant ») : le bandeau disparaît, mais le bouton de fin de partie gagnée reste ;
+ * - « ouvert » : il a touché un bouton d'avis (page du store ouverte) : plus aucune invitation.
+ */
+export type EtatAvis = 'aucun' | 'ferme' | 'ouvert';
+
+export async function chargerEtatAvis(): Promise<EtatAvis> {
   try {
-    return (await AsyncStorage.getItem(CLE_BANDEAU)) === '1';
+    const v = await AsyncStorage.getItem(CLE_BANDEAU);
+    return v === 'ouvert' ? 'ouvert' : v === '1' || v === 'ferme' ? 'ferme' : 'aucun';
   } catch {
-    return false;
+    return 'aucun';
   }
 }
 
-export async function masquerBandeauAvis(): Promise<void> {
+export async function sauverEtatAvis(etat: EtatAvis): Promise<void> {
   try {
-    await AsyncStorage.setItem(CLE_BANDEAU, '1');
+    await AsyncStorage.setItem(CLE_BANDEAU, etat);
   } catch {
-    // Non enregistré : le bandeau reviendra au prochain lancement, ce n'est pas grave.
+    // Non enregistré : l'invitation reviendra au prochain lancement, ce n'est pas grave.
   }
 }
 
-/** Le bandeau de l'accueil est proposé une fois le joueur lancé (quelques parties) et tant qu'il ne l'a pas écarté. */
-export function bandeauAvisVisible(stats: Stats, masque: boolean): boolean {
-  return !masque && partiesJouees(stats) >= PARTIES_MIN;
+/** Le bandeau de l'accueil : une fois le joueur lancé (quelques parties), tant qu'il n'y a pas touché ni fermé. */
+export function bandeauAvisVisible(stats: Stats, etat: EtatAvis): boolean {
+  return etat === 'aucun' && partiesJouees(stats) >= PARTIES_MIN;
+}
+
+/** Le bouton de fin de partie gagnée : tant que le joueur n'a pas ouvert la page d'avis. */
+export function boutonAvisVisible(stats: Stats, etat: EtatAvis): boolean {
+  return etat !== 'ouvert' && partiesJouees(stats) >= PARTIES_MIN;
 }
