@@ -7,8 +7,7 @@ import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
 import { LIEN_PARTAGE } from './src/game/partage';
 import { Bonus } from './src/game/bonus';
-import * as StoreReview from 'expo-store-review';
-import { doitDemanderAvis } from './src/game/avis';
+import { DELAI_AVIS_MS, MomentAvis, demanderAvisNatif, doitDemanderAvis } from './src/game/avis';
 import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
 import EntreAmis from './src/ui/EntreAmis';
 import { Mystere } from './src/data/mysteres';
@@ -117,6 +116,8 @@ function Application() {
   const imagesDispo = imagesDisponibles();
   const imagesVues = useRef<string[]>([]);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
+  const ecranRef = useRef(ecran);
+  ecranRef.current = ecran;
   const [amisOuvert, setAmisOuvert] = useState(false);
   // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
   definirLangue(prefs.langue);
@@ -169,6 +170,20 @@ function Application() {
   }
 
   /**
+   * Si le moment s'y prête, programme la fenêtre de notation native et renvoie les statistiques à jour
+   * (la demande est comptée tout de suite : une seule par appareil). Elle n'apparaît que si le joueur
+   * est toujours sur l'écran de fin de partie, jamais au milieu d'une autre partie.
+   */
+  function proposerAvis(st: Stats, moment: MomentAvis): Stats {
+    if (!doitDemanderAvis(st, moment)) return st;
+    const ecranDeFin = ecranRef.current.nom;
+    setTimeout(() => {
+      if (ecranRef.current.nom === ecranDeFin) demanderAvisNatif();
+    }, DELAI_AVIS_MS);
+    return { ...st, avisDemandes: st.avisDemandes + 1, dernierAvis: cle };
+  }
+
+  /**
    * Fin d'une partie, quel que soit le mode : statistiques, bonus de série et cartes gagnées.
    * `progApres` est la progression une fois la partie prise en compte.
    */
@@ -185,17 +200,8 @@ function Application() {
     const serieAvant = partie.stats.serie;
     const extra = supplement ? supplement(partie.stats) : { stats: partie.stats, bonus: null };
     let nouvellesStats = extra.stats;
-    // Après une victoire, on propose de noter l'appli (fenêtre native, rarement).
-    if (gagne && doitDemanderAvis(nouvellesStats, cle)) {
-      nouvellesStats = { ...nouvellesStats, avisDemandes: nouvellesStats.avisDemandes + 1, dernierAvis: cle };
-      setTimeout(async () => {
-        try {
-          if (await StoreReview.isAvailableAsync()) await StoreReview.requestReview();
-        } catch {
-          // Pas disponible (émulateur, boutique absente) : on ignore.
-        }
-      }, 4500);
-    }
+    // Après une victoire en série, on propose de noter l'appli (une seule fois par appareil).
+    if (gagne) nouvellesStats = proposerAvis(nouvellesStats, 'victoire');
     const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : partie.bonus;
     setStats(nouvellesStats);
     sauverStats(nouvellesStats);
@@ -587,7 +593,9 @@ function Application() {
           onTerminee={({ points, trouves }) => {
             const record = points > stats.recordSprint;
             const pieces = piecesSprint(points);
-            const s2 = { ...stats, sprints: stats.sprints + 1, recordSprint: Math.max(stats.recordSprint, points), pieces: stats.pieces + pieces };
+            const s1 = { ...stats, sprints: stats.sprints + 1, recordSprint: Math.max(stats.recordSprint, points), pieces: stats.pieces + pieces };
+            // Le récap du Sprint s'affiche : un moment de réussite pour proposer de noter l'appli.
+            const s2 = proposerAvis(s1, 'sprint');
             setStats(s2);
             sauverStats(s2);
             evenementQuete({ type: 'sprint', trouves, points });
