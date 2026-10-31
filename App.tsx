@@ -5,7 +5,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
-import { LIEN_APP } from './src/config';
+import { LIEN_PARTAGE } from './src/game/partage';
 import { Bonus } from './src/game/bonus';
 import * as StoreReview from 'expo-store-review';
 import { doitDemanderAvis } from './src/game/avis';
@@ -264,7 +264,7 @@ function Application() {
       "I'm playing Quizzle, a mystery and general-knowledge game: you guess from clues! Come and try it, and tell me how many attempts you need. 🔎",
     );
     try {
-      const r = await Share.share({ message: LIEN_APP ? `${message}\n${LIEN_APP}` : message });
+      const r = await Share.share({ message: `${message}\n👉 ${LIEN_PARTAGE}` });
       if (r.action === Share.sharedAction) partageFait();
     } catch {
       // Partage annulé.

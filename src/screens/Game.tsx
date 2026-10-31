@@ -16,7 +16,8 @@ import {
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { MAX_ESSAIS, PASSE, estCorrect, normaliser } from '../game/engine';
-import { LIEN_APP, PARTAGES_PAR_JOKER } from '../config';
+import { PARTAGES_PAR_JOKER } from '../config';
+import { LIEN_PARTAGE, messagePartage } from '../game/partage';
 import { Difficulte, INDICES_DE_BASE } from '../game/preferences';
 import { gainPieces } from '../game/boutique';
 import { genererCode } from '../game/social';
@@ -216,9 +217,13 @@ export default function Game({
       propositions.map((p) => (p === PASSE ? '🟨' : estCorrect(mystere, p) ? '🟩' : '🟥')).join('') +
       '⬛'.repeat(Math.max(0, maxEssais - propositions.length));
     const entete = libellePartage ?? (numero ? `Quizzle ${tr('n°', 'No.')}${numero}` : 'Quizzle');
-    const resultat = gagne ? `${score}/${maxEssais}` : `X/${maxEssais}`;
+    const phrase = gagne
+      ? tr('🎉 J’ai trouvé ! Score : {s}/{m}', '🎉 I got it! Score: {s}/{m}', { s: score, m: maxEssais })
+      : tr('😅 Celle-là m’a résisté… Et vous, vous la trouvez ?', '😅 This one beat me… Can you get it?');
     try {
-      const r = await Share.share({ message: `${entete} ${resultat}\n${carres}` });
+      const r = await Share.share({
+        message: messagePartage(`🧠 ${entete}\n${phrase}\n${carres}\n${tr('🟩 trouvé · 🟨 passé · 🟥 raté', '🟩 found · 🟨 skipped · 🟥 missed')}`),
+      });
       if (r.action === Share.sharedAction) onPartage?.();
     } catch {
       // Partage annulé : rien à faire.
@@ -241,7 +246,7 @@ export default function Game({
           { code },
         );
     try {
-      const r = await Share.share({ message: LIEN_APP ? `${message}\n${LIEN_APP}` : message });
+      const r = await Share.share({ message: `${message}\n👉 ${LIEN_PARTAGE}` });
       if (r.action === Share.sharedAction) onPartage?.();
     } catch {
       // Partage annulé.

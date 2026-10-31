@@ -3,6 +3,7 @@ import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { jouerEffet } from '../audio/effets';
 import { Affirmation, NB_PAR_SERIE, tirerSerie } from '../data/vraifaux';
 import { tr } from '../i18n';
+import { messagePartage } from '../game/partage';
 import { couleurs, rayon } from '../theme';
 import EnteteEcran from '../ui/EnteteEcran';
 import FondAnime from '../ui/FondAnime';
@@ -67,10 +68,12 @@ export default function VraiFaux({ meilleur, onTerminee, onPartage, onRetour }: 
   async function partager() {
     try {
       const r = await Share.share({
-        message: tr(
-          'Quizzle ✅ Vrai ou faux : {b}/{t} ! Saurez-vous faire mieux ?',
-          'Quizzle ✅ True or false: {b}/{t}! Can you beat it?',
-          { b: bonnes, t: serie.length },
+        message: messagePartage(
+          tr(
+            '✅ Quizzle Vrai ou faux : {b}/{t} ! Saurez-vous faire mieux ?',
+            '✅ Quizzle True or false: {b}/{t}! Can you beat it?',
+            { b: bonnes, t: serie.length },
+          ),
         ),
       });
       if (r.action === Share.sharedAction) onPartage();
