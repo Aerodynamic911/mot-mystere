@@ -10,6 +10,9 @@ export const LIEN_PLAY_STORE = '';
 /** Lien de téléchargement de l'appli, ajouté aux messages d'invitation et de partage (celui du store de l'appareil). */
 export const LIEN_APP = Platform.OS === 'ios' ? LIEN_APP_STORE : LIEN_PLAY_STORE;
 
+/** Lien universel des partages : la page envoie chacun vers son store (iPhone, Android). Il ne change jamais : seule la page évolue. */
+export const LIEN_QUIZZLE = 'https://occitangames.com/quizzle';
+
 /** Page « Rédiger un avis » de l'App Store (ouvre directement l'écran d'avis). Vide si le store n'a pas de lien d'avis. */
 export const LIEN_AVIS = Platform.OS === 'ios' ? `${LIEN_APP_STORE}?action=write-review` : LIEN_PLAY_STORE;
 
