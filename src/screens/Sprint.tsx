@@ -7,6 +7,7 @@ import { SECONDES_JOKER_TEMPS } from '../game/boutique';
 import { estCorrect, normaliser } from '../game/engine';
 import type { TrancheAge } from '../game/preferences';
 import { localiser, tr } from '../i18n';
+import { messagePartage } from '../game/partage';
 import { couleurs, rayon } from '../theme';
 import EnteteEcran from '../ui/EnteteEcran';
 import FondAnime from '../ui/FondAnime';
@@ -220,10 +221,12 @@ export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTermi
   async function partager() {
     try {
       const r = await Share.share({
-        message: tr(
-          'Quizzle ⚡ Sprint : {p} points, {m} en {d} secondes. Saurez-vous faire mieux ?',
-          'Quizzle ⚡ Sprint: {p} points, {m} in {d} seconds. Can you beat it?',
-          { p: pointsRef.current, m: nbTrouves(trouvesRef.current), d: DUREE_SPRINT },
+        message: messagePartage(
+          tr(
+            '⚡ Quizzle Sprint : {p} points, {m} en {d} secondes. Saurez-vous faire mieux ?',
+            '⚡ Quizzle Sprint: {p} points, {m} in {d} seconds. Can you beat it?',
+            { p: pointsRef.current, m: nbTrouves(trouvesRef.current), d: DUREE_SPRINT },
+          ),
         ),
       });
       if (r.action === Share.sharedAction) onPartage();
