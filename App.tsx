@@ -273,6 +273,9 @@ function Application() {
     fermerBandeauAvis();
   }
 
+  // Bouton de fin de partie gagnée : tant que le joueur n'a pas déjà été invité (bandeau ou bouton).
+  const avisFinPartie = LIEN_AVIS !== '' && bandeauAvisVisible(stats, avisMasque) ? donnerMonAvis : undefined;
+
   function fermerBandeauAvis() {
     setAvisMasque(true);
     masquerBandeauAvis();
@@ -409,6 +412,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="jour"
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
@@ -440,6 +444,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="aventure"
           onTerminee={(propositions, gagne) => {
             let apres = prog;
@@ -475,6 +480,7 @@ function Application() {
             jokers={stats.jokers}
             onJoker={utiliserJoker}
             onPartage={partageFait}
+            onAvis={avisFinPartie}
             mode="aventure"
             onTerminee={(propositions, gagne) => {
               if (derniere(gagne)) {
@@ -532,6 +538,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="evenement"
           onTerminee={(propositions, gagne) => {
             let apres = prog;
@@ -563,6 +570,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="defi"
           onTerminee={(propositions, gagne) => finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined)}
           commentaireFin={(gagne, essais) => {
@@ -657,6 +665,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="image"
           onTerminee={(propositions, gagne) => finDePartie('image', propositions, gagne, prog)}
           onRetour={() => setEcran({ nom: 'accueil' })}
