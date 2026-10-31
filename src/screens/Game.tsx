@@ -234,19 +234,23 @@ export default function Game({
   async function defier() {
     const essais = gagne ? propositions.length : 0;
     const code = genererCode(mystereBrut.id, essais);
-    const message = gagne
+    const accroche = gagne
       ? tr(
-          '🎯 Défi Quizzle ! J\'ai trouvé en {n} essai{s}. Saurez-vous faire mieux ?\nCode du défi : {code}\nDans Quizzle, touchez « Entre amis » puis entrez le code.',
-          '🎯 Quizzle challenge! I found it in {n} attempt{s}. Can you do better?\nChallenge code: {code}\nIn Quizzle, tap “With friends” and enter the code.',
-          { n: essais, s: essais > 1 ? 's' : '', code },
+          '🎯 Je te défie sur Quizzle ! J’ai trouvé en {n} essai{s}… à toi de faire mieux 😏',
+          '🎯 I challenge you on Quizzle! I found it in {n} attempt{s}… your turn to beat that 😏',
+          { n: essais, s: essais > 1 ? 's' : '' },
         )
       : tr(
-          '🎯 Défi Quizzle ! Je n\'ai pas trouvé celui-là. Saurez-vous le résoudre ?\nCode du défi : {code}\nDans Quizzle, touchez « Entre amis » puis entrez le code.',
-          '🎯 Quizzle challenge! I couldn\'t find this one. Can you solve it?\nChallenge code: {code}\nIn Quizzle, tap “With friends” and enter the code.',
-          { code },
+          '🎯 Je te défie sur Quizzle ! Celui-là m’a battu… tu arriveras à le trouver ? 😏',
+          '🎯 I challenge you on Quizzle! This one beat me… think you can find it? 😏',
         );
+    const message = tr(
+      '{accroche}\n\n1️⃣ Télécharge Quizzle (gratuit, sans pub) :\n{lien}\n2️⃣ Touche « Entre amis »\n3️⃣ Entre le code : {code}\n\nTu auras exactement le même mystère que moi. Tu relèves le défi ?',
+      '{accroche}\n\n1️⃣ Download Quizzle (free, no ads):\n{lien}\n2️⃣ Tap “With friends”\n3️⃣ Enter the code: {code}\n\nYou’ll get exactly the same mystery as me. Challenge accepted?',
+      { accroche, lien: LIEN_PARTAGE, code },
+    );
     try {
-      const r = await Share.share({ message: `${message}\n👉 ${LIEN_PARTAGE}` });
+      const r = await Share.share({ message });
       if (r.action === Share.sharedAction) onPartage?.();
     } catch {
       // Partage annulé.
