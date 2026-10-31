@@ -4,11 +4,12 @@
 Usage : python3 build.py
 Les liens des boutiques sont à renseigner ci-dessous dès que l'appli est publiée.
 """
+import json
 import math
 import os
 
 # ── À renseigner à la publication ────────────────────────────────────────────
-LIEN_APP_STORE = ''      # ex. https://apps.apple.com/app/quizzle/id000000000
+LIEN_APP_STORE = 'https://apps.apple.com/fr/app/quizzle/id6826238020'
 LIEN_GOOGLE_PLAY = ''    # ex. https://play.google.com/store/apps/details?id=com.occitangames.quizzle
 SITE = 'https://occitangames.com'
 CONTACT = 'contact@occitangames.com'
@@ -63,13 +64,13 @@ TEXTES = {
     'fr': dict(
         lang='fr', racine='', autre_lang='en/', autre_nom='EN', autre_label='English version',
         titre='Quizzle, le jeu des mystères : devinez à partir d’indices',
-        description='Quizzle : six indices, une réponse. Un mystère par jour, une aventure sans fin, des événements mensuels et plus de 200 énigmes pour tous les âges. Bientôt sur iPhone et Android.',
+        description='Quizzle : six indices, une réponse. Un mystère par jour, une aventure sans fin, des événements mensuels et plus de 200 énigmes pour tous les âges. Gratuit sur iPhone, bientôt sur Android.',
         aller='Aller au contenu', nav_jouer='Essayer', nav_modes='Modes de jeu', nav_dl='Télécharger',
         h1='Six indices. Une seule réponse.',
         chapeau='Chaque énigme commence vague et devient de plus en plus précise. Moins vous demandez d’indices, plus votre score monte. Un mystère par jour, une aventure sans fin et plus de 200 énigmes.',
         bientot='Bientôt', dispo_ios='Télécharger sur l’', dispo_android='Disponible sur',
         note_bientot='Quizzle arrive bientôt sur iPhone et Android. Les liens de téléchargement apparaîtront ici dès la publication.',
-        note_dispo='Gratuit à télécharger.',
+        note_dispo='Gratuit à télécharger. La version Android arrive bientôt.',
         essai_intro='Une vraie énigme du jeu. Tapez votre réponse, ou demandez un indice.',
         modes_h='Trois façons de jouer',
         modes_p='Quelques minutes suffisent. Revenez chaque jour, ou enchaînez les niveaux.',
@@ -94,7 +95,7 @@ TEXTES = {
         p2_t='Des jokers', p2_p='Un indice offert, sans compter comme un essai.',
         p3_t='Des glaçons', p3_p='Ils gardent votre série au frais si vous manquez un jour.',
         p4_t='Des cartes à collectionner', p4_p='Elles récompensent votre progression.',
-        fin_h='Prêt à deviner ?', fin_p='Quizzle arrive bientôt sur iPhone et Android. Vos données restent sur votre téléphone : aucun compte à créer.',
+        fin_h='Prêt à deviner ?', fin_p='Quizzle est disponible sur iPhone, et arrive bientôt sur Android. Vos données restent sur votre téléphone : aucun compte à créer.',
         pied_pub='Quizzle est un jeu édité par Occitan Games.', conf='Confidentialité', ment='Mentions légales', contact='Contact',
         url_conf='confidentialite.html', url_ment='mentions-legales.html', url_home='',
         indice='Indice',
@@ -102,13 +103,13 @@ TEXTES = {
     'en': dict(
         lang='en', racine='../', autre_lang='../', autre_nom='FR', autre_label='Version française',
         titre='Quizzle, the mystery game: guess from the clues',
-        description='Quizzle: six clues, one answer. A daily mystery, an endless adventure, monthly events and over 200 riddles for every age. Coming soon to iPhone and Android.',
+        description='Quizzle: six clues, one answer. A daily mystery, an endless adventure, monthly events and over 200 riddles for every age. Free on iPhone, coming soon to Android.',
         aller='Skip to content', nav_jouer='Try it', nav_modes='Ways to play', nav_dl='Download',
         h1='Six clues. One answer.',
         chapeau='Every riddle starts vague and gets sharper with each clue. The fewer clues you ask for, the higher your score. A mystery every day, an endless adventure and over 200 riddles.',
         bientot='Coming soon', dispo_ios='Download on the ', dispo_android='Get it on',
         note_bientot='Quizzle is coming soon to iPhone and Android. Download links will appear here as soon as it is published.',
-        note_dispo='Free to download.',
+        note_dispo='Free to download. The Android version is coming soon.',
         essai_intro='A real riddle from the game. Type your answer, or ask for a clue.',
         modes_h='Three ways to play',
         modes_p='A few minutes is all it takes. Come back every day, or chain levels together.',
@@ -133,7 +134,7 @@ TEXTES = {
         p2_t='Jokers', p2_p='A free clue that does not count as an attempt.',
         p3_t='Ice cubes', p3_p='They keep your streak on ice if you miss a day.',
         p4_t='Collectible cards', p4_p='They reward your progress.',
-        fin_h='Ready to guess?', fin_p='Quizzle is coming soon to iPhone and Android. Your data stays on your phone: no account to create.',
+        fin_h='Ready to guess?', fin_p='Quizzle is available on iPhone and coming soon to Android. Your data stays on your phone: no account to create.',
         pied_pub='Quizzle is a game published by Occitan Games.', conf='Privacy', ment='Legal notice', contact='Contact',
         url_conf='privacy.html', url_ment='legal.html', url_home='',
         indice='Clue',
@@ -456,6 +457,40 @@ def page_texte(t, contenu, canon, chemin_autre):
     return html
 
 
+def page_lien():
+    """Lien universel /quizzle : envoie chacun vers son store (iPhone, Android) ; sinon, page avec les deux boutons.
+    C'est cette adresse que l'appli met dans ses messages de partage : elle ne change jamais, seule cette page évolue."""
+    t = dict(TEXTES['fr'], racine='../', url_conf='../confidentialite.html', url_ment='../mentions-legales.html')
+    t_en = TEXTES['en']
+    titre = 'Quizzle : télécharge le jeu des mystères, gratuit'
+    desc = 'Six indices, une seule réponse. Quizzle est gratuit, sans pub, et créé en famille. Télécharge-le sur iPhone (Android bientôt).'
+    html = ouverture_page(t, titre, desc, 'en/', 'quizzle')
+    html += entete(t, '../en/', accueil=False)
+    html += f'''<main id="contenu" class="page lien"><div class="conteneur" style="text-align:center">
+{mot_marque()}
+<h1><span data-l="fr">Télécharge Quizzle</span><span data-l="en" hidden>Download Quizzle</span></h1>
+<p class="chapeau" style="margin:14px auto 22px"><span data-l="fr">Six indices, une seule réponse. Gratuit, sans pub, créé en famille.</span><span data-l="en" hidden>Six clues, one answer. Free, no ads, made by a family.</span></p>
+<div id="telecharger">{boutiques(t)}</div>
+<p class="note" style="margin-top:16px"><span data-l="fr">{t['note_dispo'] if (LIEN_APP_STORE or LIEN_GOOGLE_PLAY) else t['note_bientot']}</span><span data-l="en" hidden>{t_en['note_dispo'] if (LIEN_APP_STORE or LIEN_GOOGLE_PLAY) else t_en['note_bientot']}</span></p>
+</div></main>
+<script>
+(function () {{
+  var ua = navigator.userAgent || '';
+  var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  var android = /Android/.test(ua);
+  var langue = ((navigator.language || 'fr') + '').slice(0, 2) === 'fr' ? 'fr' : 'en';
+  var nodes = document.querySelectorAll('[data-l]');
+  for (var i = 0; i < nodes.length; i++) nodes[i].hidden = nodes[i].getAttribute('data-l') !== langue;
+  var apple = {json.dumps(LIEN_APP_STORE)}, play = {json.dumps(LIEN_GOOGLE_PLAY)};
+  var cible = ios && apple ? apple : (android && play ? play : '');
+  if (cible) location.replace(cible);
+}})();
+</script>
+'''
+    html += pied(t)
+    return html
+
+
 def ecrire(chemin, contenu):
     complet = os.path.join(ICI, chemin)
     os.makedirs(os.path.dirname(complet), exist_ok=True)
@@ -467,6 +502,7 @@ if __name__ == '__main__':
     fr, en = TEXTES['fr'], TEXTES['en']
     ecrire('index.html', page_accueil(fr))
     ecrire('en/index.html', page_accueil(en))
+    ecrire('quizzle/index.html', page_lien())
     ecrire('confidentialite.html', page_texte(fr, PRIVACY['fr'], 'confidentialite.html', 'en/privacy.html'))
     ecrire('en/privacy.html', page_texte(en, PRIVACY['en'], 'en/privacy.html', 'confidentialite.html'))
     ecrire('mentions-legales.html', page_texte(fr, LEGAL['fr'], 'mentions-legales.html', 'en/legal.html'))
