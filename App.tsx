@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
-import { Share, StyleSheet, View } from 'react-native';
+import { Linking, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
 import { LIEN_PARTAGE } from './src/game/partage';
-import { Bonus } from './src/game/bonus';
-import * as StoreReview from 'expo-store-review';
-import { doitDemanderAvis } from './src/game/avis';
+import { Bonus, CADEAU_MERCI, PARTIES_CADEAU_MERCI } from './src/game/bonus';
+import { DELAI_AVIS_MS, MomentAvis, EtatAvis, bandeauAvisVisible, boutonAvisVisible, chargerEtatAvis, demanderAvisNatif, doitDemanderAvis, partiesJouees, sauverEtatAvis } from './src/game/avis';
+import { LIEN_AVIS } from './src/config';
 import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
 import EntreAmis from './src/ui/EntreAmis';
 import { Mystere } from './src/data/mysteres';
@@ -119,6 +119,9 @@ function Application() {
   const imagesDispo = imagesDisponibles();
   const imagesVues = useRef<string[]>([]);
   const [ecran, setEcran] = useState<Ecran>({ nom: 'accueil' });
+  const ecranRef = useRef(ecran);
+  ecranRef.current = ecran;
+  const [etatAvis, setEtatAvis] = useState<EtatAvis>('ouvert');
   const [amisOuvert, setAmisOuvert] = useState(false);
   // La langue est appliquée avant chaque affichage : tous les écrans se rafraîchissent avec ce composant.
   definirLangue(prefs.langue);
@@ -142,6 +145,7 @@ function Application() {
         chargerQuetes(),
       ]);
       quetesRef.current = qu;
+      setEtatAvis(await chargerEtatAvis());
       setQuetes(qu);
       setStats(s);
       setJour(j);
@@ -171,6 +175,20 @@ function Application() {
   }
 
   /**
+   * Si le moment s'y prête, programme la fenêtre de notation native et renvoie les statistiques à jour
+   * (la demande est comptée tout de suite : une seule par appareil). Elle n'apparaît que si le joueur
+   * est toujours sur l'écran de fin de partie, jamais au milieu d'une autre partie.
+   */
+  function proposerAvis(st: Stats, moment: MomentAvis): Stats {
+    if (!doitDemanderAvis(st, moment)) return st;
+    const ecranDeFin = ecranRef.current.nom;
+    setTimeout(() => {
+      if (ecranRef.current.nom === ecranDeFin) demanderAvisNatif();
+    }, DELAI_AVIS_MS);
+    return { ...st, avisDemandes: st.avisDemandes + 1, dernierAvis: cle };
+  }
+
+  /**
    * Fin d'une partie, quel que soit le mode : statistiques, bonus de série et cartes gagnées.
    * `progApres` est la progression une fois la partie prise en compte.
    */
@@ -187,18 +205,20 @@ function Application() {
     const serieAvant = partie.stats.serie;
     const extra = supplement ? supplement(partie.stats) : { stats: partie.stats, bonus: null };
     let nouvellesStats = extra.stats;
-    // Après une victoire, on propose de noter l'appli (fenêtre native, rarement).
-    if (gagne && doitDemanderAvis(nouvellesStats, cle)) {
-      nouvellesStats = { ...nouvellesStats, avisDemandes: nouvellesStats.avisDemandes + 1, dernierAvis: cle };
-      setTimeout(async () => {
-        try {
-          if (await StoreReview.isAvailableAsync()) await StoreReview.requestReview();
-        } catch {
-          // Pas disponible (émulateur, boutique absente) : on ignore.
-        }
-      }, 4500);
+    // Après une victoire en série, on propose de noter l'appli (une seule fois par appareil).
+    if (gagne) nouvellesStats = proposerAvis(nouvellesStats, 'victoire');
+    const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : [...partie.bonus];
+    // Cadeau de remerciement pour les joueurs fidèles : une seule fois, sans lien avec les avis.
+    const jouees = partiesJouees(nouvellesStats);
+    if (!nouvellesStats.cadeauMerci && jouees >= PARTIES_CADEAU_MERCI) {
+      nouvellesStats = {
+        ...nouvellesStats,
+        cadeauMerci: true,
+        jokers: nouvellesStats.jokers + CADEAU_MERCI.jokers,
+        pieces: nouvellesStats.pieces + CADEAU_MERCI.pieces,
+      };
+      bonus.push({ origine: 'merci', serie: jouees, jokers: CADEAU_MERCI.jokers, pieces: CADEAU_MERCI.pieces });
     }
-    const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : partie.bonus;
     setStats(nouvellesStats);
     sauverStats(nouvellesStats);
     const nouvelles = cartesMeritees(progApres, nouvellesStats, collection);
@@ -273,6 +293,23 @@ function Application() {
     }
     if (r.bonus) setTimeout(() => setRecompenses((l) => [...l, { type: 'bonus' as const, bonus: r.bonus! }]), 800);
   }
+
+  /** Bandeau de l'accueil ou fin de partie : ouvre la page d'avis du store, puis on ne propose plus. */
+  function donnerMonAvis() {
+    Linking.openURL(LIEN_AVIS).catch(() => {});
+    setEtatAvis('ouvert');
+    sauverEtatAvis('ouvert');
+  }
+
+  /** Croix du bandeau : « pas maintenant ». Le bouton de fin de partie gagnée reste proposé. */
+  function fermerBandeauAvis() {
+    if (etatAvis === 'ouvert') return;
+    setEtatAvis('ferme');
+    sauverEtatAvis('ferme');
+  }
+
+  // Bouton de fin de partie gagnée.
+  const avisFinPartie = LIEN_AVIS !== '' && boutonAvisVisible(stats, etatAvis) ? donnerMonAvis : undefined;
 
   async function inviterUnAmi() {
     const message = tr(
@@ -381,6 +418,9 @@ function Application() {
           quetesARecuperer={nbARecuperer(quetes, cle, imagesDispo)}
           onQuetes={() => setEcran({ nom: 'quetes' })}
           onSprint={() => setEcran({ nom: 'sprint' })}
+          avisVisible={LIEN_AVIS !== '' && bandeauAvisVisible(stats, etatAvis)}
+          onAvis={donnerMonAvis}
+          onFermerAvis={fermerBandeauAvis}
           onVraiFaux={() => setEcran({ nom: 'vf' })}
           onImage={imagesDispo ? () => lancerImage(0) : undefined}
         />
@@ -403,6 +443,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="jour"
           onRetour={() => setEcran({ nom: 'accueil' })}
         />
@@ -434,6 +475,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="aventure"
           onTerminee={(propositions, gagne) => {
             let apres = prog;
@@ -469,6 +511,7 @@ function Application() {
             jokers={stats.jokers}
             onJoker={utiliserJoker}
             onPartage={partageFait}
+            onAvis={avisFinPartie}
             mode="aventure"
             onTerminee={(propositions, gagne) => {
               if (derniere(gagne)) {
@@ -526,6 +569,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="evenement"
           onTerminee={(propositions, gagne) => {
             let apres = prog;
@@ -568,6 +612,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="defi"
           onTerminee={(propositions, gagne) => finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined)}
           commentaireFin={(gagne, essais) => {
@@ -621,7 +666,9 @@ function Application() {
           onTerminee={({ points, trouves }) => {
             const record = points > stats.recordSprint;
             const pieces = piecesSprint(points);
-            const s2 = { ...stats, sprints: stats.sprints + 1, recordSprint: Math.max(stats.recordSprint, points), pieces: stats.pieces + pieces };
+            const s1 = { ...stats, sprints: stats.sprints + 1, recordSprint: Math.max(stats.recordSprint, points), pieces: stats.pieces + pieces };
+            // Le récap du Sprint s'affiche : un moment de réussite pour proposer de noter l'appli.
+            const s2 = proposerAvis(s1, 'sprint');
             setStats(s2);
             sauverStats(s2);
             evenementQuete({ type: 'sprint', trouves, points });
@@ -668,6 +715,7 @@ function Application() {
           jokers={stats.jokers}
           onJoker={utiliserJoker}
           onPartage={partageFait}
+          onAvis={avisFinPartie}
           mode="image"
           onTerminee={(propositions, gagne) => finDePartie('image', propositions, gagne, prog)}
           onRetour={() => setEcran({ nom: 'accueil' })}

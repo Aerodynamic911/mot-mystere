@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { MAX_ESSAIS } from '../game/engine';
 import { PALIERS_JOURS, PALIERS_VICTOIRES, prochainPalier } from '../game/bonus';
 import { Stats } from '../game/storage';
@@ -35,6 +35,10 @@ interface Props {
   quetesARecuperer: number;
   onQuetes: () => void;
   onSprint: () => void;
+  /** Bandeau « Donner mon avis » (une fois le joueur lancé, tant qu'il ne l'a pas écarté). */
+  avisVisible: boolean;
+  onAvis: () => void;
+  onFermerAvis: () => void;
   onVraiFaux: () => void;
   /** Absent tant que le jeu n'a pas assez d'images : le mode n'est alors pas proposé. */
   onImage?: () => void;
@@ -65,9 +69,15 @@ export default function Home({
   quetesARecuperer,
   onQuetes,
   onSprint,
+  avisVisible,
+  onAvis,
+  onFermerAvis,
   onVraiFaux,
   onImage,
 }: Props) {
+  // Sur un petit écran (iPhone SE), le bandeau écraserait la mascotte : le bouton des préférences reste disponible.
+  const { height: hauteurEcran } = useWindowDimensions();
+  const afficherAvis = avisVisible && hauteurEcran >= 720;
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   // Infobulle ouverte en touchant la série ou les jokers.
   const [info, setInfo] = useState<'serie' | 'jokers' | null>(null);
@@ -149,6 +159,25 @@ export default function Home({
         <PetitMode emoji="✅" titre={tr('Vrai ou faux', 'True or false')} onPress={onVraiFaux} />
         {onImage && <PetitMode emoji="🖼️" titre={tr('Image', 'Picture')} onPress={onImage} />}
       </View>
+
+      {afficherAvis && (
+        <View style={styles.bandeauAvis}>
+          <TouchableOpacity style={styles.bandeauAvisCorps} onPress={onAvis} activeOpacity={0.85} accessibilityRole="button">
+            <Text style={styles.bandeauAvisTexte}>
+              ⭐ {tr('Quizzle vous plaît ? Un avis nous aide énormément', 'Enjoying Quizzle? A review helps us a lot')}
+            </Text>
+            <Text style={styles.bandeauAvisAction}>{tr('Donner mon avis ›', 'Leave a review ›')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onFermerAvis}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={tr('Fermer', 'Close')}
+          >
+            <Text style={styles.bandeauAvisFermer}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.pied}>
         {/* Tant que le mystère du jour n'est pas fait, c'est le bouton principal ; ensuite il s'efface devant les autres modes. */}
@@ -474,6 +503,22 @@ const styles = StyleSheet.create({
   },
   pastille: { marginLeft: 8, minWidth: 20, height: 20, borderRadius: 10, backgroundColor: couleurs.erreur, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
   pastilleTexte: { color: '#fff', fontSize: 12, fontWeight: '800' },
+  bandeauAvis: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: rayon,
+    borderWidth: 1.5,
+    borderColor: couleurs.accent,
+    backgroundColor: 'rgba(245,185,66,0.12)',
+  },
+  bandeauAvisCorps: { flex: 1 },
+  bandeauAvisTexte: { color: couleurs.texte, fontSize: 13, fontWeight: '600' },
+  bandeauAvisAction: { color: couleurs.accent, fontSize: 13, fontWeight: '800', marginTop: 2 },
+  bandeauAvisFermer: { color: couleurs.texteSecondaire, fontSize: 16, paddingLeft: 12 },
   modesPetits: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 12 },
   petitMode: {
     flex: 1,

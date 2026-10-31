@@ -26,10 +26,16 @@ export const PALIERS_VICTOIRES: Palier[] = [
 ];
 
 export interface Bonus {
-  origine: 'jours' | 'victoires' | 'partages' | 'defi';
+  origine: 'jours' | 'victoires' | 'partages' | 'defi' | 'merci';
   serie: number;
   jokers: number;
+  /** Pièces offertes en plus des jokers (cadeau de fidélité). */
+  pieces?: number;
 }
+
+/** Cadeau de remerciement, offert une seule fois après autant de parties jouées (tous modes). Sans lien avec les avis. */
+export const PARTIES_CADEAU_MERCI = 25;
+export const CADEAU_MERCI = { jokers: 1, pieces: 100 };
 
 /** Bonus gagnés quand une série atteint exactement un palier (`null` = série non concernée). */
 export function bonusAttribues(serieJours: number | null, serieVictoires: number | null): Bonus[] {

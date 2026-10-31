@@ -83,6 +83,8 @@ interface Props {
   onJoker?: () => void;
   /** Appelé quand le joueur a bien partagé (pour compter les partages qui rapportent un joker). */
   onPartage?: () => void;
+  /** Après une victoire : ouvre la page d'avis du store (absent si le joueur a déjà été invité ou si le store n'a pas de page d'avis). */
+  onAvis?: () => void;
   /** Mode de jeu, pour afficher les pièces gagnées. */
   mode?: ModeJeu;
   /** Phrase de fin de partie (par exemple la comparaison avec le score d'un ami). */
@@ -106,6 +108,7 @@ export default function Game({
   jokers = 0,
   onJoker,
   onPartage,
+  onAvis,
   mode,
   commentaireFin,
   image,
@@ -337,6 +340,11 @@ export default function Game({
                 <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami', 'Challenge a friend')}</Text>
               </TouchableOpacity>
             )}
+            {gagne && onAvis && (
+              <TouchableOpacity style={styles.boutonAvis} onPress={onAvis} activeOpacity={0.85} accessibilityRole="button">
+                <Text style={styles.boutonAvisTexte}>⭐ {tr('Quizzle vous plaît ? Donner mon avis', 'Enjoying Quizzle? Leave a review')}</Text>
+              </TouchableOpacity>
+            )}
             {onPartage && (
               <Text style={styles.noteJoker}>
                 {tr('✨ +1 joker tous les {n} partages (1 par jour)', '✨ +1 joker every {n} shares (1 per day)', { n: PARTAGES_PAR_JOKER })}
@@ -516,6 +524,8 @@ const styles = StyleSheet.create({
   boutonTexte: { color: '#1B1B1B', fontWeight: '700', fontSize: 16 },
   boutonSecondaire: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: couleurs.bordure, marginTop: 10 },
   pieces: { color: couleurs.accent, fontSize: 16, fontWeight: '800', textAlign: 'center', marginBottom: 10 },
+  boutonAvis: { marginTop: 14, paddingVertical: 8, alignItems: 'center' },
+  boutonAvisTexte: { color: couleurs.accent, fontSize: 14, fontWeight: '700', textDecorationLine: 'underline' },
   boutonDefi: { borderColor: couleurs.accent, marginTop: 10 },
   commentaireFin: { color: couleurs.accent, fontSize: 15, fontWeight: '700', textAlign: 'center', marginTop: 4, marginBottom: 4 },
   noteJoker: { color: couleurs.texteSecondaire, fontSize: 12, textAlign: 'center', marginTop: 10 },

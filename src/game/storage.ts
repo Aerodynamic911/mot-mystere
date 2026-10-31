@@ -66,6 +66,8 @@ export interface Stats {
   /** Jokers spécifiques : +10 secondes au Sprint, et passer une question de Vrai ou faux. */
   jokersTemps: number;
   jokersPasser: number;
+  /** Le cadeau de remerciement (jokers et pièces) a déjà été offert. */
+  cadeauMerci: boolean;
 }
 
 export interface EtatDuJour {
@@ -112,6 +114,7 @@ export const STATS_VIDES: Stats = {
   skinEquipe: 'classique',
   jokersTemps: 0,
   jokersPasser: 0,
+  cadeauMerci: false,
 };
 
 export async function chargerStats(): Promise<Stats> {

@@ -1,8 +1,8 @@
-import { LIEN_APP, LIEN_APP_STORE } from '../config';
+import { LIEN_QUIZZLE } from '../config';
 import { tr } from '../i18n';
 
-/** Lien joint aux partages : celui du store de l'appareil, sinon l'App Store (la plupart des amis y sont). */
-export const LIEN_PARTAGE = LIEN_APP || LIEN_APP_STORE;
+/** Lien joint aux partages : on ne connaît pas le téléphone du destinataire, donc un lien universel qui l'envoie vers son store. */
+export const LIEN_PARTAGE = LIEN_QUIZZLE;
 
 /** Invitation ajoutée à la fin de chaque message de partage. */
 export function invitation(): string {

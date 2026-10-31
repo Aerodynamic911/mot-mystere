@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CREDITS_IMAGES } from '../data/imagesCredits';
 import { IMAGES } from '../data/images';
+import { LIEN_AVIS } from '../config';
 import { Difficulte, Langue, Preferences, TrancheAge } from '../game/preferences';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
@@ -82,6 +83,20 @@ export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
             )}
           </Text>
         </Section>
+
+        {LIEN_AVIS !== '' && (
+          <Section titre={tr('Votre avis', 'Your review')}>
+            <Text style={styles.note}>
+              {tr(
+                'Quizzle est gratuit, sans pub, et créé en famille. Un avis, même court, nous aide énormément à le faire connaître.',
+                'Quizzle is free, ad-free and made by a family. A review, even a short one, helps us a lot to spread the word.',
+              )}
+            </Text>
+            <TouchableOpacity style={styles.boutonAvis} onPress={() => Linking.openURL(LIEN_AVIS).catch(() => {})} activeOpacity={0.85} accessibilityRole="button">
+              <Text style={styles.boutonAvisTexte}>⭐ {tr('Donner mon avis', 'Leave a review')}</Text>
+            </TouchableOpacity>
+          </Section>
+        )}
 
         {CREDITS_IMAGES.length > 0 && (
           <Section titre={tr('Crédits des images', 'Picture credits')}>
@@ -185,4 +200,6 @@ const styles = StyleSheet.create({
   ligneTitre: { color: couleurs.texte, fontSize: 16, fontWeight: '600' },
   ligneDetail: { color: couleurs.texteSecondaire, fontSize: 13, marginTop: 2 },
   note: { color: couleurs.texteSecondaire, fontSize: 12, lineHeight: 17, marginTop: 8 },
+  boutonAvis: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 13, alignItems: 'center', marginTop: 12 },
+  boutonAvisTexte: { color: '#1B1B1B', fontSize: 16, fontWeight: '800' },
 });
