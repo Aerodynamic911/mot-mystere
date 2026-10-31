@@ -70,13 +70,14 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
         {recompense?.type === 'bonus' && (
           <>
             <Text style={styles.titre}>
-              {recompense.bonus.origine === 'partages' || recompense.bonus.origine === 'defi' ? `🎁 ${tr('Merci !', 'Thank you!')}` : `🔥 ${tr('Bonus de série !', 'Streak bonus!')}`}
+              {recompense.bonus.origine === 'partages' || recompense.bonus.origine === 'defi' || recompense.bonus.origine === 'merci' ? `🎁 ${tr('Merci !', 'Thank you!')}` : `🔥 ${tr('Bonus de série !', 'Streak bonus!')}`}
             </Text>
             <Animated.View style={[styles.bonus, { transform: [{ scale: echelle }] }]}>
               <Text style={styles.bonusEmoji}>🎁</Text>
               <Text style={styles.bonusJokers}>
                 +{recompense.bonus.jokers} joker{recompense.bonus.jokers > 1 ? 's' : ''}
               </Text>
+              {!!recompense.bonus.pieces && <Text style={styles.bonusPieces}>+{recompense.bonus.pieces} 🪙</Text>}
               <Text style={styles.bonusSerie}>
                 {recompense.bonus.origine === 'jours'
                   ? tr('{n} jours de suite avec le mystère du jour !', '{n} days in a row with the daily mystery!', { n: recompense.bonus.serie })
@@ -84,7 +85,9 @@ export default function RecompenseModal({ recompense, suivantes, onFermer }: Pro
                     ? tr("{n} victoires d'affilée !", '{n} wins in a row!', { n: recompense.bonus.serie })
                     : recompense.bonus.origine === 'partages'
                       ? tr('Merci de faire connaître Quizzle ! {n} partages.', 'Thanks for spreading the word about Quizzle! {n} shares.', { n: recompense.bonus.serie })
-                      : tr('Défi relevé avec succès !', 'Challenge completed!')}
+                      : recompense.bonus.origine === 'merci'
+                        ? tr('Merci de jouer à Quizzle ! Déjà {n} parties : voici un petit cadeau.', 'Thanks for playing Quizzle! {n} games already: here is a little gift.', { n: recompense.bonus.serie })
+                        : tr('Défi relevé avec succès !', 'Challenge completed!')}
               </Text>
               <View pointerEvents="none" style={styles.centre}>
                 <Eclat valeur={eclat} rayon={130} />
@@ -117,6 +120,7 @@ const styles = StyleSheet.create({
   },
   bonusEmoji: { fontSize: 60 },
   bonusJokers: { color: couleurs.accent, fontSize: 34, fontWeight: '900', marginTop: 6 },
+  bonusPieces: { color: couleurs.accent, fontSize: 26, fontWeight: '900', marginTop: 2 },
   bonusSerie: { color: couleurs.texte, fontSize: 16, fontWeight: '600', textAlign: 'center', marginTop: 8, maxWidth: 240 },
   bouton: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 14, paddingHorizontal: 48, marginTop: 28 },
   boutonTexte: { color: '#1B1B1B', fontSize: 17, fontWeight: '800' },

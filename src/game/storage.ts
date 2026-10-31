@@ -60,6 +60,8 @@ export interface Stats {
   vfTotal: number;
   /** Boss vaincus depuis le début. */
   bossVaincus: number;
+  /** Le cadeau de remerciement (jokers et pièces) a déjà été offert. */
+  cadeauMerci: boolean;
 }
 
 export interface EtatDuJour {
@@ -102,6 +104,7 @@ export const STATS_VIDES: Stats = {
   vfBonnes: 0,
   vfTotal: 0,
   bossVaincus: 0,
+  cadeauMerci: false,
 };
 
 export async function chargerStats(): Promise<Stats> {

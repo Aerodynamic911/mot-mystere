@@ -6,8 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
 import { NB_VUS_GARDES, choisirMystereAventure, essaisAventure, essaisEtape, mystereParId, tousLesMysteres } from './src/game/aventure';
 import { LIEN_PARTAGE } from './src/game/partage';
-import { Bonus } from './src/game/bonus';
-import { DELAI_AVIS_MS, MomentAvis, bandeauAvisMasque, bandeauAvisVisible, demanderAvisNatif, doitDemanderAvis, masquerBandeauAvis } from './src/game/avis';
+import { Bonus, CADEAU_MERCI, PARTIES_CADEAU_MERCI } from './src/game/bonus';
+import { DELAI_AVIS_MS, MomentAvis, bandeauAvisMasque, bandeauAvisVisible, demanderAvisNatif, doitDemanderAvis, masquerBandeauAvis, partiesJouees } from './src/game/avis';
 import { LIEN_AVIS } from './src/config';
 import { enregistrerDefiGagne, enregistrerPartage, lireCode } from './src/game/social';
 import EntreAmis from './src/ui/EntreAmis';
@@ -205,7 +205,18 @@ function Application() {
     let nouvellesStats = extra.stats;
     // Après une victoire en série, on propose de noter l'appli (une seule fois par appareil).
     if (gagne) nouvellesStats = proposerAvis(nouvellesStats, 'victoire');
-    const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : partie.bonus;
+    const bonus = extra.bonus ? [...partie.bonus, extra.bonus] : [...partie.bonus];
+    // Cadeau de remerciement pour les joueurs fidèles : une seule fois, sans lien avec les avis.
+    const jouees = partiesJouees(nouvellesStats);
+    if (!nouvellesStats.cadeauMerci && jouees >= PARTIES_CADEAU_MERCI) {
+      nouvellesStats = {
+        ...nouvellesStats,
+        cadeauMerci: true,
+        jokers: nouvellesStats.jokers + CADEAU_MERCI.jokers,
+        pieces: nouvellesStats.pieces + CADEAU_MERCI.pieces,
+      };
+      bonus.push({ origine: 'merci', serie: jouees, jokers: CADEAU_MERCI.jokers, pieces: CADEAU_MERCI.pieces });
+    }
     setStats(nouvellesStats);
     sauverStats(nouvellesStats);
     const nouvelles = cartesMeritees(progApres, nouvellesStats, collection);
