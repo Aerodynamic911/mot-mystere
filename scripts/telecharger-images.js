@@ -117,7 +117,13 @@ const IMAGES = [
     "id": "le-penseur",
     "recherche": "Rodin The Thinker sculpture",
     "refaire": true,
-    "portrait": true
+    "portrait": true,
+    "motsTitre": "thinker|penseur|rodin",
+    "titre": [
+      "File:Thinker Rodin.jpg",
+      "File:The Thinker, Rodin.jpg",
+      "File:Le Penseur (Rodin), Musée Rodin.jpg"
+    ]
   },
   {
     "id": "venus-de-milo",
@@ -147,9 +153,9 @@ const IMAGES = [
     "id": "leonard-de-vinci",
     "recherche": "Leonardo da Vinci self-portrait red chalk",
     "titre": [
+      "File:Leonardo da Vinci - presumed self-portrait - WGA12798.jpg",
       "File:Leonardo self.jpg",
-      "File:Francesco Melzi - Portrait of Leonardo.png",
-      "File:Leonardo da Vinci - presumed self-portrait - WGA12798.jpg"
+      "File:Francesco Melzi - Portrait of Leonardo.png"
     ],
     "refaire": true,
     "portrait": true
@@ -299,7 +305,8 @@ async function choisir(item) {
   ];
   for (const requete of essais) {
     const liste = await parRecherche(requete);
-    const bons = liste.filter((c) => c.paysage || item.portrait);
+    const mots = item.motsTitre ? new RegExp(item.motsTitre, 'i') : null;
+    const bons = liste.filter((c) => (c.paysage || item.portrait) && (!mots || mots.test(c.titre)));
     if (bons.length) return bons[0];
     await pause(800);
   }
@@ -334,7 +341,10 @@ async function main() {
         continue;
       }
       const ext = c.mime === 'image/png' ? 'png' : c.mime === 'image/webp' ? 'webp' : 'jpg';
-      const buf = await appel(c.url, true);
+      let buf = await appel(c.url, true);
+      if (buf.length > 1500 * 1024 && /\/\d+px-/.test(c.url)) {
+        buf = await appel(c.url.replace(/\/\d+px-/, '/700px-'), true); // version plus légère
+      }
       for (const vieux of trouves) fs.unlinkSync(path.join(DOSSIER, vieux)); // évite deux fichiers pour le même identifiant
       fs.writeFileSync(path.join(DOSSIER, item.id + '.' + ext), buf);
       retirer.add(item.id);
