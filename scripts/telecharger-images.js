@@ -20,8 +20,7 @@ const IMAGES = [
   },
   {
     "id": "versailles",
-    "recherche": "Château de Versailles facade cour de marbre",
-    "refaire": true
+    "recherche": "Château de Versailles facade cour de marbre"
   },
   {
     "id": "pyramide-louvre",
@@ -33,7 +32,10 @@ const IMAGES = [
   },
   {
     "id": "golden-gate",
-    "recherche": "Golden Gate Bridge San Francisco"
+    "recherche": "Golden Gate Bridge San Francisco",
+    "motsTitre": "golden gate",
+    "motsExclus": "bw|black|fog|night",
+    "refaire": true
   },
   {
     "id": "christ-redempteur",
@@ -49,7 +51,10 @@ const IMAGES = [
   },
   {
     "id": "burj-khalifa",
-    "recherche": "Burj Khalifa incategory:\"Burj Khalifa\"",
+    "recherche": "Burj Khalifa tower",
+    "portrait": true,
+    "motsTitre": "burj",
+    "motsExclus": "sunset|towers|skyline|panorama|night",
     "refaire": true
   },
   {
@@ -75,8 +80,7 @@ const IMAGES = [
   {
     "id": "mont-fuji",
     "recherche": "Mount Fuji Japan landscape Lake Kawaguchi",
-    "titre": "File:Lake Kawaguchiko Sakura Mount Fuji 3.JPG",
-    "refaire": true
+    "titre": "File:Lake Kawaguchiko Sakura Mount Fuji 3.JPG"
   },
   {
     "id": "grand-canyon",
@@ -84,8 +88,7 @@ const IMAGES = [
   },
   {
     "id": "chutes-niagara",
-    "recherche": "Horseshoe Falls Niagara Falls Canada waterfall",
-    "refaire": true
+    "recherche": "Horseshoe Falls Niagara Falls Canada waterfall"
   },
   {
     "id": "mont-blanc",
@@ -106,8 +109,7 @@ const IMAGES = [
   {
     "id": "nympheas",
     "recherche": "Claude Monet Nymphéas painting",
-    "titre": "File:Claude Monet - Water Lilies - 1906, Ryerson.jpg",
-    "refaire": true
+    "titre": "File:Claude Monet - Water Lilies - 1906, Ryerson.jpg"
   },
   {
     "id": "ronde-de-nuit",
@@ -116,7 +118,6 @@ const IMAGES = [
   {
     "id": "le-penseur",
     "recherche": "Rodin The Thinker sculpture",
-    "refaire": true,
     "portrait": true,
     "motsTitre": "thinker|penseur|rodin",
     "titre": [
@@ -132,21 +133,18 @@ const IMAGES = [
   {
     "id": "david-michel-ange",
     "recherche": "Michelangelo David statue Florence Accademia",
-    "titre": "File:'David' by Michelangelo Fir JBU002.jpg",
-    "refaire": true
+    "titre": "File:'David' by Michelangelo Fir JBU002.jpg"
   },
   {
     "id": "victor-hugo",
     "recherche": "Victor Hugo portrait Carjat",
     "titre": "File:Victor Hugo by Étienne Carjat 1876 - full.jpg",
-    "refaire": true,
     "portrait": true
   },
   {
     "id": "marie-curie",
     "recherche": "Marie Curie portrait",
     "titre": "File:Marie Curie c1920.jpg",
-    "refaire": true,
     "portrait": true
   },
   {
@@ -157,28 +155,24 @@ const IMAGES = [
       "File:Leonardo self.jpg",
       "File:Francesco Melzi - Portrait of Leonardo.png"
     ],
-    "refaire": true,
     "portrait": true
   },
   {
     "id": "cleopatre",
     "recherche": "Cleopatra VII bust Altes Museum Berlin",
     "titre": "File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg",
-    "refaire": true,
     "portrait": true
   },
   {
     "id": "jeanne-d-arc",
     "recherche": "Joan of Arc miniature 15th century",
     "titre": "File:Joan of Arc miniature graded.jpg",
-    "refaire": true,
     "portrait": true
   },
   {
     "id": "gandhi",
     "recherche": "Mahatma Gandhi portrait 1931",
     "titre": "File:Mahatma-Gandhi, studio, 1931.jpg",
-    "refaire": true,
     "portrait": true
   },
   {
@@ -191,7 +185,13 @@ const IMAGES = [
   },
   {
     "id": "ours-polaire",
-    "recherche": "Polar bear Ursus maritimus"
+    "recherche": "Polar bear Ursus maritimus portrait",
+    "titre": [
+      "File:Polar Bear - Alaska (cropped).jpg",
+      "File:Polar bear (Ursus maritimus) 2.jpg"
+    ],
+    "motsExclus": "prey|kill|seal|carcass|eating|feeding",
+    "refaire": true
   },
   {
     "id": "flamant-rose",
@@ -306,7 +306,8 @@ async function choisir(item) {
   for (const requete of essais) {
     const liste = await parRecherche(requete);
     const mots = item.motsTitre ? new RegExp(item.motsTitre, 'i') : null;
-    const bons = liste.filter((c) => (c.paysage || item.portrait) && (!mots || mots.test(c.titre)));
+    const exclus = item.motsExclus ? new RegExp(item.motsExclus, 'i') : null;
+    const bons = liste.filter((c) => (c.paysage || item.portrait) && (!mots || mots.test(c.titre)) && (!exclus || !exclus.test(c.titre)));
     if (bons.length) return bons[0];
     await pause(800);
   }
