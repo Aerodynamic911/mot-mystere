@@ -21,9 +21,10 @@ export interface Skin {
   evenement?: string;
 }
 
-/** Une semaine de jeu rapporte environ 300 pièces : un costume en coûte 7 jours, une simple couleur 4 à 5. */
-export const PRIX_COSTUME = 300;
-export const PRIX_COULEUR = 200;
+/** Un joueur régulier gagne 75 à 120 pièces par jour : une couleur ≈ 3 à 4 jours, la Reine du Nil ≈ 4 à 5, les autres costumes ≈ 5 à 7. */
+export const PRIX_COULEUR = 300;
+export const PRIX_REINE = 400;
+export const PRIX_COSTUME = 500;
 
 export const SKIN_PAR_DEFAUT = 'classique';
 
@@ -32,7 +33,7 @@ export const SKINS: Skin[] = [
   { id: 'menthe', emoji: '🍃', nomFr: 'Menthe', nomEn: 'Mint', origine: 'boutique', prix: PRIX_COULEUR },
   { id: 'ocean', emoji: '🌊', nomFr: 'Océan', nomEn: 'Ocean', origine: 'boutique', prix: PRIX_COULEUR },
   { id: 'rose', emoji: '🌸', nomFr: 'Bonbon', nomEn: 'Candy', origine: 'boutique', prix: PRIX_COULEUR },
-  { id: 'cleopatre', emoji: '👑', nomFr: 'Reine du Nil', nomEn: 'Queen of the Nile', origine: 'boutique', prix: PRIX_COSTUME },
+  { id: 'cleopatre', emoji: '👑', nomFr: 'Reine du Nil', nomEn: 'Queen of the Nile', origine: 'boutique', prix: PRIX_REINE },
   { id: 'roi-soleil', emoji: '☀️', nomFr: 'Roi-Soleil', nomEn: 'Sun King', origine: 'boutique', prix: PRIX_COSTUME },
   { id: 'savant', emoji: '🔬', nomFr: 'Savant fou', nomEn: 'Mad scientist', origine: 'boutique', prix: PRIX_COSTUME },
   { id: 'compositeur', emoji: '🎼', nomFr: 'Compositeur', nomEn: 'Composer', origine: 'boutique', prix: PRIX_COSTUME },
