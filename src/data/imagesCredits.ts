@@ -239,5 +239,245 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "auteur": "Charles J. Sharp",
     "licence": "CC BY-SA 4.0",
     "lien": "https://commons.wikimedia.org/wiki/File:Plains_zebras_(Equus_quagga)_Maputo.jpg"
+  },
+  {
+    "id": "sacre-coeur",
+    "auteur": "Terragio67",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Basilique_du_Sacr%C3%A9-C%C5%93ur_de_Montmartre_-_Paris_-_GT-01_-_2024.jpg"
+  },
+  {
+    "id": "pyramide-louvre",
+    "auteur": "Benh LIEU SONG (Flickr)",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Louvre_Courtyard,_Looking_West.jpg"
+  },
+  {
+    "id": "opera-sydney",
+    "auteur": "Diliff",
+    "licence": "CC BY-SA 3.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Sydney_Opera_House_-_Dec_2008.jpg"
+  },
+  {
+    "id": "golden-gate",
+    "auteur": "Dietmar Rabich",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:San_Francisco_(CA,_USA),_Golden_Gate_Bridge_--_2022_--_3023_(bw).jpg"
+  },
+  {
+    "id": "christ-redempteur",
+    "auteur": "Donatas Dabravolskas",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Unique_Moment_with_the_Moon_and_Christ_the_Redeemer_3.jpg"
+  },
+  {
+    "id": "petra",
+    "auteur": "Vyacheslav Argenberg",
+    "licence": "CC BY 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Al-Khazneh_(The_Treasury)_2,_Petra,_Jordan.jpg"
+  },
+  {
+    "id": "angkor-vat",
+    "auteur": "Satdeep Gill",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Angkor_Wat_with_its_reflection_(cropped).jpg"
+  },
+  {
+    "id": "carcassonne",
+    "auteur": "Diego Delso",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Ciudadela,_Carcasona,_Francia,_2023-01-07,_DD_216-218_HDR.jpg"
+  },
+  {
+    "id": "chichen-itza",
+    "auteur": "Daniel Schwen",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Chichen_Itza_3.jpg"
+  },
+  {
+    "id": "stonehenge",
+    "auteur": "Diego Delso",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Stonehenge,_Condado_de_Wiltshire,_Inglaterra,_2014-08-12,_DD_09.JPG"
+  },
+  {
+    "id": "alhambra",
+    "auteur": "Jebulon",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Alhambra_in_the_evening.jpg"
+  },
+  {
+    "id": "porte-brandebourg",
+    "auteur": "א (Aleph) Creator: Johann Gottfried Schadow",
+    "licence": "CC BY-SA 2.5",
+    "lien": "https://commons.wikimedia.org/wiki/File:Brandenburg_Gate_Quadriga_at_Night.jpg"
+  },
+  {
+    "id": "grand-canyon",
+    "auteur": "Mgimelfarb",
+    "licence": "CC0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Grand_Canyon_South_Rim_at_Sunset.jpg"
+  },
+  {
+    "id": "mont-blanc",
+    "auteur": "Krzysztof Golik",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Massif_du_Mont-Blanc_from_Lac_de_Joux_Plane_03.jpg"
+  },
+  {
+    "id": "naissance-venus",
+    "auteur": "Sandro Botticelli",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg"
+  },
+  {
+    "id": "le-baiser",
+    "auteur": "Gustav Klimt",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg"
+  },
+  {
+    "id": "radeau-meduse",
+    "auteur": "Théodore Géricault",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:JEAN_LOUIS_TH%C3%89ODORE_G%C3%89RICAULT_-_La_Balsa_de_la_Medusa_(Museo_del_Louvre,_1818-19).jpg"
+  },
+  {
+    "id": "ronde-de-nuit",
+    "auteur": "Rembrandt",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:La_ronda_de_noche,_por_Rembrandt_van_Rijn.jpg"
+  },
+  {
+    "id": "venus-de-milo",
+    "auteur": "Livioandronico2013",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Foreground_of_the_Venus_de_Milo.jpg"
+  },
+  {
+    "id": "louis-pasteur",
+    "auteur": "auteur inconnu",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Louis_Pasteur-portrait.jpg"
+  },
+  {
+    "id": "loup",
+    "auteur": "Christian Mehlführer, User:Chmehl",
+    "licence": "CC BY 2.5",
+    "lien": "https://commons.wikimedia.org/wiki/File:MC_Timberwolf.jpg"
+  },
+  {
+    "id": "ours-polaire",
+    "auteur": "AWeith",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Polar_bear_(Ursus_maritimus)_with_its_prey.jpg"
+  },
+  {
+    "id": "flamant-rose",
+    "auteur": "Diego Delso",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Flamenco_com%C3%BAn_(Phoenicopterus_roseus),_Walvis_Bay,_Namibia,_2018-08-05,_DD_30.jpg"
+  },
+  {
+    "id": "dauphin",
+    "auteur": "Giles Laurent",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:010_Atlantic_bottlenose_dolphin_jumping_at_Pelican_point_Photo_by_Giles_Laurent.jpg"
+  },
+  {
+    "id": "paon",
+    "auteur": "Senthi Aathavan Senthilverl",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Indian_peafowl_or_blue_peafowl_(Pavo_cristatus).jpg"
+  },
+  {
+    "id": "guepard",
+    "auteur": "Charles J. Sharp",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Cheetah_(Acinonyx_jubatus)_female_2.jpg"
+  },
+  {
+    "id": "koala",
+    "auteur": "Till Niermann",
+    "licence": "CC BY 3.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Koala_in_Zoo_Duisburg.jpg"
+  },
+  {
+    "id": "versailles",
+    "auteur": "Kipp Jones from Atlanta, US",
+    "licence": "CC BY 2.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Ch%C3%A2teau_de_Versailles_Cour_de_Marbre_20170617_facade.jpg"
+  },
+  {
+    "id": "mont-fuji",
+    "auteur": "Midori",
+    "licence": "CC BY 3.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Lake_Kawaguchiko_Sakura_Mount_Fuji_3.JPG"
+  },
+  {
+    "id": "chutes-niagara",
+    "auteur": "DXR",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Maid_of_the_Mist_VII_approaching_the_Horseshoe_Falls,_West_view_20170418_1.jpg"
+  },
+  {
+    "id": "nympheas",
+    "auteur": "Claude Monet",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg"
+  },
+  {
+    "id": "david-michel-ange",
+    "auteur": "Jörg Bittner Unna",
+    "licence": "CC BY 3.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:%27David%27_by_Michelangelo_Fir_JBU002.jpg"
+  },
+  {
+    "id": "victor-hugo",
+    "auteur": "Étienne Carjat",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Victor_Hugo_by_%C3%89tienne_Carjat_1876_-_full.jpg"
+  },
+  {
+    "id": "marie-curie",
+    "auteur": "Henri Manuel",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Marie_Curie_c1920.jpg"
+  },
+  {
+    "id": "cleopatre",
+    "auteur": "Louis le Grand",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg"
+  },
+  {
+    "id": "jeanne-d-arc",
+    "auteur": "Auteur inconnu",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Joan_of_Arc_miniature_graded.jpg"
+  },
+  {
+    "id": "gandhi",
+    "auteur": "Elliott & Fry",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Mahatma-Gandhi,_studio,_1931.jpg"
+  },
+  {
+    "id": "burj-khalifa",
+    "auteur": "ECWiki1",
+    "licence": "CC BY 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Burj_Khalifa_Dubai,_UAE_at_Sunset_001_by_Eric_Chamchoum.jpg"
+  },
+  {
+    "id": "le-penseur",
+    "auteur": "AndrewHorne (talk)",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:The_Thinker,_Rodin.jpg"
+  },
+  {
+    "id": "leonard-de-vinci",
+    "auteur": "Leonardo da Vinci",
+    "licence": "Public domain",
+    "lien": "https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_presumed_self-portrait_-_WGA12798.jpg"
   }
 ];

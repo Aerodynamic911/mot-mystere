@@ -38,3 +38,43 @@ tour-de-pise ; Saffron Blaze ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki
 tour-eiffel ; Benh LIEU SONG ; Public domain ; https://commons.wikimedia.org/wiki/File:Tour_Eiffel_Wikimedia_Commons.jpg
 tournesols ; Vincent van Gogh ; Public domain ; https://commons.wikimedia.org/wiki/File:Vincent_Willem_van_Gogh_128.jpg
 zebre ; Charles J. Sharp ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Plains_zebras_(Equus_quagga)_Maputo.jpg
+sacre-coeur ; Terragio67 ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Basilique_du_Sacr%C3%A9-C%C5%93ur_de_Montmartre_-_Paris_-_GT-01_-_2024.jpg
+pyramide-louvre ; Benh LIEU SONG (Flickr) ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Louvre_Courtyard,_Looking_West.jpg
+opera-sydney ; Diliff ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:Sydney_Opera_House_-_Dec_2008.jpg
+golden-gate ; Dietmar Rabich ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:San_Francisco_(CA,_USA),_Golden_Gate_Bridge_--_2022_--_3023_(bw).jpg
+christ-redempteur ; Donatas Dabravolskas ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Unique_Moment_with_the_Moon_and_Christ_the_Redeemer_3.jpg
+petra ; Vyacheslav Argenberg ; CC BY 4.0 ; https://commons.wikimedia.org/wiki/File:Al-Khazneh_(The_Treasury)_2,_Petra,_Jordan.jpg
+angkor-vat ; Satdeep Gill ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Angkor_Wat_with_its_reflection_(cropped).jpg
+carcassonne ; Diego Delso ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Ciudadela,_Carcasona,_Francia,_2023-01-07,_DD_216-218_HDR.jpg
+chichen-itza ; Daniel Schwen ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Chichen_Itza_3.jpg
+stonehenge ; Diego Delso ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Stonehenge,_Condado_de_Wiltshire,_Inglaterra,_2014-08-12,_DD_09.JPG
+alhambra ; Jebulon ; Public domain ; https://commons.wikimedia.org/wiki/File:Alhambra_in_the_evening.jpg
+porte-brandebourg ; א (Aleph) Creator: Johann Gottfried Schadow ; CC BY-SA 2.5 ; https://commons.wikimedia.org/wiki/File:Brandenburg_Gate_Quadriga_at_Night.jpg
+grand-canyon ; Mgimelfarb ; CC0 ; https://commons.wikimedia.org/wiki/File:Grand_Canyon_South_Rim_at_Sunset.jpg
+mont-blanc ; Krzysztof Golik ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Massif_du_Mont-Blanc_from_Lac_de_Joux_Plane_03.jpg
+naissance-venus ; Sandro Botticelli ; Public domain ; https://commons.wikimedia.org/wiki/File:Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg
+le-baiser ; Gustav Klimt ; Public domain ; https://commons.wikimedia.org/wiki/File:The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg
+radeau-meduse ; Théodore Géricault ; Public domain ; https://commons.wikimedia.org/wiki/File:JEAN_LOUIS_TH%C3%89ODORE_G%C3%89RICAULT_-_La_Balsa_de_la_Medusa_(Museo_del_Louvre,_1818-19).jpg
+ronde-de-nuit ; Rembrandt ; Public domain ; https://commons.wikimedia.org/wiki/File:La_ronda_de_noche,_por_Rembrandt_van_Rijn.jpg
+venus-de-milo ; Livioandronico2013 ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Foreground_of_the_Venus_de_Milo.jpg
+louis-pasteur ; auteur inconnu ; Public domain ; https://commons.wikimedia.org/wiki/File:Louis_Pasteur-portrait.jpg
+loup ; Christian Mehlführer, User:Chmehl ; CC BY 2.5 ; https://commons.wikimedia.org/wiki/File:MC_Timberwolf.jpg
+ours-polaire ; AWeith ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Polar_bear_(Ursus_maritimus)_with_its_prey.jpg
+flamant-rose ; Diego Delso ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Flamenco_com%C3%BAn_(Phoenicopterus_roseus),_Walvis_Bay,_Namibia,_2018-08-05,_DD_30.jpg
+dauphin ; Giles Laurent ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:010_Atlantic_bottlenose_dolphin_jumping_at_Pelican_point_Photo_by_Giles_Laurent.jpg
+paon ; Senthi Aathavan Senthilverl ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Indian_peafowl_or_blue_peafowl_(Pavo_cristatus).jpg
+guepard ; Charles J. Sharp ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Cheetah_(Acinonyx_jubatus)_female_2.jpg
+koala ; Till Niermann ; CC BY 3.0 ; https://commons.wikimedia.org/wiki/File:Koala_in_Zoo_Duisburg.jpg
+versailles ; Kipp Jones from Atlanta, US ; CC BY 2.0 ; https://commons.wikimedia.org/wiki/File:Ch%C3%A2teau_de_Versailles_Cour_de_Marbre_20170617_facade.jpg
+mont-fuji ; Midori ; CC BY 3.0 ; https://commons.wikimedia.org/wiki/File:Lake_Kawaguchiko_Sakura_Mount_Fuji_3.JPG
+chutes-niagara ; DXR ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Maid_of_the_Mist_VII_approaching_the_Horseshoe_Falls,_West_view_20170418_1.jpg
+nympheas ; Claude Monet ; Public domain ; https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg
+david-michel-ange ; Jörg Bittner Unna ; CC BY 3.0 ; https://commons.wikimedia.org/wiki/File:%27David%27_by_Michelangelo_Fir_JBU002.jpg
+victor-hugo ; Étienne Carjat ; Public domain ; https://commons.wikimedia.org/wiki/File:Victor_Hugo_by_%C3%89tienne_Carjat_1876_-_full.jpg
+marie-curie ; Henri Manuel ; Public domain ; https://commons.wikimedia.org/wiki/File:Marie_Curie_c1920.jpg
+cleopatre ; Louis le Grand ; Public domain ; https://commons.wikimedia.org/wiki/File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg
+jeanne-d-arc ; Auteur inconnu ; Public domain ; https://commons.wikimedia.org/wiki/File:Joan_of_Arc_miniature_graded.jpg
+gandhi ; Elliott & Fry ; Public domain ; https://commons.wikimedia.org/wiki/File:Mahatma-Gandhi,_studio,_1931.jpg
+burj-khalifa ; ECWiki1 ; CC BY 4.0 ; https://commons.wikimedia.org/wiki/File:Burj_Khalifa_Dubai,_UAE_at_Sunset_001_by_Eric_Chamchoum.jpg
+le-penseur ; AndrewHorne (talk) ; Public domain ; https://commons.wikimedia.org/wiki/File:The_Thinker,_Rodin.jpg
+leonard-de-vinci ; Leonardo da Vinci ; Public domain ; https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_presumed_self-portrait_-_WGA12798.jpg
