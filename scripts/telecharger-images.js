@@ -49,8 +49,7 @@ const IMAGES = [
   },
   {
     "id": "burj-khalifa",
-    "recherche": "Burj Khalifa Dubai tower skyline",
-    "titre": "File:Burj Khalifa.jpg",
+    "recherche": "Burj Khalifa incategory:\"Burj Khalifa\"",
     "refaire": true
   },
   {
@@ -116,8 +115,9 @@ const IMAGES = [
   },
   {
     "id": "le-penseur",
-    "recherche": "Rodin The Thinker sculpture Musée Rodin Paris bronze",
-    "refaire": true
+    "recherche": "Rodin The Thinker sculpture",
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "venus-de-milo",
@@ -133,37 +133,47 @@ const IMAGES = [
     "id": "victor-hugo",
     "recherche": "Victor Hugo portrait Carjat",
     "titre": "File:Victor Hugo by Étienne Carjat 1876 - full.jpg",
-    "refaire": true
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "marie-curie",
     "recherche": "Marie Curie portrait",
     "titre": "File:Marie Curie c1920.jpg",
-    "refaire": true
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "leonard-de-vinci",
     "recherche": "Leonardo da Vinci self-portrait red chalk",
-    "titre": "File:Leonardo self.jpg",
-    "refaire": true
+    "titre": [
+      "File:Leonardo self.jpg",
+      "File:Francesco Melzi - Portrait of Leonardo.png",
+      "File:Leonardo da Vinci - presumed self-portrait - WGA12798.jpg"
+    ],
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "cleopatre",
     "recherche": "Cleopatra VII bust Altes Museum Berlin",
     "titre": "File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg",
-    "refaire": true
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "jeanne-d-arc",
     "recherche": "Joan of Arc miniature 15th century",
     "titre": "File:Joan of Arc miniature graded.jpg",
-    "refaire": true
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "gandhi",
     "recherche": "Mahatma Gandhi portrait 1931",
     "titre": "File:Mahatma-Gandhi, studio, 1931.jpg",
-    "refaire": true
+    "refaire": true,
+    "portrait": true
   },
   {
     "id": "louis-pasteur",
@@ -277,10 +287,10 @@ async function parTitre(titre) {
 }
 
 async function choisir(item) {
-  if (item.titre) {
-    const direct = await parTitre(item.titre);
+  for (const titre of [].concat(item.titre || [])) {
+    const direct = await parTitre(titre);
     if (direct.length) return direct[0];
-    console.log('  (titre introuvable ou licence refusée : ' + item.titre + ' → recherche)');
+    console.log('  (titre introuvable ou licence refusée : ' + titre + ')');
   }
   const essais = [
     item.recherche + ' incategory:"Featured pictures on Wikimedia Commons"',
@@ -289,7 +299,7 @@ async function choisir(item) {
   ];
   for (const requete of essais) {
     const liste = await parRecherche(requete);
-    const bons = liste.filter((c) => c.paysage);
+    const bons = liste.filter((c) => c.paysage || item.portrait);
     if (bons.length) return bons[0];
     await pause(800);
   }
@@ -314,6 +324,11 @@ async function main() {
     try {
       const c = await choisir(item);
       if (!c) {
+        if (refaire && trouves.length) {
+          for (const vieux of trouves) fs.unlinkSync(path.join(DOSSIER, vieux));
+          retirer.add(item.id);
+          rapport.push(item.id + ' : ancienne photo SUPPRIMÉE (elle était fausse), aucune nouvelle trouvée');
+        }
         rapport.push(item.id + ' : AUCUNE PHOTO LIBRE TROUVÉE (cherche à la main : ' + item.recherche + ')');
         console.log('✗ ' + item.id);
         continue;
@@ -332,7 +347,7 @@ async function main() {
     }
     await pause(1500);
   }
-  if (nouvelles) {
+  if (nouvelles || retirer.size) {
     // Les lignes de crédit des images refaites sont remplacées, pas dupliquées.
     const gardees = credits.split('\n').filter((l) => l.trim() && !retirer.has(l.split(';')[0].trim()));
     fs.writeFileSync(CREDITS, gardees.join('\n') + (gardees.length ? '\n' : '') + nouvelles);
