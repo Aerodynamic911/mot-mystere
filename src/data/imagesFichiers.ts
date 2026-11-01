@@ -11,7 +11,6 @@ export const FICHIERS: Record<string, ImageSourcePropType> = {
   'baleine': require('../../assets/images/baleine.jpg'),
   'beethoven': require('../../assets/images/beethoven.jpg'),
   'big-ben': require('../../assets/images/big-ben.jpg'),
-  'burj-khalifa': require('../../assets/images/burj-khalifa.jpg'),
   'carcassonne': require('../../assets/images/carcassonne.jpg'),
   'chichen-itza': require('../../assets/images/chichen-itza.jpg'),
   'christ-redempteur': require('../../assets/images/christ-redempteur.jpg'),

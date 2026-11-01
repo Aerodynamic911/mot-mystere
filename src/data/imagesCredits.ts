@@ -469,12 +469,6 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "lien": "https://commons.wikimedia.org/wiki/File:Golden_Gate_Bridge_as_seen_from_Marshall%E2%80%99s_Beach,_March_2018.jpg"
   },
   {
-    "id": "burj-khalifa",
-    "auteur": "Qayyum Qayyumi Official",
-    "licence": "CC0",
-    "lien": "https://commons.wikimedia.org/wiki/File:Dubai,_beside_of_Burj_Al_Khalifa_tall_building.jpg"
-  },
-  {
     "id": "ours-polaire",
     "auteur": "Andreas Weith",
     "licence": "CC BY-SA 4.0",

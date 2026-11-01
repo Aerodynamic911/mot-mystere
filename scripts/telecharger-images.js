@@ -49,18 +49,6 @@ const IMAGES = [
     "recherche": "Angkor Wat"
   },
   {
-    "id": "burj-khalifa",
-    "recherche": "Burj Khalifa Dubai tallest building",
-    "portrait": true,
-    "motsTitre": "burj",
-    "motsExclus": "sunset|towers|skyline|panorama|night|construction|stamp|under|2008|2007|2009",
-    "refaire": true,
-    "titre": [
-      "File:Burj Khalifa.jpg",
-      "File:Burj Khalifa 2.jpg"
-    ]
-  },
-  {
     "id": "carcassonne",
     "recherche": "Cité de Carcassonne"
   },
@@ -194,7 +182,6 @@ const IMAGES = [
       "File:Polar bear (Ursus maritimus) 2.jpg"
     ],
     "motsExclus": "stamp|colnect|prey|kill|seal|carcass|eating|feeding|postage|coin|drawing|logo",
-    "refaire": true,
     "motsTitre": "polar|ours|bear"
   },
   {
