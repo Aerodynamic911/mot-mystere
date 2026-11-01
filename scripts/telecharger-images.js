@@ -2,7 +2,8 @@
 // Pour chaque image : cherche une photo libre (CC0, domaine public, CC BY, CC BY-SA), la télécharge en 1200 px de large
 // dans assets/images/<identifiant>.jpg, et ajoute sa ligne de crédit à assets/images/credits.txt.
 // Un rapport (scripts/rapport-images.txt) liste le fichier retenu pour chaque image : regarde les photos avant de valider.
-// Options : --force (retélécharge même si le fichier existe), --seulement=id1,id2
+// Options : --force (retélécharge même si le fichier existe), --seulement=id1,id2,
+//           --refaire (ne retélécharge que les images marquées « refaire » : photos corrigées après un premier passage).
 const fs = require('fs');
 const path = require('path');
 
@@ -19,7 +20,8 @@ const IMAGES = [
   },
   {
     "id": "versailles",
-    "recherche": "Château de Versailles facade"
+    "recherche": "Château de Versailles facade cour de marbre",
+    "refaire": true
   },
   {
     "id": "pyramide-louvre",
@@ -47,7 +49,9 @@ const IMAGES = [
   },
   {
     "id": "burj-khalifa",
-    "recherche": "Burj Khalifa"
+    "recherche": "Burj Khalifa Dubai tower skyline",
+    "titre": "File:Burj Khalifa.jpg",
+    "refaire": true
   },
   {
     "id": "carcassonne",
@@ -71,7 +75,9 @@ const IMAGES = [
   },
   {
     "id": "mont-fuji",
-    "recherche": "Mount Fuji"
+    "recherche": "Mount Fuji Japan landscape Lake Kawaguchi",
+    "titre": "File:Lake Kawaguchiko Sakura Mount Fuji 3.JPG",
+    "refaire": true
   },
   {
     "id": "grand-canyon",
@@ -79,7 +85,8 @@ const IMAGES = [
   },
   {
     "id": "chutes-niagara",
-    "recherche": "Niagara Falls"
+    "recherche": "Horseshoe Falls Niagara Falls Canada waterfall",
+    "refaire": true
   },
   {
     "id": "mont-blanc",
@@ -99,7 +106,9 @@ const IMAGES = [
   },
   {
     "id": "nympheas",
-    "recherche": "Claude Monet Water Lilies"
+    "recherche": "Claude Monet Nymphéas painting",
+    "titre": "File:Claude Monet - Water Lilies - 1906, Ryerson.jpg",
+    "refaire": true
   },
   {
     "id": "ronde-de-nuit",
@@ -107,7 +116,8 @@ const IMAGES = [
   },
   {
     "id": "le-penseur",
-    "recherche": "Auguste Rodin The Thinker"
+    "recherche": "Rodin The Thinker sculpture Musée Rodin Paris bronze",
+    "refaire": true
   },
   {
     "id": "venus-de-milo",
@@ -115,31 +125,45 @@ const IMAGES = [
   },
   {
     "id": "david-michel-ange",
-    "recherche": "Michelangelo David Galleria dell Accademia"
+    "recherche": "Michelangelo David statue Florence Accademia",
+    "titre": "File:'David' by Michelangelo Fir JBU002.jpg",
+    "refaire": true
   },
   {
     "id": "victor-hugo",
-    "recherche": "Victor Hugo Nadar portrait"
+    "recherche": "Victor Hugo portrait Carjat",
+    "titre": "File:Victor Hugo by Étienne Carjat 1876 - full.jpg",
+    "refaire": true
   },
   {
     "id": "marie-curie",
-    "recherche": "Marie Curie portrait"
+    "recherche": "Marie Curie portrait",
+    "titre": "File:Marie Curie c1920.jpg",
+    "refaire": true
   },
   {
     "id": "leonard-de-vinci",
-    "recherche": "Leonardo da Vinci portrait"
+    "recherche": "Leonardo da Vinci self-portrait red chalk",
+    "titre": "File:Leonardo self.jpg",
+    "refaire": true
   },
   {
     "id": "cleopatre",
-    "recherche": "Cleopatra VII bust Berlin"
+    "recherche": "Cleopatra VII bust Altes Museum Berlin",
+    "titre": "File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg",
+    "refaire": true
   },
   {
     "id": "jeanne-d-arc",
-    "recherche": "Joan of Arc portrait"
+    "recherche": "Joan of Arc miniature 15th century",
+    "titre": "File:Joan of Arc miniature graded.jpg",
+    "refaire": true
   },
   {
     "id": "gandhi",
-    "recherche": "Mahatma Gandhi portrait"
+    "recherche": "Mahatma Gandhi portrait 1931",
+    "titre": "File:Mahatma-Gandhi, studio, 1931.jpg",
+    "refaire": true
   },
   {
     "id": "louis-pasteur",
@@ -177,6 +201,7 @@ const IMAGES = [
 
 const args = process.argv.slice(2);
 const force = args.includes('--force');
+const refaire = args.includes('--refaire'); // retélécharge seulement les images marquées « refaire » dans la liste (photos corrigées)
 const seulement = (args.find((a) => a.startsWith('--seulement=')) || '').replace('--seulement=', '').split(',').filter(Boolean);
 
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -217,13 +242,13 @@ function licenceOk(licence) {
   return /^(cc0|cc-zero|public domain|pd|cc by|cc-by|attribution)/.test(l) || l.includes('public domain');
 }
 
-function candidat(page) {
+function candidat(page, souple) {
   const info = page.imageinfo && page.imageinfo[0];
   if (!info || !/^image\/(jpeg|png|webp)$/.test(info.mime)) return null;
   const meta = info.extmetadata || {};
   const licence = nettoie((meta.LicenseShortName || {}).value);
   if (!licenceOk(licence)) return null;
-  if (info.width < 1000 || info.height < 700) return null;
+  if (souple ? info.width < 600 || info.height < 600 : info.width < 1000 || info.height < 700) return null;
   const paysage = info.width >= info.height * 0.9;
   return {
     titre: page.title,
@@ -244,7 +269,19 @@ async function parRecherche(requete) {
   return pages.map(candidat).filter(Boolean);
 }
 
+async function parTitre(titre) {
+  const url = API + '?action=query&format=json&titles=' + encodeURIComponent(titre) + '&prop=' + PROP;
+  const data = await appel(url);
+  const pages = Object.values((data.query && data.query.pages) || {});
+  return pages.map((p) => candidat(p, true)).filter(Boolean);
+}
+
 async function choisir(item) {
+  if (item.titre) {
+    const direct = await parTitre(item.titre);
+    if (direct.length) return direct[0];
+    console.log('  (titre introuvable ou licence refusée : ' + item.titre + ' → recherche)');
+  }
   const essais = [
     item.recherche + ' incategory:"Featured pictures on Wikimedia Commons"',
     item.recherche + ' incategory:"Quality images"',
@@ -265,10 +302,12 @@ async function main() {
   const deja = new Set(credits.split('\n').map((l) => l.split(';')[0].trim()).filter(Boolean));
   const rapport = [];
   let nouvelles = '';
+  const retirer = new Set();
   for (const item of IMAGES) {
     if (seulement.length && !seulement.includes(item.id)) continue;
+    if (refaire && !item.refaire) continue;
     const trouves = fs.readdirSync(DOSSIER).filter((f) => f.replace(/\.[^.]+$/, '') === item.id);
-    if (trouves.length && !force) {
+    if (trouves.length && !force && !refaire) {
       rapport.push(item.id + ' : déjà présent (' + trouves[0] + ')');
       continue;
     }
@@ -281,8 +320,10 @@ async function main() {
       }
       const ext = c.mime === 'image/png' ? 'png' : c.mime === 'image/webp' ? 'webp' : 'jpg';
       const buf = await appel(c.url, true);
+      for (const vieux of trouves) fs.unlinkSync(path.join(DOSSIER, vieux)); // évite deux fichiers pour le même identifiant
       fs.writeFileSync(path.join(DOSSIER, item.id + '.' + ext), buf);
-      if (!deja.has(item.id)) nouvelles += item.id + ' ; ' + c.auteur + ' ; ' + c.licence + ' ; ' + c.lien + '\n';
+      retirer.add(item.id);
+      nouvelles += item.id + ' ; ' + c.auteur + ' ; ' + c.licence + ' ; ' + c.lien + '\n';
       rapport.push(item.id + ' : ' + c.titre + ' | ' + c.auteur + ' | ' + c.licence + ' | ' + Math.round(buf.length / 1024) + ' Ko');
       console.log('✓ ' + item.id + ' ← ' + c.titre);
     } catch (e) {
@@ -291,7 +332,11 @@ async function main() {
     }
     await pause(1500);
   }
-  if (nouvelles) fs.appendFileSync(CREDITS, (credits && !credits.endsWith('\n') ? '\n' : '') + nouvelles);
+  if (nouvelles) {
+    // Les lignes de crédit des images refaites sont remplacées, pas dupliquées.
+    const gardees = credits.split('\n').filter((l) => l.trim() && !retirer.has(l.split(';')[0].trim()));
+    fs.writeFileSync(CREDITS, gardees.join('\n') + (gardees.length ? '\n' : '') + nouvelles);
+  }
   fs.writeFileSync(RAPPORT, rapport.join('\n') + '\n');
   console.log('\nRapport : ' + RAPPORT);
   console.log('Étape suivante : node scripts/gen-images.js');
