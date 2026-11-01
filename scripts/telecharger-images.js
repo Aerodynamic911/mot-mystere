@@ -34,8 +34,7 @@ const IMAGES = [
     "id": "golden-gate",
     "recherche": "Golden Gate Bridge San Francisco",
     "motsTitre": "golden gate",
-    "motsExclus": "bw|black|fog|night",
-    "refaire": true
+    "motsExclus": "bw|black|fog|night"
   },
   {
     "id": "christ-redempteur",
@@ -51,11 +50,15 @@ const IMAGES = [
   },
   {
     "id": "burj-khalifa",
-    "recherche": "Burj Khalifa tower",
+    "recherche": "Burj Khalifa Dubai tallest building",
     "portrait": true,
     "motsTitre": "burj",
-    "motsExclus": "sunset|towers|skyline|panorama|night",
-    "refaire": true
+    "motsExclus": "sunset|towers|skyline|panorama|night|construction|stamp|under|2008|2007|2009",
+    "refaire": true,
+    "titre": [
+      "File:Burj Khalifa.jpg",
+      "File:Burj Khalifa 2.jpg"
+    ]
   },
   {
     "id": "carcassonne",
@@ -185,13 +188,14 @@ const IMAGES = [
   },
   {
     "id": "ours-polaire",
-    "recherche": "Polar bear Ursus maritimus portrait",
+    "recherche": "Polar bear Ursus maritimus",
     "titre": [
       "File:Polar Bear - Alaska (cropped).jpg",
       "File:Polar bear (Ursus maritimus) 2.jpg"
     ],
-    "motsExclus": "prey|kill|seal|carcass|eating|feeding",
-    "refaire": true
+    "motsExclus": "stamp|colnect|prey|kill|seal|carcass|eating|feeding|postage|coin|drawing|logo",
+    "refaire": true,
+    "motsTitre": "polar|ours|bear"
   },
   {
     "id": "flamant-rose",
