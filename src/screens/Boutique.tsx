@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   JOURS_ENTRE_GLACONS,
   MAX_GLACONS,
@@ -13,6 +13,7 @@ import {
   joursAvantGlacon,
   possedeSkin,
 } from '../game/boutique';
+import { EVENEMENTS } from '../data/evenements';
 import { SKINS, Skin, nomSkin } from '../game/skins';
 import CorpsMascotte from '../ui/CorpsMascotte';
 import { Stats } from '../game/storage';
@@ -46,6 +47,8 @@ export default function Boutique({
   onRetour,
 }: Props) {
   const [merci, setMerci] = useState('');
+  // Le skin ouvert en grand : on le regarde de près, et on confirme l'achat (ou on revient) dans cette fenêtre.
+  const [skinOuvert, setSkinOuvert] = useState<Skin | null>(null);
   const jokerOk = jokerDisponible(stats, cle);
   const attente = joursAvantGlacon(stats, cle);
   const glaconPlein = stats.glacons >= MAX_GLACONS;
@@ -147,16 +150,27 @@ export default function Boutique({
               possede={possedeSkin(stats, sk.id)}
               equipe={stats.skinEquipe === sk.id}
               pieces={stats.pieces}
-              onAcheter={() => {
-                onAcheterSkin(sk.id);
-                setMerci(tr('{e} Skin « {n} » acheté et équipé !', '{e} “{n}” skin bought and equipped!', { e: sk.emoji, n: nomSkin(sk) }));
-              }}
+              onOuvrir={() => setSkinOuvert(sk)}
               onEquiper={() => onEquiperSkin(sk.id)}
             />
           ))}
         </View>
         {merci !== '' && <Text style={styles.merci}>{merci}</Text>}
       </ScrollView>
+      <ApercuSkin
+        skin={skinOuvert}
+        stats={stats}
+        onFermer={() => setSkinOuvert(null)}
+        onAcheter={(sk) => {
+          onAcheterSkin(sk.id);
+          setMerci(tr('{e} Skin « {n} » acheté et équipé !', '{e} “{n}” skin bought and equipped!', { e: sk.emoji, n: nomSkin(sk) }));
+          setSkinOuvert(null);
+        }}
+        onEquiper={(sk) => {
+          onEquiperSkin(sk.id);
+          setSkinOuvert(null);
+        }}
+      />
     </View>
   );
 }
@@ -166,20 +180,20 @@ function CarteSkin({
   possede,
   equipe,
   pieces,
-  onAcheter,
+  onOuvrir,
   onEquiper,
 }: {
   skin: Skin;
   possede: boolean;
   equipe: boolean;
   pieces: number;
-  onAcheter: () => void;
+  onOuvrir: () => void;
   onEquiper: () => void;
 }) {
   const evenement = skin.origine === 'evenement';
   const trop = !possede && !evenement && pieces < skin.prix;
   return (
-    <View style={[styles.carteSkin, equipe && styles.carteSkinEquipee]}>
+    <TouchableOpacity style={[styles.carteSkin, equipe && styles.carteSkinEquipee]} onPress={onOuvrir} activeOpacity={0.85} accessibilityLabel={tr('Voir {n} en grand', 'View {n} larger', { n: nomSkin(skin) })}>
       <View style={!possede && evenement ? styles.apercuVerrou : undefined}>
         <CorpsMascotte largeur={84} hauteur={80} skin={skin.id} />
       </View>
@@ -195,11 +209,68 @@ function CarteSkin({
       ) : evenement ? (
         <Text style={styles.skinVerrou}>🔒 {tr('Terminez l’événement', 'Complete the event')}</Text>
       ) : (
-        <TouchableOpacity style={[styles.skinBouton, trop && styles.acheterInactif]} onPress={onAcheter} disabled={trop} activeOpacity={0.85}>
+        <TouchableOpacity style={[styles.skinBouton, trop && styles.acheterInactif]} onPress={onOuvrir} activeOpacity={0.85}>
           <Text style={styles.acheterTexte}>🪙 {skin.prix}</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </TouchableOpacity>
+  );
+}
+
+/** Aperçu d'un skin en grand. L'achat n'a lieu qu'ici, après un second geste : « Acheter » ou « Retour ». */
+function ApercuSkin({
+  skin,
+  stats,
+  onFermer,
+  onAcheter,
+  onEquiper,
+}: {
+  skin: Skin | null;
+  stats: Stats;
+  onFermer: () => void;
+  onAcheter: (s: Skin) => void;
+  onEquiper: (s: Skin) => void;
+}) {
+  if (!skin) return null;
+  const possede = possedeSkin(stats, skin.id);
+  const equipe = stats.skinEquipe === skin.id;
+  const evenement = skin.origine === 'evenement';
+  const manque = skin.prix - stats.pieces;
+  const titreEvenement = evenement ? EVENEMENTS.find((e) => e.id === skin.evenement)?.titre : undefined;
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onFermer}>
+      <View style={styles.voile}>
+        <View style={styles.apercuBoite}>
+          <CorpsMascotte largeur={230} hauteur={218} skin={skin.id} />
+          <Text style={styles.apercuNom}>
+            {skin.emoji} {nomSkin(skin)}
+          </Text>
+          {equipe ? (
+            <Text style={styles.apercuStatut}>{tr('✓ Équipé', '✓ Equipped')}</Text>
+          ) : possede ? (
+            <TouchableOpacity style={styles.apercuPrincipal} onPress={() => onEquiper(skin)} activeOpacity={0.85}>
+              <Text style={styles.acheterTexte}>{tr('Équiper', 'Equip')}</Text>
+            </TouchableOpacity>
+          ) : evenement ? (
+            <Text style={styles.apercuInfo}>
+              🔒 {titreEvenement ? tr('Terminez l’événement « {t} » pour l’obtenir.', 'Complete the “{t}” event to get it.', { t: titreEvenement }) : tr('Terminez l’événement pour l’obtenir.', 'Complete the event to get it.')}
+            </Text>
+          ) : manque > 0 ? (
+            <Text style={styles.apercuInfo}>{tr('🪙 {p} — il vous manque {n} 🪙', '🪙 {p} — you need {n} more 🪙', { p: skin.prix, n: manque })}</Text>
+          ) : (
+            <>
+              <Text style={styles.apercuInfo}>{tr('Vous avez 🪙 {a}. Après achat : 🪙 {b}.', 'You have 🪙 {a}. After buying: 🪙 {b}.', { a: stats.pieces, b: stats.pieces - skin.prix })}</Text>
+              <TouchableOpacity style={styles.apercuPrincipal} onPress={() => onAcheter(skin)} activeOpacity={0.85}>
+                <Text style={styles.acheterTexte}>{tr('Acheter pour 🪙 {p}', 'Buy for 🪙 {p}', { p: skin.prix })}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          <TouchableOpacity style={styles.apercuRetour} onPress={onFermer} activeOpacity={0.85}>
+            <Text style={styles.apercuRetourTexte}>{tr('Retour', 'Back')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -272,4 +343,12 @@ const styles = StyleSheet.create({
   skinVerrou: { color: couleurs.texteSecondaire, fontSize: 11, fontWeight: '600', marginTop: 8, textAlign: 'center' },
   skinBouton: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingHorizontal: 16, paddingVertical: 8, marginTop: 8 },
   merci: { color: couleurs.succes, fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 8 },
+  voile: { flex: 1, backgroundColor: 'rgba(10,12,28,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  apercuBoite: { width: '100%', maxWidth: 360, alignItems: 'center', backgroundColor: couleurs.carte, borderRadius: rayon, borderWidth: 2, borderColor: couleurs.accent, paddingVertical: 22, paddingHorizontal: 20 },
+  apercuNom: { color: couleurs.texte, fontSize: 22, fontWeight: '900', marginTop: 10 },
+  apercuStatut: { color: couleurs.succes, fontSize: 16, fontWeight: '800', marginTop: 12 },
+  apercuInfo: { color: couleurs.texteSecondaire, fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 10 },
+  apercuPrincipal: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 14, paddingHorizontal: 30, marginTop: 14, alignSelf: 'stretch', alignItems: 'center' },
+  apercuRetour: { borderRadius: rayon, borderWidth: 1, borderColor: couleurs.bordure, paddingVertical: 12, paddingHorizontal: 30, marginTop: 10, alignSelf: 'stretch', alignItems: 'center' },
+  apercuRetourTexte: { color: couleurs.texte, fontWeight: '700', fontSize: 15 },
 });

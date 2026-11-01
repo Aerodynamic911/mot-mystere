@@ -4,7 +4,7 @@ import AccessoiresSkin from './AccessoiresSkin';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 /**
- * Dessin de la mascotte (viewBox 200 × 190), partagé par la grande mascotte de l'accueil et la mini-mascotte de la carte.
+ * Dessin de la mascotte (viewBox 206 × 190, un peu de marge pour la main droite), partagé par la grande mascotte de l'accueil et la mini-mascotte de la carte.
  * Boîte-mystère en volume : face arrière en retrait, reflets, rivets dorés, couvercle épais avec fermoir, ampoule à l'antenne.
  */
 export default function CorpsMascotte({ largeur, hauteur, yeuxFermes = false, skin = 'classique' }: { largeur: number; hauteur: number; yeuxFermes?: boolean; skin?: string }) {
@@ -12,7 +12,7 @@ export default function CorpsMascotte({ largeur, hauteur, yeuxFermes = false, sk
   // Les identifiants de dégradés portent le nom du skin : plusieurs mascottes peuvent être affichées ensemble.
   const k = `-${skin}`;
   return (
-    <Svg width={largeur} height={hauteur} viewBox="0 0 200 190">
+    <Svg width={largeur} height={hauteur} viewBox="-3 0 206 190">
     <Defs >
       <LinearGradient id={`gCorps${k}`} x1="0" y1="0" x2="0" y2="1">
         <Stop offset="0" stopColor={p.c0} />
