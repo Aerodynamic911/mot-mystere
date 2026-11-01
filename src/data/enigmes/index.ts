@@ -13,8 +13,12 @@ import plus1 from './plus1';
 import plus2 from './plus2';
 import plus3 from './plus3';
 import plus4 from './plus4';
+import nouv1 from './nouv1';
+import nouv2 from './nouv2';
+import nouv3 from './nouv3';
+import nouv4 from './nouv4';
 
-const TOUTES: Brut[] = [...tous1, ...tous2, ...tous3, ...tous4, ...ado, ...a18, ...a30, ...a50, ...plus1, ...plus2, ...plus3, ...plus4];
+const TOUTES: Brut[] = [...tous1, ...tous2, ...tous3, ...tous4, ...ado, ...a18, ...a30, ...a50, ...plus1, ...plus2, ...plus3, ...plus4, ...nouv1, ...nouv2, ...nouv3, ...nouv4];
 
 /** Les énigmes ajoutées (en français). */
 export const NOUVELLES: Mystere[] = TOUTES.map((b) => b.fr);

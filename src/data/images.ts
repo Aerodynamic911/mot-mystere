@@ -2,9 +2,10 @@ import type { ImageSourcePropType } from 'react-native';
 import type { Mystere } from './mysteres';
 import type { MystereEn } from './mysteres_en';
 import { FICHIERS } from './imagesFichiers';
+import { NOUVELLES_DEFINITIONS } from './imagesNouvelles';
 
 /** [identifiant du fichier, catégorie FR, catégorie EN, [réponse, autres écritures, anecdote] en français, idem en anglais] */
-type Definition = [string, string, string, [string, string[], string], [string, string[], string]];
+export type Definition = [string, string, string, [string, string[], string], [string, string[], string]];
 
 const DEFINITIONS: Definition[] = [
   // Monuments
@@ -142,14 +143,14 @@ export interface ImageMystere {
 }
 
 /** Les images fournies avec l'appli (seules celles dont le fichier existe sont jouables). */
-export const IMAGES: ImageMystere[] = DEFINITIONS.filter((d) => FICHIERS[d[0]]).map((d) => ({
+export const IMAGES: ImageMystere[] = [...DEFINITIONS, ...NOUVELLES_DEFINITIONS].filter((d) => FICHIERS[d[0]]).map((d) => ({
   mystere: { id: `img-${d[0]}`, categorie: d[1], reponse: d[3][0], alias: d[3][1], indices: SANS_INDICE, anecdote: d[3][2] },
   source: FICHIERS[d[0]],
 }));
 
 /** Traductions anglaises des mystères-images, par identifiant. */
 export const EN_IMAGES: Record<string, MystereEn> = Object.fromEntries(
-  DEFINITIONS.map((d) => [`img-${d[0]}`, { c: d[2], r: d[4][0], a: d[4][1], i: SANS_INDICE, n: d[4][2] } as MystereEn]),
+  [...DEFINITIONS, ...NOUVELLES_DEFINITIONS].map((d) => [`img-${d[0]}`, { c: d[2], r: d[4][0], a: d[4][1], i: SANS_INDICE, n: d[4][2] } as MystereEn]),
 );
 
 /** Le mode image n'apparaît que s'il y a assez d'images pour varier les parties. */
