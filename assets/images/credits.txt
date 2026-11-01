@@ -41,7 +41,6 @@ zebre ; Charles J. Sharp ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/Fil
 sacre-coeur ; Terragio67 ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Basilique_du_Sacr%C3%A9-C%C5%93ur_de_Montmartre_-_Paris_-_GT-01_-_2024.jpg
 pyramide-louvre ; Benh LIEU SONG (Flickr) ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Louvre_Courtyard,_Looking_West.jpg
 opera-sydney ; Diliff ; CC BY-SA 3.0 ; https://commons.wikimedia.org/wiki/File:Sydney_Opera_House_-_Dec_2008.jpg
-golden-gate ; Dietmar Rabich ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:San_Francisco_(CA,_USA),_Golden_Gate_Bridge_--_2022_--_3023_(bw).jpg
 christ-redempteur ; Donatas Dabravolskas ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Unique_Moment_with_the_Moon_and_Christ_the_Redeemer_3.jpg
 petra ; Vyacheslav Argenberg ; CC BY 4.0 ; https://commons.wikimedia.org/wiki/File:Al-Khazneh_(The_Treasury)_2,_Petra,_Jordan.jpg
 angkor-vat ; Satdeep Gill ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Angkor_Wat_with_its_reflection_(cropped).jpg
@@ -59,7 +58,6 @@ ronde-de-nuit ; Rembrandt ; Public domain ; https://commons.wikimedia.org/wiki/F
 venus-de-milo ; Livioandronico2013 ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Foreground_of_the_Venus_de_Milo.jpg
 louis-pasteur ; auteur inconnu ; Public domain ; https://commons.wikimedia.org/wiki/File:Louis_Pasteur-portrait.jpg
 loup ; Christian Mehlführer, User:Chmehl ; CC BY 2.5 ; https://commons.wikimedia.org/wiki/File:MC_Timberwolf.jpg
-ours-polaire ; AWeith ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Polar_bear_(Ursus_maritimus)_with_its_prey.jpg
 flamant-rose ; Diego Delso ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Flamenco_com%C3%BAn_(Phoenicopterus_roseus),_Walvis_Bay,_Namibia,_2018-08-05,_DD_30.jpg
 dauphin ; Giles Laurent ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:010_Atlantic_bottlenose_dolphin_jumping_at_Pelican_point_Photo_by_Giles_Laurent.jpg
 paon ; Senthi Aathavan Senthilverl ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Indian_peafowl_or_blue_peafowl_(Pavo_cristatus).jpg
@@ -75,6 +73,8 @@ marie-curie ; Henri Manuel ; Public domain ; https://commons.wikimedia.org/wiki/
 cleopatre ; Louis le Grand ; Public domain ; https://commons.wikimedia.org/wiki/File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg
 jeanne-d-arc ; Auteur inconnu ; Public domain ; https://commons.wikimedia.org/wiki/File:Joan_of_Arc_miniature_graded.jpg
 gandhi ; Elliott & Fry ; Public domain ; https://commons.wikimedia.org/wiki/File:Mahatma-Gandhi,_studio,_1931.jpg
-burj-khalifa ; ECWiki1 ; CC BY 4.0 ; https://commons.wikimedia.org/wiki/File:Burj_Khalifa_Dubai,_UAE_at_Sunset_001_by_Eric_Chamchoum.jpg
 le-penseur ; AndrewHorne (talk) ; Public domain ; https://commons.wikimedia.org/wiki/File:The_Thinker,_Rodin.jpg
 leonard-de-vinci ; Leonardo da Vinci ; Public domain ; https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_presumed_self-portrait_-_WGA12798.jpg
+golden-gate ; Frank Schulenburg ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Golden_Gate_Bridge_as_seen_from_Marshall%E2%80%99s_Beach,_March_2018.jpg
+burj-khalifa ; Qayyum Qayyumi Official ; CC0 ; https://commons.wikimedia.org/wiki/File:Dubai,_beside_of_Burj_Al_Khalifa_tall_building.jpg
+ours-polaire ; Andreas Weith ; CC BY-SA 4.0 ; https://commons.wikimedia.org/wiki/File:Polar_bear_(Ursus_maritimus)_in_the_drift_ice_region_north_of_Svalbard.jpg

@@ -259,12 +259,6 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "lien": "https://commons.wikimedia.org/wiki/File:Sydney_Opera_House_-_Dec_2008.jpg"
   },
   {
-    "id": "golden-gate",
-    "auteur": "Dietmar Rabich",
-    "licence": "CC BY-SA 4.0",
-    "lien": "https://commons.wikimedia.org/wiki/File:San_Francisco_(CA,_USA),_Golden_Gate_Bridge_--_2022_--_3023_(bw).jpg"
-  },
-  {
     "id": "christ-redempteur",
     "auteur": "Donatas Dabravolskas",
     "licence": "CC BY-SA 4.0",
@@ -367,12 +361,6 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "lien": "https://commons.wikimedia.org/wiki/File:MC_Timberwolf.jpg"
   },
   {
-    "id": "ours-polaire",
-    "auteur": "AWeith",
-    "licence": "CC BY-SA 4.0",
-    "lien": "https://commons.wikimedia.org/wiki/File:Polar_bear_(Ursus_maritimus)_with_its_prey.jpg"
-  },
-  {
     "id": "flamant-rose",
     "auteur": "Diego Delso",
     "licence": "CC BY-SA 4.0",
@@ -463,12 +451,6 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "lien": "https://commons.wikimedia.org/wiki/File:Mahatma-Gandhi,_studio,_1931.jpg"
   },
   {
-    "id": "burj-khalifa",
-    "auteur": "ECWiki1",
-    "licence": "CC BY 4.0",
-    "lien": "https://commons.wikimedia.org/wiki/File:Burj_Khalifa_Dubai,_UAE_at_Sunset_001_by_Eric_Chamchoum.jpg"
-  },
-  {
     "id": "le-penseur",
     "auteur": "AndrewHorne (talk)",
     "licence": "Public domain",
@@ -479,5 +461,23 @@ export const CREDITS_IMAGES: { id: string; auteur: string; licence: string; lien
     "auteur": "Leonardo da Vinci",
     "licence": "Public domain",
     "lien": "https://commons.wikimedia.org/wiki/File:Leonardo_da_Vinci_-_presumed_self-portrait_-_WGA12798.jpg"
+  },
+  {
+    "id": "golden-gate",
+    "auteur": "Frank Schulenburg",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Golden_Gate_Bridge_as_seen_from_Marshall%E2%80%99s_Beach,_March_2018.jpg"
+  },
+  {
+    "id": "burj-khalifa",
+    "auteur": "Qayyum Qayyumi Official",
+    "licence": "CC0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Dubai,_beside_of_Burj_Al_Khalifa_tall_building.jpg"
+  },
+  {
+    "id": "ours-polaire",
+    "auteur": "Andreas Weith",
+    "licence": "CC BY-SA 4.0",
+    "lien": "https://commons.wikimedia.org/wiki/File:Polar_bear_(Ursus_maritimus)_in_the_drift_ice_region_north_of_Svalbard.jpg"
   }
 ];
