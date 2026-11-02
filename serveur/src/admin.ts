@@ -23,15 +23,36 @@ interface LignePseudo {
   signalements: number;
 }
 
-function autorise(requete: Request, env: Env): boolean {
-  const attendu = (env.ADMIN_EMAIL ?? '').trim().toLowerCase();
-  if (!attendu) return false; // secret absent : tout est refuse
-  const recu = (requete.headers.get('cf-access-authenticated-user-email') ?? '').trim().toLowerCase();
-  return recu === attendu;
+// Identite donnee par Cloudflare Access : en-tete e-mail, sinon contenu du jeton d'acces.
+function emailAccess(requete: Request): string {
+  const direct = (requete.headers.get('cf-access-authenticated-user-email') ?? '').trim().toLowerCase();
+  if (direct) return direct;
+  const jeton = requete.headers.get('cf-access-jwt-assertion') ?? '';
+  try {
+    const charge = jeton.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const donnees = JSON.parse(atob(charge)) as { email?: string };
+    return (donnees.email ?? '').trim().toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+// ADMIN_EMAIL peut contenir plusieurs adresses separees par des virgules.
+// Retourne null si l'acces est autorise, sinon la raison du refus.
+function refus(requete: Request, env: Env): string | null {
+  const autorises = (env.ADMIN_EMAIL ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (!autorises.length) return 'secret_absent';
+  const recu = emailAccess(requete);
+  if (!recu) return 'email_absent';
+  return autorises.includes(recu) ? null : 'email_different';
 }
 
 export async function adminRequete(requete: Request, env: Env, url: URL): Promise<Response> {
-  if (!autorise(requete, env)) return erreur(403, 'acces_refuse');
+  const motif = refus(requete, env);
+  if (motif) return erreur(403, 'acces_refuse', { motif });
 
   const { pathname } = url;
   const methode = requete.method;
