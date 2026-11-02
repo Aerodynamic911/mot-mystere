@@ -31,6 +31,7 @@ import {
   PROGRESSION_VIDE,
   Progression,
   chargerProgression,
+  etapeRatee,
   etapeReussie,
   evenementDe,
   niveauReussi,
@@ -577,6 +578,9 @@ function Application() {
               apres = etapeReussie(prog, ecran.id, ecran.etape, propositions.length);
               changerProgression(apres);
               setEtapeAnimee({ id: ecran.id, etape: ecran.etape });
+            } else {
+              apres = etapeRatee(prog, ecran.id, ecran.etape);
+              if (apres !== prog) changerProgression(apres);
             }
             // Dernière étape réussie : le skin de l'événement est offert (une seule fois).
             const idEvt = ecran.id;

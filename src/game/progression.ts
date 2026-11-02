@@ -6,6 +6,8 @@ export interface ProgressionEvenement {
   faites: number;
   /** Étoiles obtenues (0 à 3) pour chaque étape réussie. */
   etoiles: number[];
+  /** Étapes ratées au moins une fois : on a vu la réponse, donc une revanche ne rapporte qu'une étoile. */
+  ratees?: number[];
 }
 
 export interface Progression {
@@ -49,7 +51,10 @@ function valider(brut: Partial<Progression> | null): Progression {
     const faites = Number.isFinite(e?.faites) ? Math.max(0, Math.min(NB_ETAPES, Math.floor(e!.faites))) : 0;
     const liste = Array.isArray(e?.etoiles) ? e!.etoiles.slice(0, faites) : [];
     while (liste.length < faites) liste.push(1);
-    evenements[ev.id] = { faites, etoiles: liste.map((x) => (x >= 1 && x <= 3 ? Math.floor(x) : 1)) };
+    const ratees = Array.isArray(e?.ratees)
+      ? e!.ratees.filter((x) => Number.isInteger(x) && x > faites && x <= NB_ETAPES)
+      : [];
+    evenements[ev.id] = { faites, etoiles: liste.map((x) => (x >= 1 && x <= 3 ? Math.floor(x) : 1)), ratees };
   }
   const vus = Array.isArray(a?.vus) ? a!.vus.filter((x) => typeof x === 'string').slice(-40) : [];
   const ec = a?.enCours;
@@ -93,11 +98,27 @@ export function niveauReussi(prog: Progression, nbPropositions: number): Progres
 export function etapeReussie(prog: Progression, id: string, etape: number, nbPropositions: number): Progression {
   const actuel = evenementDe(prog, id);
   if (etape !== actuel.faites + 1 || etape > NB_ETAPES) return prog;
+  // Étape déjà ratée : on connaît la réponse, la revanche ne vaut qu'une étoile.
+  const revanche = (actuel.ratees ?? []).includes(etape);
   return {
     ...prog,
     evenements: {
       ...prog.evenements,
-      [id]: { faites: etape, etoiles: [...actuel.etoiles, etoilesPour(nbPropositions)] },
+      [id]: {
+        faites: etape,
+        etoiles: [...actuel.etoiles, revanche ? 1 : etoilesPour(nbPropositions)],
+        ratees: (actuel.ratees ?? []).filter((x) => x !== etape),
+      },
     },
+  };
+}
+
+/** Étape d'événement ratée : on s'en souvient (seule l'étape en cours compte). */
+export function etapeRatee(prog: Progression, id: string, etape: number): Progression {
+  const actuel = evenementDe(prog, id);
+  if (etape !== actuel.faites + 1 || etape > NB_ETAPES || (actuel.ratees ?? []).includes(etape)) return prog;
+  return {
+    ...prog,
+    evenements: { ...prog.evenements, [id]: { ...actuel, ratees: [...(actuel.ratees ?? []), etape] } },
   };
 }
