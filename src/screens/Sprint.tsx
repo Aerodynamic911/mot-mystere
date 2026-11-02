@@ -344,11 +344,11 @@ export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTermi
           </TouchableOpacity>
           {jokersTemps > 0 && (
             <TouchableOpacity style={styles.petit} onPress={ajouterTemps} activeOpacity={0.85}>
-              <Text style={styles.petitTexte}>⏳ +{SECONDES_JOKER_TEMPS} s ({jokersTemps})</Text>
+              <Text style={styles.petitTexte} numberOfLines={1} adjustsFontSizeToFit>⏳ +{SECONDES_JOKER_TEMPS} s ({jokersTemps})</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity style={[styles.petit, styles.petitPasser]} onPress={passer} activeOpacity={0.85}>
-            <Text style={styles.petitTexte}>⏭ {tr('Passer (−{n} s)', 'Skip (−{n} s)', { n: PENALITE_PASSER })}</Text>
+            <Text style={styles.petitTexte} numberOfLines={1} adjustsFontSizeToFit>⏭ {tr('Passer (−{n} s)', 'Skip (−{n} s)', { n: PENALITE_PASSER })}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.saisieLigne}>
