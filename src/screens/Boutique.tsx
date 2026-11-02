@@ -13,7 +13,7 @@ import {
   joursAvantGlacon,
   possedeSkin,
 } from '../game/boutique';
-import { EVENEMENTS } from '../data/evenements';
+import { EVENEMENTS, evenementEnCours } from '../data/evenements';
 import { SKINS, Skin, nomSkin } from '../game/skins';
 import CorpsMascotte from '../ui/CorpsMascotte';
 import { Stats } from '../game/storage';
@@ -143,7 +143,10 @@ export default function Boutique({
           )}
         </Text>
         <View style={styles.grille}>
-          {SKINS.map((sk) => (
+          {SKINS.filter(
+            // Un seul skin d'événement à la fois : celui de l'événement en cours (un skin déjà gagné reste visible).
+            (sk) => sk.origine !== 'evenement' || sk.evenement === evenementEnCours().id || possedeSkin(stats, sk.id),
+          ).map((sk) => (
             <CarteSkin
               key={sk.id}
               skin={sk}
