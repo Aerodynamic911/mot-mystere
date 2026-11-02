@@ -49,6 +49,7 @@ import RecompenseModal, { Recompense } from './src/ui/RecompenseModal';
 import EvenementCarte from './src/screens/EvenementCarte';
 import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
+import ProfilEcran from './src/screens/Profil';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
 import Quetes from './src/screens/Quetes';
@@ -77,6 +78,7 @@ const BOSS_PIECES = 25;
 type Ecran =
   | { nom: 'accueil' }
   | { nom: 'preferences' }
+  | { nom: 'profil' }
   | { nom: 'jour' }
   | { nom: 'aventure' }
   | { nom: 'aventure-jeu'; niveau: number; essai: number; mystere: Mystere }
@@ -428,7 +430,11 @@ function Application() {
       )}
 
       {ecran.nom === 'preferences' && (
-        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} />
+        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} onProfil={() => setEcran({ nom: 'profil' })} />
+      )}
+
+      {ecran.nom === 'profil' && (
+        <ProfilEcran onRetour={() => setEcran({ nom: 'preferences' })} />
       )}
 
       {ecran.nom === 'jour' && (

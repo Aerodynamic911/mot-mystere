@@ -18,3 +18,6 @@ export const LIEN_AVIS = Platform.OS === 'ios' ? `${LIEN_APP_STORE}?action=write
 
 /** Nombre de partages nécessaires pour gagner un joker. */
 export const PARTAGES_PAR_JOKER = 3;
+
+/** Serveur de Quizzle (Cloudflare) : pseudo, amis, groupes. Rien n'y est envoyé tant que le joueur n'a pas créé son profil. */
+export const URL_SERVEUR = 'https://api.occitangames.com';

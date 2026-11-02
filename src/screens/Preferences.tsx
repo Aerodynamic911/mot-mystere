@@ -12,6 +12,7 @@ interface Props {
   prefs: Preferences;
   onChange: (prefs: Preferences) => void;
   onRetour: () => void;
+  onProfil: () => void;
 }
 
 interface Choix<T> {
@@ -41,7 +42,7 @@ const ages = (): Choix<TrancheAge>[] => [
   { valeur: 'a50', titre: tr('50 ans et plus', '50 and over') },
 ];
 
-export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
+export default function PreferencesEcran({ prefs, onChange, onRetour, onProfil }: Props) {
   const [creditsOuverts, setCreditsOuverts] = useState(false);
   return (
     <View style={styles.racine}>
@@ -82,6 +83,18 @@ export default function PreferencesEcran({ prefs, onChange, onRetour }: Props) {
               'This choice is stored on your phone. The riddles offered are adapted to your age group, always with a common base for everyone.',
             )}
           </Text>
+        </Section>
+
+        <Section titre={tr('Profil en ligne', 'Online profile')}>
+          <Text style={styles.note}>
+            {tr(
+              'Choisissez un pseudo pour jouer avec vos amis. Rien n’est envoyé tant que vous n’en avez pas choisi un.',
+              'Pick a nickname to play with your friends. Nothing is sent until you choose one.',
+            )}
+          </Text>
+          <TouchableOpacity style={styles.boutonAvis} onPress={onProfil} activeOpacity={0.85} accessibilityRole="button">
+            <Text style={styles.boutonAvisTexte}>👤 {tr('Mon pseudo', 'My nickname')}</Text>
+          </TouchableOpacity>
         </Section>
 
         {LIEN_AVIS !== '' && (
