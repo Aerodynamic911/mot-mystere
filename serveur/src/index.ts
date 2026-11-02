@@ -1,59 +1,18 @@
 // Quizzle 1.3 : API (Cloudflare Worker + base D1).
-// Etape actuelle : joueur anonyme et pseudo (filtre automatique, validation manuelle ensuite).
+// Etape actuelle : joueur anonyme et pseudo, plus le BackOffice (admin.ts) pour la moderation.
 
-// --- Types minimaux (evite une dependance de plus) ---------------------------------------
-interface D1Result<T = unknown> {
-  results: T[];
-  meta: { changes?: number };
-}
-interface D1Statement {
-  bind(...valeurs: unknown[]): D1Statement;
-  first<T = unknown>(): Promise<T | null>;
-  all<T = unknown>(): Promise<D1Result<T>>;
-  run(): Promise<D1Result>;
-}
-interface D1Database {
-  prepare(requete: string): D1Statement;
-  batch(instructions: D1Statement[]): Promise<D1Result[]>;
-}
-interface Env {
-  DB: D1Database;
-}
-
-interface Joueur {
-  id: string;
-  secret_hash: string;
-  code_ami: string;
-  pseudo: string | null;
-  pseudo_cle: string | null;
-  statut: 'attente' | 'approuve' | 'refuse' | 'banni';
-  dernier_changement_pseudo: string | null;
-}
+import { adminRequete } from './admin';
+import {
+  type Env,
+  type Joueur,
+  erreur,
+  json,
+  jourParis,
+  lireCorps,
+  normaliser,
+} from './commun';
 
 // --- Outils ------------------------------------------------------------------------------
-const ENTETES = {
-  'content-type': 'application/json; charset=utf-8',
-  'cache-control': 'no-store',
-};
-
-function json(donnees: unknown, status = 200): Response {
-  return new Response(JSON.stringify(donnees), { status, headers: ENTETES });
-}
-
-function erreur(status: number, code: string, extra: Record<string, unknown> = {}): Response {
-  return json({ erreur: code, ...extra }, status);
-}
-
-// Jour courant au fuseau Europe/Paris (AAAA-MM-JJ) : c'est le serveur qui decide du jour.
-function jourParis(): string {
-  return new Intl.DateTimeFormat('fr-CA', {
-    timeZone: 'Europe/Paris',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
-
 async function sha256(texte: string): Promise<string> {
   const octets = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texte));
   return [...new Uint8Array(octets)].map((o) => o.toString(16).padStart(2, '0')).join('');
@@ -70,15 +29,6 @@ const ALPHABET_CODE = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function codeAleatoire(longueur: number): string {
   const octets = crypto.getRandomValues(new Uint8Array(longueur));
   return [...octets].map((o) => ALPHABET_CODE[o % ALPHABET_CODE.length]).join('');
-}
-
-async function lireCorps(requete: Request): Promise<Record<string, unknown>> {
-  try {
-    const corps = await requete.json();
-    return corps && typeof corps === 'object' ? (corps as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
 }
 
 // Authentification : l'app envoie son identifiant et son secret ; le serveur ne garde que l'empreinte.
@@ -99,21 +49,6 @@ async function authentifier(requete: Request, env: Env): Promise<Joueur | null> 
 const FORME_PSEUDO = /^[\p{L}\p{N}_-]+(?: [\p{L}\p{N}_-]+)*$/u;
 const COORDONNEES = /@|https?:|www\.|\.(com|fr|net|org|io)\b|\d{6,}/i;
 const SEMAINE_MS = 7 * 24 * 3600 * 1000;
-
-// Minuscules, sans accents, chiffres "d'argot" remplaces, sans separateurs.
-function normaliser(texte: string): string {
-  return texte
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[0@]/g, 'o')
-    .replace(/[1!|]/g, 'i')
-    .replace(/3/g, 'e')
-    .replace(/[4]/g, 'a')
-    .replace(/[5$]/g, 's')
-    .replace(/7/g, 't')
-    .replace(/[\s_-]+/g, '');
-}
 
 function nomAffiche(joueur: Joueur): string {
   return joueur.statut === 'approuve' && joueur.pseudo
@@ -167,7 +102,7 @@ async function changerPseudo(requete: Request, env: Env, joueur: Joueur): Promis
   }
 
   // Un changement par semaine (le premier pseudo est libre).
-  if (joueur.pseudo && joueur.dernier_changement_pseudo) {
+  if (joueur.pseudo && joueur.statut !== 'refuse' && joueur.dernier_changement_pseudo) {
     const depuis = Date.now() - Date.parse(joueur.dernier_changement_pseudo.replace(' ', 'T') + 'Z');
     if (depuis < SEMAINE_MS) {
       return erreur(429, 'trop_tot', { reessayer_dans_secondes: Math.ceil((SEMAINE_MS - depuis) / 1000) });
@@ -207,8 +142,14 @@ async function supprimerJoueur(env: Env, joueur: Joueur): Promise<Response> {
 // --- Routes ------------------------------------------------------------------------------
 export default {
   async fetch(requete: Request, env: Env): Promise<Response> {
-    const { pathname } = new URL(requete.url);
+    const url = new URL(requete.url);
+    const { pathname } = url;
     const methode = requete.method;
+
+    // Le BackOffice vit sur son propre nom de domaine ; l'API de l'app n'y repond jamais.
+    if (url.hostname === (env.ADMIN_HOST ?? 'admin.occitangames.com')) {
+      return adminRequete(requete, env, url);
+    }
 
     if (methode === 'GET' && pathname === '/v1/sante') {
       return json({ ok: true, service: 'quizzle-api', jour: jourParis() });
