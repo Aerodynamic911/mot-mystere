@@ -24,6 +24,9 @@ export interface Env {
   NTFY_TOPIC?: string;
   // Secret : jeton d'acces du compte ntfy.sh (optionnel mais conseille).
   NTFY_TOKEN?: string;
+  // Secrets : bot Telegram pour les alertes de moderation (optionnel).
+  TELEGRAM_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
 }
 
 export interface Joueur {

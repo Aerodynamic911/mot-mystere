@@ -4,7 +4,31 @@
 
 import type { Env } from './commun';
 
+async function telegram(env: Env, titre: string, message: string): Promise<string> {
+  const jeton = (env.TELEGRAM_TOKEN ?? '').trim();
+  const salon = (env.TELEGRAM_CHAT_ID ?? '').trim();
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${jeton}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ chat_id: salon, text: `${titre}\n${message}\nhttps://admin.occitangames.com`, disable_web_page_preview: true }),
+      signal: AbortSignal.timeout(8000),
+    });
+    return r.ok ? 'envoye' : 'telegram_' + r.status;
+  } catch (e) {
+    return 'telegram_injoignable (' + (e instanceof Error ? e.name : 'inconnu') + ')';
+  }
+}
+
+// Envoie sur chaque canal configure (Telegram, ntfy) ; renvoie le resultat de chacun.
 export async function notifier(env: Env, titre: string, message: string): Promise<string> {
+  const resultats: string[] = [];
+  if (env.TELEGRAM_TOKEN && env.TELEGRAM_CHAT_ID) resultats.push('Telegram : ' + (await telegram(env, titre, message)));
+  if (env.NTFY_TOPIC) resultats.push('ntfy : ' + (await ntfy(env, titre, message)));
+  return resultats.length ? resultats.join(' | ') : 'aucun_canal_configure';
+}
+
+async function ntfy(env: Env, titre: string, message: string): Promise<string> {
   if (!env.NTFY_TOPIC) return 'secret_absent';
   const jeton = (env.NTFY_TOKEN ?? '').trim();
   try {
