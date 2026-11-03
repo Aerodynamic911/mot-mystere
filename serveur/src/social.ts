@@ -1,5 +1,6 @@
 // Resultats du jour, amis par code, blocages et signalements.
 
+import { notifier } from './notifier';
 import { type Env, type Joueur, erreur, json, jourParis, lireCorps } from './commun';
 
 const JOUR = /^\d{4}-\d{2}-\d{2}$/;
@@ -189,6 +190,7 @@ export async function routeSociale(requete: Request, env: Env, url: URL, joueur:
       await env.DB.prepare('INSERT INTO signalements (joueur_signale, joueur_signalant, motif) VALUES (?, ?, ?)')
         .bind(cible, joueur.id, motif)
         .run();
+      await notifier(env, 'Quizzle : signalement', 'Un joueur a été signalé (BackOffice).');
     }
     return json({ ok: true });
   }

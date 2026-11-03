@@ -20,6 +20,8 @@ export interface Env {
   ADMIN_EMAIL?: string;
   // Nom de domaine du BackOffice (par defaut admin.occitangames.com).
   ADMIN_HOST?: string;
+  // Secret : sujet ntfy.sh pour les alertes de moderation (optionnel).
+  NTFY_TOPIC?: string;
 }
 
 export interface Joueur {

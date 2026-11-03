@@ -3,6 +3,7 @@
 
 import { adminRequete } from './admin';
 import { authentifier, sha256 } from './auth';
+import { notifier, rappelModeration } from './notifier';
 import { routeDefis } from './defis';
 import { routeGroupes } from './groupes';
 import { routeSociale } from './social';
@@ -103,6 +104,7 @@ async function changerPseudo(requete: Request, env: Env, joueur: Joueur): Promis
   } catch {
     return erreur(409, 'pris');
   }
+  await notifier(env, 'Quizzle : nouveau pseudo', 'Un pseudo est à valider dans le BackOffice.');
   return json({ pseudo, statut: 'attente' });
 }
 
@@ -163,5 +165,9 @@ export default {
     }
 
     return erreur(404, 'introuvable');
+  },
+  // Rappel quotidien (declenche par le cron de wrangler.jsonc).
+  async scheduled(_evenement: unknown, env: Env): Promise<void> {
+    await rappelModeration(env);
   },
 };
