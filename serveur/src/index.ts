@@ -3,6 +3,8 @@
 
 import { adminRequete } from './admin';
 import { authentifier, sha256 } from './auth';
+import { routeDefis } from './defis';
+import { routeGroupes } from './groupes';
 import { routeSociale } from './social';
 import {
   type Env,
@@ -142,10 +144,13 @@ export default {
       return creerJoueur(env);
     }
 
-    if (/^\/v1\/(amis|resultats|blocages|signalements)(\/|$)/.test(pathname)) {
+    if (/^\/v1\/(amis|resultats|blocages|signalements|groupes|defis|reactions|stats)(\/|$)/.test(pathname)) {
       const joueur = await authentifier(requete, env);
       if (!joueur) return erreur(401, 'non_authentifie');
-      const reponse = await routeSociale(requete, env, url, joueur);
+      const reponse =
+        (await routeSociale(requete, env, url, joueur)) ??
+        (await routeGroupes(requete, env, url, joueur)) ??
+        (await routeDefis(requete, env, url, joueur));
       if (reponse) return reponse;
     }
 

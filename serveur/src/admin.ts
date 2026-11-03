@@ -87,6 +87,8 @@ export async function adminRequete(requete: Request, env: Env, url: URL): Promis
       avec_pseudo: await compte('SELECT COUNT(*) AS n FROM joueurs WHERE pseudo IS NOT NULL'),
       pseudos_en_attente: await compte("SELECT COUNT(*) AS n FROM joueurs WHERE pseudo IS NOT NULL AND statut = 'attente'"),
       resultats_du_jour: await compte('SELECT COUNT(*) AS n FROM resultats WHERE jour = ?', jour),
+      groupes: await compte('SELECT COUNT(*) AS n FROM groupes'),
+      defis_7j: await compte("SELECT COUNT(*) AS n FROM defis WHERE cree_le > datetime('now', '-7 days')"),
       signalements_a_traiter: await compte('SELECT COUNT(*) AS n FROM signalements WHERE traite = 0'),
       jour,
     });
@@ -144,6 +146,23 @@ export async function adminRequete(requete: Request, env: Env, url: URL): Promis
   const traiter = pathname.match(/^\/admin\/signalements\/([0-9a-f-]{36})\/traiter$/);
   if (methode === 'POST' && traiter) {
     await env.DB.prepare('UPDATE signalements SET traite = 1 WHERE joueur_signale = ?').bind(traiter[1]).run();
+    return json({ ok: true });
+  }
+
+  // --- Groupes ---
+  if (methode === 'GET' && pathname === '/admin/groupes') {
+    const { results } = await env.DB.prepare(
+      `SELECT g.id, g.nom, g.code, g.cree_le, (SELECT COUNT(*) FROM membres m WHERE m.groupe_id = g.id) AS membres
+       FROM groupes g ORDER BY g.cree_le DESC LIMIT 100`,
+    ).all();
+    return json({ groupes: results });
+  }
+  const groupe = pathname.match(/^\/admin\/groupes\/([0-9a-f-]{36})$/);
+  if (methode === 'DELETE' && groupe) {
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM membres WHERE groupe_id = ?').bind(groupe[1]),
+      env.DB.prepare('DELETE FROM groupes WHERE id = ?').bind(groupe[1]),
+    ]);
     return json({ ok: true });
   }
 

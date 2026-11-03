@@ -85,3 +85,27 @@ export function normaliser(texte: string): string {
     .replace(/7/g, 't')
     .replace(/[\s_-]+/g, '');
 }
+
+// Texte libre montre aux autres (nom de groupe) : forme, coordonnees, mots interdits.
+const FORME_NOM = /^[\p{L}\p{N}_'’-]+(?: [\p{L}\p{N}_'’-]+)*$/u;
+const COORDONNEES = /@|https?:|www\.|\.(com|fr|net|org|io)\b|\d{6,}/i;
+
+export async function nomAutorise(env: Env, nom: string, min: number, max: number): Promise<boolean> {
+  if (nom.length < min || nom.length > max || !FORME_NOM.test(nom) || COORDONNEES.test(nom)) return false;
+  const cle = normaliser(nom);
+  const { results } = await env.DB.prepare('SELECT mot FROM mots_interdits').all<{ mot: string }>();
+  return !results.some((m) => m.mot && cle.includes(normaliser(m.mot)));
+}
+
+// Sans 0, O, 1, I, L : evite les confusions quand on recopie un code.
+const ALPHABET_CODE = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+export function codeAleatoire(longueur: number): string {
+  const octets = crypto.getRandomValues(new Uint8Array(longueur));
+  return [...octets].map((o) => ALPHABET_CODE[o % ALPHABET_CODE.length]).join('');
+}
+
+// Ajoute n jours a une date AAAA-MM-JJ.
+export function ajouterJours(jour: string, n: number): string {
+  const d = new Date(Date.parse(jour + 'T00:00:00Z') + n * 86400000);
+  return d.toISOString().slice(0, 10);
+}

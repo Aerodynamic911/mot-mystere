@@ -61,6 +61,9 @@ export const PAGE_ADMIN = `<!doctype html>
   <h2>Signalements à traiter</h2>
   <div id="signalements"></div>
 
+  <h2>Groupes</h2>
+  <div id="groupes"></div>
+
   <h2>Mots interdits</h2>
   <div class="barre">
     <input id="nouveauMot" placeholder="Ajouter un mot" maxlength="30">
@@ -120,6 +123,8 @@ export const PAGE_ADMIN = `<!doctype html>
         ['Avec pseudo', c.avec_pseudo],
         ['Pseudos en attente', c.pseudos_en_attente],
         ['Résultats du jour', c.resultats_du_jour],
+        ['Groupes', c.groupes],
+        ['Défis (7 jours)', c.defis_7j],
         ['Signalements', c.signalements_a_traiter]
       ].forEach(function (x) {
         var carte = el('div', 'carte chiffre');
@@ -192,6 +197,31 @@ export const PAGE_ADMIN = `<!doctype html>
     }).catch(function (e) { message(e.message); });
   }
 
+  function groupes() {
+    appel('/admin/groupes').then(function (d) {
+      var zone = $('groupes');
+      vide(zone, d.groupes.length ? '' : 'Aucun groupe.');
+      d.groupes.forEach(function (g) {
+        var carte = el('div', 'carte');
+        var ligne = el('div', 'ligne');
+        var gauche = el('div');
+        gauche.appendChild(el('div', 'pseudo', g.nom));
+        gauche.appendChild(el('div', 'meta', g.membres + ' membre(s) · code ' + g.code + ' · ' + g.cree_le));
+        var actions = el('div', 'actions');
+        actions.appendChild(bouton('Supprimer', 'ban', function () {
+          if (!confirm('Supprimer ce groupe ?')) return;
+          appel('/admin/groupes/' + g.id, { method: 'DELETE' })
+            .then(function () { groupes(); chiffres(); })
+            .catch(function (e) { message(e.message); });
+        }));
+        ligne.appendChild(gauche);
+        ligne.appendChild(actions);
+        carte.appendChild(ligne);
+        zone.appendChild(carte);
+      });
+    }).catch(function (e) { message(e.message); });
+  }
+
   function mots() {
     appel('/admin/mots').then(function (d) {
       var zone = $('mots');
@@ -211,7 +241,7 @@ export const PAGE_ADMIN = `<!doctype html>
 
   $('statut').addEventListener('change', pseudos);
   $('recherche').addEventListener('input', function () { clearTimeout(minuteur); minuteur = setTimeout(pseudos, 300); });
-  $('actualiser').addEventListener('click', function () { chiffres(); pseudos(); signalements(); mots(); });
+  $('actualiser').addEventListener('click', function () { chiffres(); pseudos(); signalements(); groupes(); mots(); });
   $('ajouterMot').addEventListener('click', function () {
     var mot = $('nouveauMot').value.trim();
     if (!mot) return;
@@ -220,7 +250,7 @@ export const PAGE_ADMIN = `<!doctype html>
       .catch(function (e) { message(e.message); });
   });
 
-  chiffres(); pseudos(); signalements(); mots();
+  chiffres(); pseudos(); signalements(); groupes(); mots();
 })();
 </script>
 </body>

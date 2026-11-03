@@ -108,9 +108,23 @@ async function listerAmis(env: Env, url: URL, joueur: Joueur): Promise<Response>
     .bind(joueur.id)
     .first<{ n: number }>();
 
+  const { results: reactions } = await env.DB.prepare(
+    'SELECT de_joueur, joueur_cible, emoji FROM reactions WHERE jour = ?2 AND (de_joueur = ?1 OR joueur_cible = ?1)',
+  )
+    .bind(joueur.id, jour)
+    .all<{ de_joueur: string; joueur_cible: string; emoji: string }>();
+  const mienne = new Map(reactions.filter((r) => r.de_joueur === joueur.id).map((r) => [r.joueur_cible, r.emoji]));
+  const recuesDe = new Map(reactions.filter((r) => r.joueur_cible === joueur.id).map((r) => [r.de_joueur, r.emoji]));
+
   return json({
     jour,
-    amis: amis.map((a) => ({ id: a.id, nom: a.nom, resultat: a.essais === null ? null : { essais: a.essais, score: a.score } })),
+    amis: amis.map((a) => ({
+      id: a.id,
+      nom: a.nom,
+      resultat: a.essais === null ? null : { essais: a.essais, score: a.score },
+      ma_reaction: mienne.get(a.id) ?? null,
+      reaction_recue: recuesDe.get(a.id) ?? null,
+    })),
     recues,
     envoyees: envoyees?.n ?? 0,
   });
