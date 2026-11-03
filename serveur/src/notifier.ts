@@ -6,6 +6,7 @@ import type { Env } from './commun';
 
 export async function notifier(env: Env, titre: string, message: string): Promise<string> {
   if (!env.NTFY_TOPIC) return 'secret_absent';
+  const jeton = (env.NTFY_TOKEN ?? '').trim();
   try {
     const r = await fetch('https://ntfy.sh/' + encodeURIComponent(env.NTFY_TOPIC), {
       method: 'POST',
@@ -15,14 +16,14 @@ export async function notifier(env: Env, titre: string, message: string): Promis
         Click: 'https://admin.occitangames.com',
         Tags: 'speech_balloon',
         // Compte ntfy : la limite d'envoi est alors la notre, et non celle de l'adresse partagee du Worker.
-        ...(env.NTFY_TOKEN ? { Authorization: 'Bearer ' + env.NTFY_TOKEN } : {}),
+        ...(jeton ? { Authorization: 'Bearer ' + jeton } : {}),
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(8000),
     });
-    return r.ok ? 'envoye' : 'ntfy_' + r.status + (env.NTFY_TOKEN ? '' : '_sans_jeton');
-  } catch {
+    return r.ok ? 'envoye' : 'ntfy_' + r.status + (jeton ? '' : '_sans_jeton');
+  } catch (e) {
     // la notification est un confort : on n'echoue jamais pour elle
-    return 'injoignable';
+    return 'injoignable (' + (e instanceof Error ? e.name + ' ' + e.message : 'inconnu').slice(0, 80) + ')';
   }
 }
 
