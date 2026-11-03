@@ -22,6 +22,8 @@ export interface Env {
   ADMIN_HOST?: string;
   // Secret : sujet ntfy.sh pour les alertes de moderation (optionnel).
   NTFY_TOPIC?: string;
+  // Secret : jeton d'acces du compte ntfy.sh (optionnel mais conseille).
+  NTFY_TOKEN?: string;
 }
 
 export interface Joueur {
