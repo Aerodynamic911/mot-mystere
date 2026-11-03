@@ -78,7 +78,7 @@ const BOSS_PIECES = 25;
 type Ecran =
   | { nom: 'accueil' }
   | { nom: 'preferences' }
-  | { nom: 'profil' }
+  | { nom: 'profil'; retour: 'accueil' | 'preferences' }
   | { nom: 'jour' }
   | { nom: 'aventure' }
   | { nom: 'aventure-jeu'; niveau: number; essai: number; mystere: Mystere }
@@ -406,6 +406,7 @@ function Application() {
           onToggleMusique={musique.basculer}
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
           onPreferences={() => setEcran({ nom: 'preferences' })}
+          onProfil={() => setEcran({ nom: 'profil', retour: 'accueil' })}
           onAmis={() => setAmisOuvert(true)}
           pieces={stats.pieces}
           onBoutique={() => setEcran({ nom: 'boutique' })}
@@ -430,11 +431,11 @@ function Application() {
       )}
 
       {ecran.nom === 'preferences' && (
-        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} onProfil={() => setEcran({ nom: 'profil' })} />
+        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} onProfil={() => setEcran({ nom: 'profil', retour: 'preferences' })} />
       )}
 
       {ecran.nom === 'profil' && (
-        <ProfilEcran onRetour={() => setEcran({ nom: 'preferences' })} />
+        <ProfilEcran onRetour={() => setEcran({ nom: ecran.retour })} />
       )}
 
       {ecran.nom === 'jour' && (

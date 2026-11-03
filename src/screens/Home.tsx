@@ -19,6 +19,7 @@ interface Props {
   onToggleMusique: () => void;
   onJouerDuJour: () => void;
   onPreferences: () => void;
+  onProfil: () => void;
   onAmis: () => void;
   pieces: number;
   onBoutique: () => void;
@@ -54,6 +55,7 @@ export default function Home({
   onToggleMusique,
   onJouerDuJour,
   onPreferences,
+  onProfil,
   onAmis,
   pieces,
   onBoutique,
@@ -99,6 +101,16 @@ export default function Home({
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={styles.boutonSonTexte}>📊</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.boutonSon, styles.boutonProfil]}
+        onPress={onProfil}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={tr('Mon pseudo', 'My nickname')}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.boutonSonTexte}>👤</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.boutonSon, styles.boutonReglages]}
@@ -416,6 +428,7 @@ const styles = StyleSheet.create({
   boutonSonTexte: { fontSize: 18 },
   boutonReglages: { right: 64 },
   boutonStats: { left: 16, right: undefined },
+  boutonProfil: { left: 64, right: undefined },
   haut: { paddingTop: 28, alignItems: 'center' },
   ruban: {
     marginTop: 4,
