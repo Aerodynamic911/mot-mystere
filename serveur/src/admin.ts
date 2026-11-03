@@ -2,6 +2,7 @@
 // Acces : Cloudflare Access devant admin.occitangames.com, et, en plus, verification ici
 // que l'adresse e-mail authentifiee par Access est bien celle du secret ADMIN_EMAIL.
 
+import { FAVICON_PNG_BASE64 } from './favicon';
 import { PAGE_ADMIN } from './pageAdmin';
 import {
   type Env,
@@ -51,6 +52,12 @@ function refus(requete: Request, env: Env): string | null {
 }
 
 export async function adminRequete(requete: Request, env: Env, url: URL): Promise<Response> {
+  // L'icone de l'onglet est publique (Cloudflare Access protege deja tout le domaine).
+  if (requete.method === 'GET' && (url.pathname === '/favicon.ico' || url.pathname === '/favicon.png')) {
+    const octets = Uint8Array.from(atob(FAVICON_PNG_BASE64), (c) => c.charCodeAt(0));
+    return new Response(octets, { headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' } });
+  }
+
   const motif = refus(requete, env);
   if (motif) return erreur(403, 'acces_refuse', { motif });
 
@@ -65,7 +72,7 @@ export async function adminRequete(requete: Request, env: Env, url: URL): Promis
         'x-content-type-options': 'nosniff',
         'referrer-policy': 'no-referrer',
         'content-security-policy':
-          "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'",
+          "default-src 'none'; img-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'",
       },
     });
   }

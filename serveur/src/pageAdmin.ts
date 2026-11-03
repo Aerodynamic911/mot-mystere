@@ -7,6 +7,7 @@ export const PAGE_ADMIN = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/favicon.png">
 <title>Quizzle - BackOffice</title>
 <style>
   :root { --fond:#f6f6f4; --carte:#fff; --texte:#1c1c1e; --doux:#6b6b70; --trait:#dcdcd6; --accent:#2f6fed; --ok:#1f8a4c; --non:#c27a00; --ban:#c0392b; }
