@@ -11,13 +11,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { ErreurPseudo, ProfilServeur, lireProfil, proposerPseudo, supprimerProfil } from '../game/serveur';
+import { ErreurPseudo, ProfilServeur, envoyerResultat, lireProfil, proposerPseudo, supprimerProfil } from '../game/serveur';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
+import AmisBloc from './AmisBloc';
 
 interface Props {
   onRetour: () => void;
+  /** Jour du mystère (AAAA-MM-JJ, jour local). */
+  jour: string;
+  /** Résultat du mystère du jour s'il est terminé : renvoyé au serveur à l'ouverture (sans danger), au cas où l'envoi aurait échoué. */
+  resultatDuJour: { essais: number; gagne: boolean } | null;
 }
 
 const MESSAGES_ERREUR: Record<ErreurPseudo, () => string> = {
@@ -34,7 +39,7 @@ const MESSAGES_ERREUR: Record<ErreurPseudo, () => string> = {
   inconnue: () => tr('Une erreur est survenue. Réessayez plus tard.', 'Something went wrong. Please try again later.'),
 };
 
-export default function ProfilEcran({ onRetour }: Props) {
+export default function ProfilEcran({ onRetour, jour, resultatDuJour }: Props) {
   const [chargement, setChargement] = useState(true);
   const [horsLigne, setHorsLigne] = useState(false);
   const [profil, setProfil] = useState<ProfilServeur | null>(null);
@@ -43,16 +48,22 @@ export default function ProfilEcran({ onRetour }: Props) {
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
+  // Valeurs simples (et non l'objet) pour ne pas relancer le chargement à chaque affichage de l'app.
+  const essaisJour = resultatDuJour?.essais ?? null;
+  const gagneJour = resultatDuJour?.gagne ?? false;
+
   const charger = useCallback(async () => {
     setChargement(true);
     setHorsLigne(false);
     try {
-      setProfil(await lireProfil());
+      const p = await lireProfil();
+      setProfil(p);
+      if (p && essaisJour !== null) envoyerResultat(jour, essaisJour, gagneJour);
     } catch {
       setHorsLigne(true);
     }
     setChargement(false);
-  }, []);
+  }, [jour, essaisJour, gagneJour]);
 
   useEffect(() => {
     charger();
@@ -113,7 +124,7 @@ export default function ProfilEcran({ onRetour }: Props) {
         <TouchableOpacity onPress={onRetour} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Text style={styles.retour}>{tr('‹ Retour', '‹ Back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.titre}>{tr('Mon pseudo', 'My nickname')}</Text>
+        <Text style={styles.titre}>{tr('Mon profil', 'My profile')}</Text>
         <View style={styles.espaceur} />
       </View>
 
@@ -200,6 +211,8 @@ export default function ProfilEcran({ onRetour }: Props) {
             )}
 
             {erreur && !peutSaisir && <Text style={styles.erreur}>{erreur}</Text>}
+
+            {profil && <AmisBloc codeAmi={profil.codeAmi} jour={jour} />}
 
             {profil && (
               <TouchableOpacity onPress={supprimer} style={styles.supprimer} activeOpacity={0.8} accessibilityRole="button">

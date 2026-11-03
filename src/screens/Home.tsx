@@ -107,7 +107,7 @@ export default function Home({
         onPress={onProfil}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={tr('Mon pseudo', 'My nickname')}
+        accessibilityLabel={tr('Mon profil', 'My profile')}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={styles.boutonSonTexte}>👤</Text>

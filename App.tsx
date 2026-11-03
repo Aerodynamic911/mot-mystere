@@ -50,6 +50,7 @@ import EvenementCarte from './src/screens/EvenementCarte';
 import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
 import ProfilEcran from './src/screens/Profil';
+import { envoyerResultat } from './src/game/serveur';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
 import Quetes from './src/screens/Quetes';
@@ -340,6 +341,7 @@ function Application() {
     const etat: EtatDuJour = { cle, id: mystereJour.id, propositions, terminee: true, gagnee: gagne };
     setJour(etat);
     sauverJour(etat);
+    envoyerResultat(cle, propositions.length, gagne);
     finDePartie('jour', propositions, gagne, prog);
   }
 
@@ -435,7 +437,11 @@ function Application() {
       )}
 
       {ecran.nom === 'profil' && (
-        <ProfilEcran onRetour={() => setEcran({ nom: ecran.retour })} />
+        <ProfilEcran
+          onRetour={() => setEcran({ nom: ecran.retour })}
+          jour={cle}
+          resultatDuJour={jourCourant?.terminee ? { essais: jourCourant.propositions.length, gagne: jourCourant.gagnee } : null}
+        />
       )}
 
       {ecran.nom === 'jour' && (

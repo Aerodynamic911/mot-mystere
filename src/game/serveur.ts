@@ -151,3 +151,75 @@ export async function supprimerProfil(): Promise<boolean> {
     return false;
   }
 }
+
+// --- Résultat du jour et amis ---------------------------------------------------------------
+
+export interface Ami {
+  id: string;
+  nom: string;
+  /** Résultat de l'ami pour le jour demandé ; `null` s'il n'a pas encore joué. `score` vaut 0 s'il n'a pas trouvé. */
+  resultat: { essais: number; score: number } | null;
+}
+
+export interface ListeAmis {
+  jour: string;
+  amis: Ami[];
+  recues: { id: string; nom: string }[];
+  envoyees: number;
+}
+
+export type ErreurAmi = 'code' | 'introuvable' | 'soi_meme' | 'limite' | 'trop_de_demandes' | 'reseau' | 'inconnue';
+
+/**
+ * Envoie le résultat du mystère du jour (le serveur n'en garde qu'un par jour).
+ * Silencieux : sans profil ou sans réseau, il ne se passe rien. Sans danger à répéter.
+ */
+export async function envoyerResultat(jour: string, essais: number, gagne: boolean): Promise<void> {
+  try {
+    const compte = await compteLocal();
+    if (!compte) return;
+    await appeler('/v1/resultats', 'POST', compte, { jour, essais, gagne });
+  } catch {
+    // pas de réseau : l'envoi sera refait à l'ouverture de l'écran du profil
+  }
+}
+
+/** Liste des amis et des demandes ; `null` sans profil. Lève une erreur si le réseau est inaccessible. */
+export async function lireAmis(jour: string): Promise<ListeAmis | null> {
+  const compte = await compteLocal();
+  if (!compte) return null;
+  const r = await appeler('/v1/amis?jour=' + encodeURIComponent(jour), 'GET', compte);
+  return r.status === 200 ? (r.donnees as ListeAmis) : null;
+}
+
+export async function demanderAmi(
+  code: string,
+): Promise<{ ok: true; statut: 'demande' | 'acceptee' } | { ok: false; erreur: ErreurAmi }> {
+  try {
+    const compte = await compteLocal();
+    if (!compte) return { ok: false, erreur: 'inconnue' };
+    const r = await appeler('/v1/amis', 'POST', compte, { code });
+    if (r.status === 200 || r.status === 201) return { ok: true, statut: r.donnees.statut };
+    const e = r.donnees?.erreur as string | undefined;
+    if (e === 'code' || e === 'introuvable' || e === 'soi_meme' || e === 'limite' || e === 'trop_de_demandes') return { ok: false, erreur: e };
+    return { ok: false, erreur: 'inconnue' };
+  } catch {
+    return { ok: false, erreur: 'reseau' };
+  }
+}
+
+async function action(chemin: string, methode: string, corps?: unknown): Promise<boolean> {
+  try {
+    const compte = await compteLocal();
+    if (!compte) return false;
+    const r = await appeler(chemin, methode, compte, corps);
+    return r.status === 200;
+  } catch {
+    return false;
+  }
+}
+
+export const repondreDemande = (id: string, accepter: boolean) => action('/v1/amis/' + id, 'PUT', { accepter });
+export const retirerAmi = (id: string) => action('/v1/amis/' + id, 'DELETE');
+export const bloquerJoueur = (id: string) => action('/v1/blocages', 'POST', { joueur_id: id });
+export const signalerJoueur = (id: string) => action('/v1/signalements', 'POST', { joueur_id: id, motif: 'pseudo_inapproprie' });
