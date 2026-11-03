@@ -159,6 +159,10 @@ export interface Ami {
   nom: string;
   /** Résultat de l'ami pour le jour demandé ; `null` s'il n'a pas encore joué. `score` vaut 0 s'il n'a pas trouvé. */
   resultat: { essais: number; score: number } | null;
+  /** Ma réaction (emoji) au résultat de cet ami pour le jour, s'il y en a une. */
+  ma_reaction?: string | null;
+  /** Réaction reçue de cet ami pour mon résultat du jour. */
+  reaction_recue?: string | null;
 }
 
 export interface ListeAmis {
@@ -223,3 +227,139 @@ export const repondreDemande = (id: string, accepter: boolean) => action('/v1/am
 export const retirerAmi = (id: string) => action('/v1/amis/' + id, 'DELETE');
 export const bloquerJoueur = (id: string) => action('/v1/blocages', 'POST', { joueur_id: id });
 export const signalerJoueur = (id: string) => action('/v1/signalements', 'POST', { joueur_id: id, motif: 'pseudo_inapproprie' });
+
+// --- Réactions, groupes, défis et statistiques ----------------------------------------------
+
+/** Réactions prédéfinies (pas de texte libre). */
+export const REACTIONS = ['👏', '🔥', '😮', '😂', '😅', '💪'];
+
+export const reagir = (joueurId: string, jour: string, emoji: string | null) =>
+  action('/v1/reactions', 'POST', { joueur_id: joueurId, jour, emoji });
+
+export interface GroupeResume {
+  id: string;
+  nom: string;
+  code: string;
+  membres: number;
+  moi_createur: boolean;
+}
+
+export interface LigneClassement {
+  id: string;
+  nom: string;
+  moi: boolean;
+  /** Score du jour ; `null` si le joueur n'a pas encore joué. */
+  jour: number | null;
+  semaine: number;
+  mois: number;
+  serie: number;
+}
+
+export interface DetailGroupe {
+  id: string;
+  nom: string;
+  code: string;
+  moi_createur: boolean;
+  jour: string;
+  classement: LigneClassement[];
+}
+
+export type ErreurGroupe = 'nom' | 'limite' | 'trop_de_groupes' | 'code' | 'introuvable' | 'groupe_plein' | 'banni' | 'reseau' | 'inconnue';
+
+const ERREURS_GROUPE: string[] = ['nom', 'limite', 'trop_de_groupes', 'code', 'introuvable', 'groupe_plein', 'banni'];
+
+async function appelGroupe(chemin: string, corps: unknown): Promise<{ ok: true; groupe: { id: string; nom: string; code: string } } | { ok: false; erreur: ErreurGroupe }> {
+  try {
+    const compte = await compteLocal();
+    if (!compte) return { ok: false, erreur: 'inconnue' };
+    const r = await appeler(chemin, 'POST', compte, corps);
+    if (r.status === 200 || r.status === 201) return { ok: true, groupe: r.donnees };
+    const e = r.donnees?.erreur as string | undefined;
+    return { ok: false, erreur: e && ERREURS_GROUPE.includes(e) ? (e as ErreurGroupe) : 'inconnue' };
+  } catch {
+    return { ok: false, erreur: 'reseau' };
+  }
+}
+
+export const creerGroupe = (nom: string) => appelGroupe('/v1/groupes', { nom });
+export const rejoindreGroupe = (code: string) => appelGroupe('/v1/groupes/rejoindre', { code });
+
+/** Mes groupes ; `null` sans profil. Lève une erreur si le réseau est inaccessible. */
+export async function lireGroupes(): Promise<GroupeResume[] | null> {
+  const compte = await compteLocal();
+  if (!compte) return null;
+  const r = await appeler('/v1/groupes', 'GET', compte);
+  return r.status === 200 ? (r.donnees.groupes as GroupeResume[]) : null;
+}
+
+export async function lireGroupe(id: string, jour: string): Promise<DetailGroupe | null> {
+  const compte = await compteLocal();
+  if (!compte) return null;
+  const r = await appeler('/v1/groupes/' + id + '?jour=' + encodeURIComponent(jour), 'GET', compte);
+  return r.status === 200 ? (r.donnees as DetailGroupe) : null;
+}
+
+/** Quitter un groupe (mon id) ou en retirer un membre (créateur du groupe). */
+export async function quitterGroupe(groupeId: string, joueurId: string): Promise<boolean> {
+  return action('/v1/groupes/' + groupeId + '/membres/' + joueurId, 'DELETE');
+}
+
+/** Mon identifiant de joueur sur le serveur (pour me repérer dans un groupe). */
+export async function monIdentifiant(): Promise<string | null> {
+  return (await compteLocal())?.id ?? null;
+}
+
+export interface DefiEnLigne {
+  id: string;
+  mystere_id: string;
+  autre: { id: string; nom: string };
+  essais_de: number;
+  gagne_de: boolean;
+  reponse: { essais: number; gagne: boolean } | null;
+  expire_le: string;
+}
+
+export type ErreurDefi = 'introuvable' | 'trop_de_defis' | 'reseau' | 'inconnue';
+
+export async function envoyerDefi(aJoueur: string, mystereId: string, essais: number, gagne: boolean): Promise<{ ok: true } | { ok: false; erreur: ErreurDefi }> {
+  try {
+    const compte = await compteLocal();
+    if (!compte) return { ok: false, erreur: 'inconnue' };
+    const r = await appeler('/v1/defis', 'POST', compte, { a_joueur: aJoueur, mystere_id: mystereId, essais, gagne });
+    if (r.status === 201) return { ok: true };
+    const e = r.donnees?.erreur as string | undefined;
+    return { ok: false, erreur: e === 'introuvable' || e === 'trop_de_defis' ? e : 'inconnue' };
+  } catch {
+    return { ok: false, erreur: 'reseau' };
+  }
+}
+
+/** Défis reçus et envoyés ; `null` sans profil. Lève une erreur si le réseau est inaccessible. */
+export async function lireDefis(): Promise<{ recus: DefiEnLigne[]; envoyes: DefiEnLigne[] } | null> {
+  const compte = await compteLocal();
+  if (!compte) return null;
+  const r = await appeler('/v1/defis', 'GET', compte);
+  return r.status === 200 ? r.donnees : null;
+}
+
+/** Renvoie mon résultat à l'ami qui m'a défié (silencieux). */
+export async function repondreDefi(id: string, essais: number, gagne: boolean): Promise<void> {
+  await action('/v1/defis/' + id + '/resultat', 'POST', { essais, gagne });
+}
+
+export interface StatsDuJour {
+  jour: string;
+  disponible: boolean;
+  total?: number;
+  taux_reussite?: number;
+  essais_moyen?: number | null;
+  repartition?: Record<string, number>;
+}
+
+/** Statistiques de tous les joueurs pour le jour ; `null` sans profil. */
+export async function lireStatsDuJour(jour: string): Promise<StatsDuJour | null> {
+  const compte = await compteLocal();
+  if (!compte) return null;
+  const r = await appeler('/v1/stats/jour?jour=' + encodeURIComponent(jour), 'GET', compte);
+  return r.status === 200 ? (r.donnees as StatsDuJour) : null;
+}

@@ -5,9 +5,11 @@ import {
   Ami,
   ErreurAmi,
   ListeAmis,
+  REACTIONS,
   bloquerJoueur,
   demanderAmi,
   lireAmis,
+  reagir,
   repondreDemande,
   retirerAmi,
   signalerJoueur,
@@ -92,6 +94,16 @@ export default function AmisBloc({ codeAmi, jour }: Props) {
     const ok = await repondreDemande(id, accepter);
     if (!ok) setMessage({ texte: MESSAGES.reseau(), erreur: true });
     charger();
+  }
+
+  async function reaction(a: Ami, emoji: string) {
+    const nouvelle = a.ma_reaction === emoji ? null : emoji;
+    // affichage immédiat, puis envoi
+    setListe((l) => (l ? { ...l, amis: l.amis.map((x) => (x.id === a.id ? { ...x, ma_reaction: nouvelle } : x)) } : l));
+    if (!(await reagir(a.id, jour, nouvelle))) {
+      setMessage({ texte: MESSAGES.reseau(), erreur: true });
+      charger();
+    }
   }
 
   function menuAmi(a: Ami) {
@@ -203,14 +215,34 @@ export default function AmisBloc({ codeAmi, jour }: Props) {
                 </Text>
               ) : (
                 liste.amis.map((a) => (
-                  <View key={a.id} style={styles.ligne}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.nom} numberOfLines={1}>{a.nom}</Text>
-                      <Text style={styles.detail}>{libelleResultat(a)}</Text>
+                  <View key={a.id} style={styles.blocAmi}>
+                    <View style={styles.ligne}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.nom} numberOfLines={1}>
+                          {a.nom}
+                          {a.reaction_recue ? `  ${a.reaction_recue}` : ''}
+                        </Text>
+                        <Text style={styles.detail}>{libelleResultat(a)}</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => menuAmi(a)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityRole="button" accessibilityLabel={tr('Options', 'Options')}>
+                        <Text style={styles.menu}>⋯</Text>
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity onPress={() => menuAmi(a)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityRole="button" accessibilityLabel={tr('Options', 'Options')}>
-                      <Text style={styles.menu}>⋯</Text>
-                    </TouchableOpacity>
+                    {a.resultat && (
+                      <View style={styles.reactions}>
+                        {REACTIONS.map((e) => (
+                          <TouchableOpacity
+                            key={e}
+                            style={[styles.reaction, a.ma_reaction === e && styles.reactionChoisie]}
+                            onPress={() => reaction(a, e)}
+                            accessibilityRole="button"
+                            accessibilityLabel={tr('Réagir', 'React') + ' ' + e}
+                          >
+                            <Text style={styles.reactionEmoji}>{e}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 ))
               )}
@@ -250,6 +282,11 @@ const styles = StyleSheet.create({
   boutonTexte: { color: '#1B1B1B', fontSize: 16, fontWeight: '800' },
   boutonSecondaire: { borderRadius: rayon, borderWidth: 1, borderColor: couleurs.accent, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
   boutonSecondaireTexte: { color: couleurs.accent, fontSize: 15, fontWeight: '700' },
+  blocAmi: { borderBottomWidth: 1, borderBottomColor: couleurs.bordure, paddingBottom: 8 },
+  reactions: { flexDirection: 'row', gap: 6 },
+  reaction: { borderRadius: 14, borderWidth: 1, borderColor: couleurs.bordure, paddingVertical: 4, paddingHorizontal: 9 },
+  reactionChoisie: { borderColor: couleurs.accent, backgroundColor: couleurs.carteClaire },
+  reactionEmoji: { fontSize: 18 },
   ligne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 8 },
   nom: { color: couleurs.texte, fontSize: 16, fontWeight: '700' },
   detail: { color: couleurs.texteSecondaire, fontSize: 13, marginTop: 2 },

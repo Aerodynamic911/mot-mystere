@@ -50,7 +50,7 @@ import EvenementCarte from './src/screens/EvenementCarte';
 import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
 import ProfilEcran from './src/screens/Profil';
-import { envoyerResultat } from './src/game/serveur';
+import { DefiEnLigne, envoyerResultat, repondreDefi } from './src/game/serveur';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
 import Quetes from './src/screens/Quetes';
@@ -90,7 +90,7 @@ type Ecran =
   | { nom: 'sprint' }
   | { nom: 'vf' }
   | { nom: 'boutique' }
-  | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number }
+  | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number; defiId?: string }
   | { nom: 'evenement'; id: string }
   | { nom: 'etape'; id: string; etape: number };
 
@@ -337,6 +337,14 @@ function Application() {
     return null;
   }
 
+  /** Relève un défi reçu via le serveur : même mystère, score de l'ami affiché à la fin. */
+  function relever(defi: DefiEnLigne): boolean {
+    const mystere = mystereParId(defi.mystere_id);
+    if (!mystere) return false;
+    setEcran({ nom: 'defi', mystere, essaisAmi: defi.gagne_de ? defi.essais_de : 0, essai: 0, defiId: defi.id });
+    return true;
+  }
+
   function terminee(propositions: string[], gagne: boolean) {
     const etat: EtatDuJour = { cle, id: mystereJour.id, propositions, terminee: true, gagnee: gagne };
     setJour(etat);
@@ -441,6 +449,7 @@ function Application() {
           onRetour={() => setEcran({ nom: ecran.retour })}
           jour={cle}
           resultatDuJour={jourCourant?.terminee ? { essais: jourCourant.propositions.length, gagne: jourCourant.gagnee } : null}
+          onRelever={relever}
         />
       )}
 
@@ -631,7 +640,10 @@ function Application() {
           onPartage={partageFait}
           onAvis={avisFinPartie}
           mode="defi"
-          onTerminee={(propositions, gagne) => finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined)}
+          onTerminee={(propositions, gagne) => {
+            if (ecran.defiId) repondreDefi(ecran.defiId, propositions.length, gagne);
+            finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined);
+          }}
           commentaireFin={(gagne, essais) => {
             const ami = ecran.essaisAmi;
             if (gagne) {

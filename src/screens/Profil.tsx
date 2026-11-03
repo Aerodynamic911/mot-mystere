@@ -11,11 +11,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { ErreurPseudo, ProfilServeur, envoyerResultat, lireProfil, proposerPseudo, supprimerProfil } from '../game/serveur';
+import { DefiEnLigne, ErreurPseudo, ProfilServeur, envoyerResultat, lireProfil, proposerPseudo, supprimerProfil } from '../game/serveur';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
 import AmisBloc from './AmisBloc';
+import DefisBloc from './DefisBloc';
+import GroupesBloc from './GroupesBloc';
+import StatsBloc from './StatsBloc';
 
 interface Props {
   onRetour: () => void;
@@ -23,6 +26,8 @@ interface Props {
   jour: string;
   /** Résultat du mystère du jour s'il est terminé : renvoyé au serveur à l'ouverture (sans danger), au cas où l'envoi aurait échoué. */
   resultatDuJour: { essais: number; gagne: boolean } | null;
+  /** Lance un défi reçu ; renvoie `false` si le mystère est inconnu de cette version. */
+  onRelever: (defi: DefiEnLigne) => boolean;
 }
 
 const MESSAGES_ERREUR: Record<ErreurPseudo, () => string> = {
@@ -39,7 +44,8 @@ const MESSAGES_ERREUR: Record<ErreurPseudo, () => string> = {
   inconnue: () => tr('Une erreur est survenue. Réessayez plus tard.', 'Something went wrong. Please try again later.'),
 };
 
-export default function ProfilEcran({ onRetour, jour, resultatDuJour }: Props) {
+export default function ProfilEcran({ onRetour, jour, resultatDuJour, onRelever }: Props) {
+  const [onglet, setOnglet] = useState<'amis' | 'groupes' | 'defis'>('amis');
   const [chargement, setChargement] = useState(true);
   const [horsLigne, setHorsLigne] = useState(false);
   const [profil, setProfil] = useState<ProfilServeur | null>(null);
@@ -212,7 +218,26 @@ export default function ProfilEcran({ onRetour, jour, resultatDuJour }: Props) {
 
             {erreur && !peutSaisir && <Text style={styles.erreur}>{erreur}</Text>}
 
-            {profil && <AmisBloc codeAmi={profil.codeAmi} jour={jour} />}
+            {profil && <StatsBloc jour={jour} />}
+
+            {profil && (
+              <View style={styles.onglets}>
+                {(
+                  [
+                    ['amis', tr('Amis', 'Friends')],
+                    ['groupes', tr('Groupes', 'Groups')],
+                    ['defis', tr('Défis', 'Challenges')],
+                  ] as const
+                ).map(([id, libelle]) => (
+                  <TouchableOpacity key={id} style={[styles.onglet, onglet === id && styles.ongletActif]} onPress={() => setOnglet(id)} accessibilityRole="button">
+                    <Text style={[styles.ongletTexte, onglet === id && styles.ongletTexteActif]}>{libelle}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            {profil && onglet === 'amis' && <AmisBloc codeAmi={profil.codeAmi} jour={jour} />}
+            {profil && onglet === 'groupes' && <GroupesBloc jour={jour} />}
+            {profil && onglet === 'defis' && <DefisBloc onRelever={onRelever} />}
 
             {profil && (
               <TouchableOpacity onPress={supprimer} style={styles.supprimer} activeOpacity={0.8} accessibilityRole="button">
@@ -227,6 +252,11 @@ export default function ProfilEcran({ onRetour, jour, resultatDuJour }: Props) {
 }
 
 const styles = StyleSheet.create({
+  onglets: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  onglet: { flex: 1, borderRadius: rayon, borderWidth: 1, borderColor: couleurs.bordure, paddingVertical: 10, alignItems: 'center' },
+  ongletActif: { backgroundColor: couleurs.accent, borderColor: couleurs.accent },
+  ongletTexte: { color: couleurs.texteSecondaire, fontSize: 14, fontWeight: '700' },
+  ongletTexteActif: { color: '#1B1B1B' },
   racine: { flex: 1, backgroundColor: couleurs.fond },
   entete: {
     flexDirection: 'row',

@@ -24,6 +24,7 @@ import { genererCode } from '../game/social';
 import type { ModeJeu } from '../game/storage';
 import { langue, localiser, tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
+import DefiAmiModal from '../ui/DefiAmiModal';
 import EffetsJeu, { EffetEnCours, TypeEffet } from '../ui/EffetsJeu';
 
 /** Encouragements après une mauvaise réponse (il reste des essais). */
@@ -116,6 +117,7 @@ export default function Game({
   const mystere = localiser(mystereBrut);
   const [propositions, setPropositions] = useState<string[]>(propositionsInitiales);
   const [saisie, setSaisie] = useState('');
+  const [defiAmiOuvert, setDefiAmiOuvert] = useState(false);
   const [message, setMessage] = useState('');
   const [encouragement, setEncouragement] = useState('');
   const [consolation] = useState(() => auHasard(langue() === 'en' ? CONSOLATIONS_EN : CONSOLATIONS));
@@ -339,6 +341,20 @@ export default function Game({
               <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={defier} activeOpacity={0.85}>
                 <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami', 'Challenge a friend')}</Text>
               </TouchableOpacity>
+            )}
+            {!image && (
+              <>
+                <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={() => setDefiAmiOuvert(true)} activeOpacity={0.85}>
+                  <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami de ma liste', 'Challenge a friend from my list')}</Text>
+                </TouchableOpacity>
+                <DefiAmiModal
+                  visible={defiAmiOuvert}
+                  mystereId={mystereBrut.id}
+                  essais={propositions.length}
+                  gagne={gagne}
+                  onFermer={() => setDefiAmiOuvert(false)}
+                />
+              </>
             )}
             {gagne && onAvis && (
               <TouchableOpacity style={styles.boutonAvis} onPress={onAvis} activeOpacity={0.85} accessibilityRole="button">
