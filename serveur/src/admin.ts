@@ -3,6 +3,7 @@
 // que l'adresse e-mail authentifiee par Access est bien celle du secret ADMIN_EMAIL.
 
 import { FAVICON_PNG_BASE64 } from './favicon';
+import { notifier } from './notifier';
 import { PAGE_ADMIN } from './pageAdmin';
 import {
   type Env,
@@ -147,6 +148,10 @@ export async function adminRequete(requete: Request, env: Env, url: URL): Promis
   if (methode === 'POST' && traiter) {
     await env.DB.prepare('UPDATE signalements SET traite = 1 WHERE joueur_signale = ?').bind(traiter[1]).run();
     return json({ ok: true });
+  }
+
+  if (methode === 'POST' && pathname === '/admin/notification-test') {
+    return json({ resultat: await notifier(env, 'Quizzle : test', 'Si vous lisez ceci, les alertes fonctionnent.') });
   }
 
   // --- Groupes ---

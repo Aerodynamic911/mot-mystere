@@ -4,17 +4,19 @@
 
 import type { Env } from './commun';
 
-export async function notifier(env: Env, titre: string, message: string): Promise<void> {
-  if (!env.NTFY_TOPIC) return;
+export async function notifier(env: Env, titre: string, message: string): Promise<string> {
+  if (!env.NTFY_TOPIC) return 'secret_absent';
   try {
-    await fetch('https://ntfy.sh/' + encodeURIComponent(env.NTFY_TOPIC), {
+    const r = await fetch('https://ntfy.sh/' + encodeURIComponent(env.NTFY_TOPIC), {
       method: 'POST',
       body: message,
       headers: { Title: titre, Click: 'https://admin.occitangames.com', Tags: 'speech_balloon' },
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(5000),
     });
+    return r.ok ? 'envoye' : 'ntfy_' + r.status;
   } catch {
     // la notification est un confort : on n'echoue jamais pour elle
+    return 'injoignable';
   }
 }
 

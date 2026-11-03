@@ -55,6 +55,7 @@ export const PAGE_ADMIN = `<!doctype html>
     </select>
     <input id="recherche" type="search" placeholder="Rechercher un pseudo">
     <button id="actualiser">Actualiser</button>
+    <button id="testNotif">Tester la notification</button>
   </div>
   <div id="pseudos"></div>
 
@@ -242,6 +243,11 @@ export const PAGE_ADMIN = `<!doctype html>
   $('statut').addEventListener('change', pseudos);
   $('recherche').addEventListener('input', function () { clearTimeout(minuteur); minuteur = setTimeout(pseudos, 300); });
   $('actualiser').addEventListener('click', function () { chiffres(); pseudos(); signalements(); groupes(); mots(); });
+  $('testNotif').addEventListener('click', function () {
+    appel('/admin/notification-test', { method: 'POST' })
+      .then(function (d) { message('Notification : ' + d.resultat); })
+      .catch(function (e) { message(e.message); });
+  });
   $('ajouterMot').addEventListener('click', function () {
     var mot = $('nouveauMot').value.trim();
     if (!mot) return;
