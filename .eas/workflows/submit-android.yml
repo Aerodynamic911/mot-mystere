@@ -1,15 +1,8 @@
 name: Submit Android build
-on:
-  workflow_dispatch:
-    inputs:
-      build_id:
-        type: string
-        required: true
-        description: 'ID du build Android a envoyer'
 jobs:
   submit_android:
     name: Submit to Google Play
     type: submit
     params:
       profile: production
-      build_id: ${{ inputs.build_id }}
+      build_id: faf0254b-f0c9-4cce-bac5-1944b208a7af
