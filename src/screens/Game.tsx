@@ -12,6 +12,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
@@ -127,6 +128,8 @@ export default function Game({
   const secousse = useRef(new Animated.Value(0)).current;
   const apparitionResultat = useRef(new Animated.Value(0)).current;
   const defilement = useRef<ScrollView>(null);
+  // Petit écran avec le clavier ouvert (Android réduit la fenêtre) : on libère la place pour les indices.
+  const compact = useWindowDimensions().height < 560;
 
   function declencher(type: TypeEffet) {
     setEffet((e) => ({ type, cle: (e?.cle ?? 0) + 1 }));
@@ -154,6 +157,13 @@ export default function Game({
     const t = setTimeout(() => defilement.current?.scrollToEnd({ animated: true }), 450);
     return () => clearTimeout(t);
   }, [termine, apparitionResultat]);
+
+  // Clavier ouvert sur petit écran : on montre l'indice le plus récent et les essais.
+  useEffect(() => {
+    if (!compact || termine) return;
+    const t = setTimeout(() => defilement.current?.scrollToEnd({ animated: true }), 200);
+    return () => clearTimeout(t);
+  }, [compact, termine, indicesVisibles, propositions.length]);
 
   const suite = termine ? (actionFin?.(gagne) ?? null) : null;
 
@@ -264,7 +274,7 @@ export default function Game({
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.entete}>
+      <View style={[styles.entete, compact && styles.enteteCompact]}>
         <TouchableOpacity onPress={onRetour} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Text style={styles.retour}>{tr('‹ Accueil', '‹ Home')}</Text>
         </TouchableOpacity>
@@ -275,12 +285,13 @@ export default function Game({
       </View>
 
       <ScrollView ref={defilement} contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
-        <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>
+        {!compact && <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>}
 
         {image && <ImageDevoilee source={image} etape={indicesVisibles - 1} />}
 
         {!image && mystere.indices.map((indice, i) => {
           const visible = i < indicesVisibles;
+          if (compact && !visible) return null;
           const dernier = visible && i === indicesVisibles - 1 && !termine;
           return (
             <IndiceCarte key={i} visible={visible} recent={dernier} numero={i + 1} texte={indice} />
@@ -380,19 +391,19 @@ export default function Game({
       )}
 
       {!termine && (
-        <View style={styles.saisieBarre}>
+        <View style={[styles.saisieBarre, compact && styles.saisieBarreCompacte]}>
           {message !== '' && <Text style={styles.message}>{message}</Text>}
-          {message === '' && encouragement !== '' && <Text style={styles.encouragement}>{encouragement}</Text>}
+          {!compact && message === '' && encouragement !== '' && <Text style={styles.encouragement}>{encouragement}</Text>}
           {peutJoker && (
             <TouchableOpacity style={[styles.boutonIndice, styles.boutonJoker]} onPress={utiliserJoker} activeOpacity={0.85}>
               <Text style={[styles.boutonIndiceTexte, { color: couleurs.succes }]}>✨ {tr('Utiliser un joker', 'Use a joker')} ({jokers})</Text>
-              <Text style={styles.boutonIndiceNote}>{tr('indice offert', 'free clue')}</Text>
+              {!compact && <Text style={styles.boutonIndiceNote}>{tr('indice offert', 'free clue')}</Text>}
             </TouchableOpacity>
           )}
           {peutDemanderIndice && (
             <TouchableOpacity style={styles.boutonIndice} onPress={indiceSuivant} activeOpacity={0.85}>
               <Text style={styles.boutonIndiceTexte}>💡 {tr('Indice suivant', 'Next clue')}</Text>
-              <Text style={styles.boutonIndiceNote}>{tr('compte comme un essai', 'counts as an attempt')}</Text>
+              {!compact && <Text style={styles.boutonIndiceNote}>{tr('compte comme un essai', 'counts as an attempt')}</Text>}
             </TouchableOpacity>
           )}
           <Animated.View
@@ -548,6 +559,8 @@ const styles = StyleSheet.create({
   boutonSecondaireTexte: { color: couleurs.texte, fontWeight: '600', fontSize: 16 },
   barreSuite: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
   boutonSuite: { marginTop: 0 },
+  enteteCompact: { paddingVertical: 4 },
+  saisieBarreCompacte: { paddingVertical: 8, paddingHorizontal: 12 },
   saisieBarre: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
   encouragement: { color: couleurs.accent, fontSize: 14, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
   consolation: { color: couleurs.texte, fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 8 },
