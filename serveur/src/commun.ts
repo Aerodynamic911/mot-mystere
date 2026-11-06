@@ -27,6 +27,10 @@ export interface Env {
   // Secrets : bot Telegram pour les alertes de moderation (optionnel).
   TELEGRAM_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
+  // Identifiant(s) client Google (type Web) acceptes comme destinataire des jetons, separes par des virgules.
+  GOOGLE_CLIENT_ID?: string;
+  // Destinataire des jetons Apple (par defaut l'identifiant de l'app).
+  APPLE_AUDIENCE?: string;
 }
 
 export interface Joueur {
