@@ -3,6 +3,8 @@ jobs:
   submit_android:
     name: Submit to Google Play
     type: submit
+    env:
+      EXPO_DEBUG: "1"
     params:
       profile: production
       build_id: faf0254b-f0c9-4cce-bac5-1944b208a7af
