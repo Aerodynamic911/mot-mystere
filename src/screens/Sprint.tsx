@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Share, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { poolPour } from '../game/aventure';
@@ -88,6 +88,8 @@ export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTermi
   const bilanRef = useRef<LigneBilan[]>([]);
   const [bilan, setBilan] = useState<LigneBilan[]>([]);
   const champ = useRef<TextInput>(null);
+  // Petit écran avec le clavier ouvert (Android réduit la fenêtre) : on libère la place pour les indices.
+  const compact = useWindowDimensions().height < 560;
 
   const brut = ordre[rang % ordre.length];
   const mystere = useMemo(() => localiser(brut), [brut]);
@@ -304,7 +306,7 @@ export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTermi
   const urgent = reste <= 10;
   return (
     <KeyboardAvoidingView style={styles.racine} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.entete}>
+      <View style={[styles.entete, compact && styles.enteteCompact]}>
         <TouchableOpacity onPress={onRetour} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Text style={styles.retour}>{tr('‹ Quitter', '‹ Quit')}</Text>
         </TouchableOpacity>
@@ -319,21 +321,21 @@ export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTermi
       <ScrollView contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
         {bandeau ? (
           <Text style={[styles.bandeau, bandeau.ok ? styles.bandeauOk : styles.bandeauRate]}>{bandeau.texte}</Text>
-        ) : (
+        ) : compact ? null : (
           <Text style={styles.bandeauVide}> </Text>
         )}
-        <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>
+        {!compact && <Text style={styles.categorie}>{tr('{c} À DEVINER', '{c} TO GUESS', { c: mystere.categorie.toUpperCase() })}</Text>}
         {mystere.indices.slice(0, indices).map((indice, i) => (
           <View key={`${rang}-${i}`} style={[styles.indice, i === indices - 1 && styles.indiceRecent]}>
             <Text style={styles.indiceNumero}>{i + 1}</Text>
             <Text style={styles.indiceTexte}>{indice}</Text>
           </View>
         ))}
-        <Text style={styles.gain}>{tr('Réponse trouvée maintenant : +{n} points', 'Found now: +{n} points', { n: pointsSprint(indices) })}</Text>
+        {!compact && <Text style={styles.gain}>{tr('Réponse trouvée maintenant : +{n} points', 'Found now: +{n} points', { n: pointsSprint(indices) })}</Text>}
       </ScrollView>
 
       <View style={styles.saisieBarre}>
-        <View style={styles.boutons}>
+        <View style={[styles.boutons, compact && styles.boutonsCompact]}>
           <TouchableOpacity
             style={[styles.petit, indices >= mystere.indices.length && styles.petitInactif]}
             onPress={indiceSuivant}
@@ -420,6 +422,8 @@ const styles = StyleSheet.create({
   gain: { color: couleurs.texteSecondaire, fontSize: 12, textAlign: 'center', marginTop: 4 },
   saisieBarre: { padding: 14, borderTopWidth: 1, borderTopColor: couleurs.bordure, backgroundColor: couleurs.fond },
   boutons: { flexDirection: 'row', marginBottom: 10 },
+  boutonsCompact: { marginBottom: 6 },
+  enteteCompact: { paddingVertical: 4 },
   petit: { flex: 1, borderRadius: rayon, borderWidth: 1.5, borderColor: couleurs.accent, paddingVertical: 10, alignItems: 'center', marginRight: 10 },
   petitPasser: { borderColor: couleurs.bordure, marginRight: 0 },
   petitInactif: { opacity: 0.35 },
