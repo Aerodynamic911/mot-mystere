@@ -129,6 +129,7 @@ export default function Game({
   const secousse = useRef(new Animated.Value(0)).current;
   const apparitionResultat = useRef(new Animated.Value(0)).current;
   const defilement = useRef<ScrollView>(null);
+  const positionsIndices = useRef<Record<number, number>>({});
   // Petit écran avec le clavier ouvert (Android réduit la fenêtre) : on libère la place pour les indices.
   const compact = useEcranCompact();
 
@@ -162,7 +163,12 @@ export default function Game({
   // Clavier ouvert sur petit écran : on montre l'indice le plus récent et les essais.
   useEffect(() => {
     if (!compact || termine) return;
-    const t = setTimeout(() => defilement.current?.scrollToEnd({ animated: true }), 200);
+    const t = setTimeout(() => {
+      // On vise le haut de l'indice le plus récent, pour qu'il ne soit jamais coupé.
+      const y = positionsIndices.current[indicesVisibles - 1];
+      if (y !== undefined) defilement.current?.scrollTo({ y: Math.max(0, y - 6), animated: true });
+      else defilement.current?.scrollToEnd({ animated: true });
+    }, 200);
     return () => clearTimeout(t);
   }, [compact, termine, indicesVisibles, propositions.length]);
 
@@ -321,7 +327,7 @@ export default function Game({
           if (compact && !visible) return null;
           const dernier = visible && i === indicesVisibles - 1 && !termine;
           return (
-            <IndiceCarte key={i} visible={visible} recent={dernier} numero={i + 1} texte={indice} />
+            <IndiceCarte key={i} visible={visible} recent={dernier} numero={i + 1} texte={indice} onLayoutY={(y) => { positionsIndices.current[i] = y; }} />
           );
         })}
 
@@ -421,18 +427,20 @@ export default function Game({
         <View style={[styles.saisieBarre, compact && styles.saisieBarreCompacte]}>
           {message !== '' && <Text style={styles.message}>{message}</Text>}
           {!compact && message === '' && encouragement !== '' && <Text style={styles.encouragement}>{encouragement}</Text>}
+          <View style={compact ? styles.boutonsCompact : undefined}>
           {peutJoker && (
-            <TouchableOpacity style={[styles.boutonIndice, styles.boutonJoker]} onPress={utiliserJoker} activeOpacity={0.85}>
-              <Text style={[styles.boutonIndiceTexte, { color: couleurs.succes }]}>✨ {tr('Utiliser un joker', 'Use a joker')} ({jokers})</Text>
+            <TouchableOpacity style={[styles.boutonIndice, styles.boutonJoker, compact && styles.boutonCompact]} onPress={utiliserJoker} activeOpacity={0.85}>
+              <Text style={[styles.boutonIndiceTexte, { color: couleurs.succes }]}>✨ {compact ? tr('Joker', 'Joker') : tr('Utiliser un joker', 'Use a joker')} ({jokers})</Text>
               {!compact && <Text style={styles.boutonIndiceNote}>{tr('indice offert', 'free clue')}</Text>}
             </TouchableOpacity>
           )}
           {peutDemanderIndice && (
-            <TouchableOpacity style={styles.boutonIndice} onPress={indiceSuivant} activeOpacity={0.85}>
-              <Text style={styles.boutonIndiceTexte}>💡 {tr('Indice suivant', 'Next clue')}</Text>
+            <TouchableOpacity style={[styles.boutonIndice, compact && styles.boutonCompact]} onPress={indiceSuivant} activeOpacity={0.85}>
+              <Text style={styles.boutonIndiceTexte}>💡 {compact ? tr('Indice', 'Clue') : tr('Indice suivant', 'Next clue')}</Text>
               {!compact && <Text style={styles.boutonIndiceNote}>{tr('compte comme un essai', 'counts as an attempt')}</Text>}
             </TouchableOpacity>
           )}
+          </View>
           {image && (
             <TouchableOpacity style={styles.boutonAbandon} onPress={voirLaReponse} activeOpacity={0.7} accessibilityRole="button">
               <Text style={styles.boutonAbandonTexte}>🏳️ {tr('Je ne sais pas : voir la réponse', "I don't know: see the answer")}</Text>
@@ -487,7 +495,7 @@ function ImageDevoilee({ source, etape }: { source: ImageSourcePropType; etape: 
   );
 }
 
-function IndiceCarte({ visible, recent, numero, texte }: { visible: boolean; recent: boolean; numero: number; texte: string }) {
+function IndiceCarte({ visible, recent, numero, texte, onLayoutY }: { visible: boolean; recent: boolean; numero: number; texte: string; onLayoutY?: (y: number) => void }) {
   const arrivee = useRef(new Animated.Value(visible ? 1 : 0)).current;
   const dejaVu = useRef(visible);
   useEffect(() => {
@@ -499,6 +507,7 @@ function IndiceCarte({ visible, recent, numero, texte }: { visible: boolean; rec
   }, [visible, arrivee]);
   return (
     <Animated.View
+      onLayout={(e) => onLayoutY?.(e.nativeEvent.layout.y)}
       style={[
         styles.indice,
         !visible && styles.indiceVerrouille,
@@ -570,6 +579,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   boutonJoker: { borderColor: couleurs.succes },
+  boutonsCompact: { flexDirection: 'row', gap: 8 },
+  boutonCompact: { flex: 1, paddingVertical: 8, marginBottom: 6 },
   boutonIndiceTexte: { color: couleurs.accent, fontSize: 15, fontWeight: '700' },
   boutonIndiceNote: { color: couleurs.texteSecondaire, fontSize: 12, marginLeft: 8 },
   pastilleTexte: { color: couleurs.texte, fontSize: 14 },
