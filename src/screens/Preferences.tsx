@@ -7,12 +7,15 @@ import { Difficulte, Langue, Preferences, TrancheAge } from '../game/preferences
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
 import FondAnime from '../ui/FondAnime';
+import SauvegardeBloc from './SauvegardeBloc';
 
 interface Props {
   prefs: Preferences;
   onChange: (prefs: Preferences) => void;
   onRetour: () => void;
   onProfil: () => void;
+  /** Une sauvegarde vient d'être restaurée : l'appli recharge ses données. */
+  onRestaure: () => void;
 }
 
 interface Choix<T> {
@@ -42,7 +45,7 @@ const ages = (): Choix<TrancheAge>[] => [
   { valeur: 'a50', titre: tr('50 ans et plus', '50 and over') },
 ];
 
-export default function PreferencesEcran({ prefs, onChange, onRetour, onProfil }: Props) {
+export default function PreferencesEcran({ prefs, onChange, onRetour, onProfil, onRestaure }: Props) {
   const [creditsOuverts, setCreditsOuverts] = useState(false);
   return (
     <View style={styles.racine}>
@@ -83,6 +86,10 @@ export default function PreferencesEcran({ prefs, onChange, onRetour, onProfil }
               'This choice is stored on your phone. The riddles offered are adapted to your age group, always with a common base for everyone.',
             )}
           </Text>
+        </Section>
+
+        <Section titre={tr('Sauvegarde de ma progression', 'Back up my progress')}>
+          <SauvegardeBloc onRestaure={onRestaure} />
         </Section>
 
         <Section titre={tr('Profil en ligne', 'Online profile')}>

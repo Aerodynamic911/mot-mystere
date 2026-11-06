@@ -21,3 +21,9 @@ export const PARTAGES_PAR_JOKER = 3;
 
 /** Serveur de Quizzle (Cloudflare) : pseudo, amis, groupes. Rien n'y est envoyé tant que le joueur n'a pas créé son profil. */
 export const URL_SERVEUR = 'https://api.occitangames.com';
+
+/**
+ * Identifiant client Google de type « Application Web » (Google Cloud › Identifiants), utilisé pour obtenir le jeton de connexion sur Android.
+ * Tant qu'il est vide, la sauvegarde par compte Google reste masquée sur Android.
+ */
+export const GOOGLE_WEB_CLIENT_ID: string = '';

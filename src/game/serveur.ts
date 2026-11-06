@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { URL_SERVEUR } from '../config';
+import { oublierSauvegarde } from './sauvegarde';
 
 /**
  * Client du serveur Quizzle (profil en ligne).
@@ -39,7 +40,7 @@ export async function compteLocal(): Promise<Compte | null> {
   }
 }
 
-async function oublierCompte(): Promise<void> {
+export async function oublierCompte(): Promise<void> {
   try {
     await AsyncStorage.removeItem(CLE);
   } catch {
@@ -47,13 +48,13 @@ async function oublierCompte(): Promise<void> {
   }
 }
 
-interface Reponse {
+export interface Reponse {
   status: number;
   donnees: any;
 }
 
 /** Appel au serveur ; lève une erreur seulement si le réseau est inaccessible. */
-async function appeler(chemin: string, methode: string, compte: Compte | null, corps?: unknown): Promise<Reponse> {
+export async function appeler(chemin: string, methode: string, compte: Compte | null, corps?: unknown): Promise<Reponse> {
   const controle = new AbortController();
   const minuteur = setTimeout(() => controle.abort(), DELAI_MS);
   try {
@@ -80,7 +81,7 @@ async function appeler(chemin: string, methode: string, compte: Compte | null, c
   }
 }
 
-async function creerCompte(): Promise<Compte | null> {
+export async function creerCompte(): Promise<Compte | null> {
   const r = await appeler('/v1/joueurs', 'POST', null);
   if (r.status !== 201 || !r.donnees?.id) return null;
   const compte: Compte = { id: r.donnees.id, secret: r.donnees.secret, codeAmi: r.donnees.code_ami };
@@ -144,6 +145,7 @@ export async function supprimerProfil(): Promise<boolean> {
     const r = await appeler('/v1/joueurs/moi', 'DELETE', compte);
     if (r.status === 200 || r.status === 401) {
       await oublierCompte();
+      await oublierSauvegarde();
       return true;
     }
     return false;

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
-import { Linking, Share, StyleSheet, View } from 'react-native';
+import { AppState, Linking, Share, StyleSheet, View } from 'react-native';
+import { sauvegarderSiBesoin } from './src/game/sauvegarde';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
@@ -138,8 +139,8 @@ function Application() {
   const mystereJour = (jour && jour.cle === cle && jour.id ? mystereParId(jour.id) : null) ?? mystereDuJour(cle, prefs.age);
   const numero = numeroDuJour(cle);
 
-  useEffect(() => {
-    (async () => {
+  /** Lit toutes les données du jeu sur le téléphone (au démarrage, et après une restauration de sauvegarde). */
+  const chargerTout = async () => {
       const [s, j, p, pr, col, qu] = await Promise.all([
         chargerStats(),
         chargerJour(),
@@ -164,7 +165,19 @@ function Application() {
       }
       setNiveauVu(pr.aventure.niveau);
       setPret(true);
-    })();
+  };
+
+  // Sauvegarde automatique de la progression (si le joueur l'a activée) : au démarrage et quand l'appli passe en arrière-plan.
+  useEffect(() => {
+    sauvegarderSiBesoin();
+    const abonnement = AppState.addEventListener('change', (etat) => {
+      if (etat !== 'active') sauvegarderSiBesoin();
+    });
+    return () => abonnement.remove();
+  }, []);
+
+  useEffect(() => {
+    chargerTout();
     const minuteur = setTimeout(() => setDelaiEcoule(true), DUREE_CHARGEMENT);
     return () => clearTimeout(minuteur);
   }, []);
@@ -441,7 +454,7 @@ function Application() {
       )}
 
       {ecran.nom === 'preferences' && (
-        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} onProfil={() => setEcran({ nom: 'profil', retour: 'preferences' })} />
+        <PreferencesEcran prefs={prefs} onChange={changerPreferences} onRetour={() => setEcran({ nom: 'accueil' })} onProfil={() => setEcran({ nom: 'profil', retour: 'preferences' })} onRestaure={() => { chargerTout(); }} />
       )}
 
       {ecran.nom === 'profil' && (

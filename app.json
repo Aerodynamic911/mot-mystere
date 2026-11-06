@@ -13,9 +13,13 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleDevelopmentRegion": "fr",
-        "CFBundleLocalizations": ["fr", "en"],
+        "CFBundleLocalizations": [
+          "fr",
+          "en"
+        ],
         "CFBundleAllowMixedLocalizations": true
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "com.occitangames.quizzle",
@@ -31,6 +35,7 @@
     },
     "plugins": [
       "expo-audio",
+      "expo-apple-authentication",
       [
         "expo-build-properties",
         {
