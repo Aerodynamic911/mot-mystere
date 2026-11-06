@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Share, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
 import { poolPour } from '../game/aventure';
@@ -9,6 +9,7 @@ import type { TrancheAge } from '../game/preferences';
 import { localiser, tr } from '../i18n';
 import { messagePartage } from '../game/partage';
 import { couleurs, rayon } from '../theme';
+import { useEcranCompact } from '../ui/useEcranCompact';
 import EnteteEcran from '../ui/EnteteEcran';
 import FondAnime from '../ui/FondAnime';
 
@@ -89,7 +90,7 @@ export default function Sprint({ age, record, jokersTemps, onJokerTemps, onTermi
   const [bilan, setBilan] = useState<LigneBilan[]>([]);
   const champ = useRef<TextInput>(null);
   // Petit écran avec le clavier ouvert (Android réduit la fenêtre) : on libère la place pour les indices.
-  const compact = useWindowDimensions().height < 560;
+  const compact = useEcranCompact();
 
   const brut = ordre[rang % ordre.length];
   const mystere = useMemo(() => localiser(brut), [brut]);

@@ -11,8 +11,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  useWindowDimensions,
+  View
 } from 'react-native';
 import { jouerEffet } from '../audio/effets';
 import { Mystere } from '../data/mysteres';
@@ -25,6 +24,7 @@ import { genererCode } from '../game/social';
 import type { ModeJeu } from '../game/storage';
 import { langue, localiser, tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
+import { useEcranCompact } from '../ui/useEcranCompact';
 import EffetsJeu, { EffetEnCours, TypeEffet } from '../ui/EffetsJeu';
 
 /** Encouragements après une mauvaise réponse (il reste des essais). */
@@ -127,7 +127,7 @@ export default function Game({
   const apparitionResultat = useRef(new Animated.Value(0)).current;
   const defilement = useRef<ScrollView>(null);
   // Petit écran avec le clavier ouvert (Android réduit la fenêtre) : on libère la place pour les indices.
-  const compact = useWindowDimensions().height < 560;
+  const compact = useEcranCompact();
 
   function declencher(type: TypeEffet) {
     setEffet((e) => ({ type, cle: (e?.cle ?? 0) + 1 }));
