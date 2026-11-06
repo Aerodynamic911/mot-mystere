@@ -79,13 +79,13 @@ export default function Home({
 }: Props) {
   // Sur un petit écran (iPhone SE), le bandeau écraserait la mascotte : le bouton des préférences reste disponible.
   const { height: hauteurEcran } = useWindowDimensions();
-  const afficherAvis = avisVisible && hauteurEcran >= 720;
+  const afficherAvis = avisVisible && hauteurEcran >= 800;
   const [statsOuvertes, setStatsOuvertes] = useState(false);
   // Infobulle ouverte en touchant la série ou les jokers.
   const [info, setInfo] = useState<'serie' | 'jokers' | null>(null);
   const [hauteurScene, setHauteurScene] = useState(0);
   // La place restante après le texte « Mystère du jour » et les puces (≈ 84 px) revient à la mascotte.
-  const tailleMascotte = hauteurScene ? Math.max(90, Math.min(190, hauteurScene - 84)) : 190;
+  const tailleMascotte = hauteurScene ? Math.max(48, Math.min(190, hauteurScene - 84)) : 190;
   const tauxVictoire = stats.parties > 0 ? Math.round((stats.victoires / stats.parties) * 100) : 0;
   const maxRep = Math.max(1, ...stats.repartition);
 
