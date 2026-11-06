@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Image,
   ImageSourcePropType,
@@ -206,6 +207,32 @@ export default function Game({
 
   const peutJoker = !termine && jokers > 0 && indicesVisibles < nbIndices;
 
+  // Mode image : on peut renoncer et voir la réponse (la partie compte comme perdue).
+  function voirLaReponse() {
+    Alert.alert(
+      tr('Voir la réponse ?', 'See the answer?'),
+      tr('Cette partie comptera comme perdue.', 'This game will count as lost.'),
+      [
+        { text: tr('Annuler', 'Cancel'), style: 'cancel' },
+        {
+          text: tr('Voir la réponse', 'See the answer'),
+          style: 'destructive',
+          onPress: () => {
+            const suivantes = [...propositions];
+            while (suivantes.length < maxEssais) suivantes.push('—');
+            setPropositions(suivantes);
+            setSaisie('');
+            setMessage('');
+            setEncouragement('');
+            declencher('faux');
+            jouerEffet('echec');
+            onTerminee?.(suivantes, false);
+          },
+        },
+      ],
+    );
+  }
+
   function utiliserJoker() {
     if (!peutJoker) return;
     setOfferts((n) => n + 1);
@@ -406,6 +433,11 @@ export default function Game({
               {!compact && <Text style={styles.boutonIndiceNote}>{tr('compte comme un essai', 'counts as an attempt')}</Text>}
             </TouchableOpacity>
           )}
+          {image && (
+            <TouchableOpacity style={styles.boutonAbandon} onPress={voirLaReponse} activeOpacity={0.7} accessibilityRole="button">
+              <Text style={styles.boutonAbandonTexte}>🏳️ {tr('Je ne sais pas : voir la réponse', "I don't know: see the answer")}</Text>
+            </TouchableOpacity>
+          )}
           <Animated.View
             style={[
               styles.saisieLigne,
@@ -525,6 +557,8 @@ const styles = StyleSheet.create({
   },
   pastilleOk: { backgroundColor: 'rgba(61,220,151,0.15)', borderColor: couleurs.succes },
   pastillePasse: { backgroundColor: 'rgba(245,185,66,0.12)', borderColor: couleurs.accent },
+  boutonAbandon: { alignItems: 'center', paddingVertical: 8, marginBottom: 4 },
+  boutonAbandonTexte: { color: couleurs.texteSecondaire, fontSize: 14, fontWeight: '600', textDecorationLine: 'underline' },
   boutonIndice: {
     flexDirection: 'row',
     alignItems: 'center',
