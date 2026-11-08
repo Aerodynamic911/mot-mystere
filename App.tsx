@@ -93,7 +93,7 @@ type Ecran =
   | { nom: 'sprint' }
   | { nom: 'vf' }
   | { nom: 'boutique' }
-  | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number; defiId?: string }
+  | { nom: 'defi'; mystere: Mystere; essaisAmi: number; essai: number; defiId?: string; revanche?: boolean }
   | { nom: 'evenement'; id: string }
   | { nom: 'etape'; id: string; etape: number };
 
@@ -378,6 +378,12 @@ function Application() {
     setAmisOuvert(false);
     setEcran({ nom: 'defi', mystere: lu.mystere, essaisAmi: lu.essaisAmi, essai: 0 });
     return null;
+  }
+
+  /** Revanche : une autre énigme (les deux joueurs connaissent déjà la réponse de celle qui vient d'être jouée). */
+  function lancerRevanche(dejaJouee: Mystere) {
+    const mystere = choisirMystereAventure(Date.now() % 1000, [...prog.aventure.vus, mystereJour.id, dejaJouee.id], prefs.age);
+    setEcran({ nom: 'defi', mystere, essaisAmi: 0, essai: 0, revanche: true });
   }
 
   /** Relève un défi reçu via le serveur : même mystère, score de l'ami affiché à la fin. */
@@ -686,6 +692,7 @@ function Application() {
           onPartage={partageFait}
           onAvis={avisFinPartie}
           mode="defi"
+          sansDefi={!ecran.revanche}
           onTerminee={(propositions, gagne) => {
             if (ecran.defiId) repondreDefi(ecran.defiId, propositions.length, gagne);
             finDePartie('defi', propositions, gagne, prog, gagne ? (s) => enregistrerDefiGagne(s, cle) : undefined);
@@ -695,14 +702,18 @@ function Application() {
             if (gagne) {
               if (ami === 0 || essais < ami) return tr('🏆 Vous battez votre ami !', '🏆 You beat your friend!');
               if (essais === ami) return tr('🤝 Égalité avec votre ami !', '🤝 A tie with your friend!');
-              return tr('Votre ami avait trouvé en {n} essai{s}. Revanche ?', 'Your friend found it in {n} attempt{s}. Rematch?', { n: ami, s: ami > 1 ? 's' : '' });
+              return tr('Votre ami avait trouvé en {n} essai{s}. Revanche sur une autre énigme ?', 'Your friend found it in {n} attempt{s}. Rematch on a new mystery?', { n: ami, s: ami > 1 ? 's' : '' });
             }
             return ami === 0
               ? tr('Même votre ami n\'avait pas trouvé celui-là !', 'Even your friend did not find this one!')
               : tr('Votre ami avait trouvé en {n} essai{s}. Retentez votre chance !', 'Your friend found it in {n} attempt{s}. Try again!', { n: ami, s: ami > 1 ? 's' : '' });
           }}
           onRetour={() => setEcran({ nom: 'accueil' })}
-          actionFin={() => ({ libelle: tr("Retour à l'accueil", 'Back to home'), onPress: () => setEcran({ nom: 'accueil' }) })}
+          actionFin={() =>
+            ecran.revanche
+              ? { libelle: tr("Retour à l'accueil", 'Back to home'), onPress: () => setEcran({ nom: 'accueil' }) }
+              : { libelle: tr('🔁 Revanche : une autre énigme', '🔁 Rematch: a new mystery'), onPress: () => lancerRevanche(ecran.mystere) }
+          }
         />
       )}
 

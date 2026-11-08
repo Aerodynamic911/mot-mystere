@@ -90,6 +90,8 @@ interface Props {
   onAvis?: () => void;
   /** Mode de jeu, pour afficher les pièces gagnées. */
   mode?: ModeJeu;
+  /** Masque les boutons « Défier un ami » : l'adversaire connaît déjà la réponse de ce mystère. */
+  sansDefi?: boolean;
   /** Phrase de fin de partie (par exemple la comparaison avec le score d'un ami). */
   commentaireFin?: (gagne: boolean, essais: number) => string | null;
   /** Mode image : la photo se dévoile peu à peu à la place des indices écrits. */
@@ -108,6 +110,7 @@ export default function Game({
   maxEssais = MAX_ESSAIS,
   libellePartage,
   actionFin,
+  sansDefi,
   jokers = 0,
   onJoker,
   onPartage,
@@ -381,12 +384,12 @@ export default function Game({
             <TouchableOpacity style={styles.bouton} onPress={partager} activeOpacity={0.85}>
               <Text style={styles.boutonTexte}>📤 {tr('Partager mon résultat', 'Share my result')}</Text>
             </TouchableOpacity>
-            {!image && (
+            {!image && !sansDefi && (
               <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={defier} activeOpacity={0.85}>
                 <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami', 'Challenge a friend')}</Text>
               </TouchableOpacity>
             )}
-            {!image && (
+            {!image && !sansDefi && (
               <>
                 <TouchableOpacity style={[styles.bouton, styles.boutonSecondaire, styles.boutonDefi]} onPress={() => setDefiAmiOuvert(true)} activeOpacity={0.85}>
                   <Text style={styles.boutonSecondaireTexte}>🎯 {tr('Défier un ami de ma liste', 'Challenge a friend from my list')}</Text>
