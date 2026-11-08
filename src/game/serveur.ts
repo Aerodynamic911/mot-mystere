@@ -365,3 +365,7 @@ export async function lireStatsDuJour(jour: string): Promise<StatsDuJour | null>
   const r = await appeler('/v1/stats/jour?jour=' + encodeURIComponent(jour), 'GET', compte);
   return r.status === 200 ? (r.donnees as StatsDuJour) : null;
 }
+
+// ---- Notifications sur le téléphone ----
+export const enregistrerJetonPush = (jeton: string, langue: string) => action('/v1/notifications', 'PUT', { jeton, langue });
+export const retirerJetonPush = (jeton: string) => action('/v1/notifications', 'DELETE', { jeton });

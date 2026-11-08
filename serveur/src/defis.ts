@@ -1,5 +1,6 @@
 // Defis directs entre amis, reactions en emoji et statistiques communautaires du jour.
 
+import { envoyerPush, nomAfficheDe } from './notifPush';
 import { type Env, type Joueur, erreur, json, jourParis, lireCorps } from './commun';
 
 const JOUR = /^\d{4}-\d{2}-\d{2}$/;
@@ -50,6 +51,16 @@ async function envoyerDefi(requete: Request, env: Env, joueur: Joueur): Promise<
   )
     .bind(id, joueur.id, cible, mystere, res.essais, res.gagne ? 1 : 0)
     .run();
+  const nom = await nomAfficheDe(env, joueur.id);
+  await envoyerPush(
+    env,
+    cible,
+    {
+      fr: { titre: 'Quizzle : défi reçu', corps: `${nom} vous défie sur un mystère. Relevez le défi !` },
+      en: { titre: 'Quizzle: challenge received', corps: `${nom} challenges you on a mystery. Take it on!` },
+    },
+    { type: 'defi' },
+  );
   return json({ id }, 201);
 }
 

@@ -1,6 +1,7 @@
 // Resultats du jour, amis par code, blocages et signalements.
 
 import { notifier } from './notifier';
+import { envoyerPush, nomAfficheDe } from './notifPush';
 import { type Env, type Joueur, erreur, json, jourParis, lireCorps } from './commun';
 
 const JOUR = /^\d{4}-\d{2}-\d{2}$/;
@@ -41,6 +42,25 @@ async function enregistrerResultat(requete: Request, env: Env, joueur: Joueur): 
   return json({ enregistre: !!res.meta.changes, essais: garde?.essais ?? essais, score: garde?.score ?? score });
 }
 
+// Notification au telephone de l'autre joueur : nouvelle demande d'ami, ou demande acceptee.
+async function prevenirAmitie(env: Env, de: string, vers: string, acceptee: boolean): Promise<void> {
+  const nom = await nomAfficheDe(env, de);
+  await envoyerPush(
+    env,
+    vers,
+    acceptee
+      ? {
+          fr: { titre: 'Quizzle : nouvel ami', corps: `${nom} est maintenant votre ami !` },
+          en: { titre: 'Quizzle: new friend', corps: `${nom} is now your friend!` },
+        }
+      : {
+          fr: { titre: 'Quizzle : demande d’ami', corps: `${nom} souhaite devenir votre ami.` },
+          en: { titre: 'Quizzle: friend request', corps: `${nom} wants to be your friend.` },
+        },
+    { type: acceptee ? 'ami_accepte' : 'ami' },
+  );
+}
+
 async function demanderAmi(requete: Request, env: Env, joueur: Joueur): Promise<Response> {
   const code = String((await lireCorps(requete)).code ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (code.length !== 8) return erreur(400, 'code');
@@ -67,6 +87,7 @@ async function demanderAmi(requete: Request, env: Env, joueur: Joueur): Promise<
     await env.DB.prepare("UPDATE amities SET statut = 'acceptee' WHERE joueur_a = ? AND joueur_b = ?")
       .bind(cible.id, joueur.id)
       .run();
+    await prevenirAmitie(env, joueur.id, cible.id, true);
     return json({ statut: 'acceptee' });
   }
 
@@ -82,6 +103,7 @@ async function demanderAmi(requete: Request, env: Env, joueur: Joueur): Promise<
   if ((recentes?.n ?? 0) >= MAX_DEMANDES_PAR_JOUR) return erreur(429, 'trop_de_demandes');
 
   await env.DB.prepare("INSERT INTO amities (joueur_a, joueur_b, statut) VALUES (?, ?, 'demande')").bind(joueur.id, cible.id).run();
+  await prevenirAmitie(env, joueur.id, cible.id, false);
   return json({ statut: 'demande' }, 201);
 }
 
@@ -151,6 +173,7 @@ export async function routeSociale(requete: Request, env: Env, url: URL, joueur:
         ? "UPDATE amities SET statut = 'acceptee' WHERE joueur_a = ? AND joueur_b = ? AND statut = 'demande'"
         : "DELETE FROM amities WHERE joueur_a = ? AND joueur_b = ? AND statut = 'demande'";
       const res = await env.DB.prepare(sql).bind(autre, joueur.id).run();
+      if (res.meta.changes && accepter) await prevenirAmitie(env, joueur.id, autre, true);
       return res.meta.changes ? json({ ok: true }) : erreur(404, 'introuvable');
     }
     if (methode === 'DELETE') {

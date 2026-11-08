@@ -20,6 +20,8 @@ interface Props {
   onJouerDuJour: () => void;
   onPreferences: () => void;
   onProfil: () => void;
+  /** Demandes d'amis + défis en attente (pastille sur le bouton profil). */
+  alertes?: number;
   onAmis: () => void;
   pieces: number;
   onBoutique: () => void;
@@ -56,6 +58,7 @@ export default function Home({
   onJouerDuJour,
   onPreferences,
   onProfil,
+  alertes = 0,
   onAmis,
   pieces,
   onBoutique,
@@ -107,10 +110,15 @@ export default function Home({
         onPress={onProfil}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={tr('Mon profil', 'My profile')}
+        accessibilityLabel={alertes > 0 ? tr('Mon profil, {n} nouveauté(s)', 'My profile, {n} new', { n: alertes }) : tr('Mon profil', 'My profile')}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={styles.boutonSonTexte}>👤</Text>
+        {alertes > 0 && (
+          <View style={styles.alertePastille} pointerEvents="none">
+            <Text style={styles.alertePastilleTexte}>{alertes > 9 ? '9+' : alertes}</Text>
+          </View>
+        )}
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.boutonSon, styles.boutonReglages]}
@@ -429,6 +437,19 @@ const styles = StyleSheet.create({
   boutonReglages: { right: 64 },
   boutonStats: { left: 16, right: undefined },
   boutonProfil: { left: 64, right: undefined },
+  alertePastille: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    backgroundColor: '#E5484D',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  alertePastilleTexte: { color: '#fff', fontSize: 11, fontWeight: '800' },
   haut: { paddingTop: 28, alignItems: 'center' },
   ruban: {
     marginTop: 4,

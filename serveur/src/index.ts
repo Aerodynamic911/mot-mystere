@@ -5,6 +5,7 @@ import { adminRequete } from './admin';
 import { authentifier, sha256 } from './auth';
 import { notifier, rappelModeration } from './notifier';
 import { restaurerCompte, routeComptes } from './comptes';
+import { routeNotifications } from './notifPush';
 import { routeDefis } from './defis';
 import { routeGroupes } from './groupes';
 import { routeSociale } from './social';
@@ -124,6 +125,7 @@ async function supprimerJoueur(env: Env, joueur: Joueur): Promise<Response> {
     env.DB.prepare('DELETE FROM resultats WHERE joueur_id = ?').bind(id),
     env.DB.prepare('DELETE FROM comptes_lies WHERE joueur_id = ?').bind(id),
     env.DB.prepare('DELETE FROM sauvegardes WHERE joueur_id = ?').bind(id),
+    env.DB.prepare('DELETE FROM notifications_jetons WHERE joueur_id = ?').bind(id),
     env.DB.prepare('DELETE FROM joueurs WHERE id = ?').bind(id),
   ]);
   return json({ supprime: true });
@@ -152,14 +154,15 @@ export default {
     // Nouveau telephone : pas encore d'identifiants, le joueur prouve son identite avec son compte Apple/Google.
     if (methode === 'POST' && pathname === '/v1/compte/restaurer') return restaurerCompte(requete, env);
 
-    if (/^\/v1\/(amis|resultats|blocages|signalements|groupes|defis|reactions|stats|compte|sauvegarde)(\/|$)/.test(pathname)) {
+    if (/^\/v1\/(amis|resultats|blocages|signalements|groupes|defis|reactions|stats|compte|sauvegarde|notifications)(\/|$)/.test(pathname)) {
       const joueur = await authentifier(requete, env);
       if (!joueur) return erreur(401, 'non_authentifie');
       const reponse =
         (await routeSociale(requete, env, url, joueur)) ??
         (await routeGroupes(requete, env, url, joueur)) ??
         (await routeDefis(requete, env, url, joueur)) ??
-        (await routeComptes(requete, env, url, joueur));
+        (await routeComptes(requete, env, url, joueur)) ??
+        (await routeNotifications(requete, env, url, joueur));
       if (reponse) return reponse;
     }
 

@@ -7,6 +7,7 @@ import { couleurs, rayon } from '../theme';
 interface Props {
   /** Lance le défi reçu (mystère identique) ; renvoie `false` si ce mystère n'existe pas dans cette version de l'app. */
   onRelever: (defi: DefiEnLigne) => boolean;
+  onChange?: () => void;
 }
 
 function essaisTexte(gagne: boolean, essais: number): string {
@@ -23,7 +24,7 @@ function verdict(d: DefiEnLigne): string | null {
   return tr('Perdu', 'Lost');
 }
 
-export default function DefisBloc({ onRelever }: Props) {
+export default function DefisBloc({ onRelever, onChange }: Props) {
   const [defis, setDefis] = useState<{ recus: DefiEnLigne[]; envoyes: DefiEnLigne[] } | null>(null);
   const [chargement, setChargement] = useState(true);
   const [horsLigne, setHorsLigne] = useState(false);
@@ -32,12 +33,13 @@ export default function DefisBloc({ onRelever }: Props) {
   const charger = useCallback(async () => {
     try {
       setDefis(await lireDefis());
+      onChange?.();
       setHorsLigne(false);
     } catch {
       setHorsLigne(true);
     }
     setChargement(false);
-  }, []);
+  }, [onChange]);
 
   useEffect(() => {
     charger();
@@ -70,7 +72,11 @@ export default function DefisBloc({ onRelever }: Props) {
         {recus.map((d) => (
           <View key={d.id} style={styles.ligne}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.nom} numberOfLines={1}>{d.autre.nom}</Text>
+              <Text style={styles.nom} numberOfLines={1}>
+                {!d.reponse ? '🆕 ' : ''}
+                {d.autre.nom}
+              </Text>
+              {!d.reponse && <Text style={styles.nouveau}>{tr('{nom} vous défie ! À vous de jouer.', '{nom} challenged you! Your turn.', { nom: d.autre.nom })}</Text>}
               <Text style={styles.detail}>
                 {tr('Son score : ', 'Their score: ')}{essaisTexte(d.gagne_de, d.essais_de)}
                 {d.reponse ? `\n${tr('Le vôtre : ', 'Yours: ')}${essaisTexte(d.reponse.gagne, d.reponse.essais)} · ${verdict(d)}` : ''}
@@ -120,6 +126,7 @@ const styles = StyleSheet.create({
   boutonSecondaireTexte: { color: couleurs.accent, fontSize: 15, fontWeight: '700' },
   ligne: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 8 },
   nom: { color: couleurs.texte, fontSize: 16, fontWeight: '700' },
+  nouveau: { color: couleurs.accent, fontSize: 13, fontWeight: '700', marginTop: 2 },
   detail: { color: couleurs.texteSecondaire, fontSize: 13, marginTop: 2, lineHeight: 18 },
   petitBouton: { backgroundColor: couleurs.accent, borderRadius: 10, paddingVertical: 8, paddingHorizontal: 14 },
   petitBoutonTexte: { color: '#1B1B1B', fontSize: 13, fontWeight: '800' },
