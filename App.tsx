@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { definirEffetsActifs } from './src/audio/effets';
-import { Linking, Share, StyleSheet, View } from 'react-native';
+import { AppState, Linking, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { EVENEMENTS, NB_ETAPES, evenementEnCours } from './src/data/evenements';
@@ -51,6 +51,8 @@ import Game from './src/screens/Game';
 import PreferencesEcran from './src/screens/Preferences';
 import ProfilEcran from './src/screens/Profil';
 import { DefiEnLigne, envoyerResultat, repondreDefi } from './src/game/serveur';
+import { AUCUNE_ALERTE, Alertes, compterAlertes } from './src/game/alertes';
+import { rafraichirNotifications, surToucheNotification } from './src/game/notifications';
 import { useMusique } from './src/audio/musique';
 import Home from './src/screens/Home';
 import Quetes from './src/screens/Quetes';
@@ -168,6 +170,34 @@ function Application() {
     const minuteur = setTimeout(() => setDelaiEcoule(true), DUREE_CHARGEMENT);
     return () => clearTimeout(minuteur);
   }, []);
+
+  // Demandes d'amis et défis en attente : pastille sur l'accueil, bandeau dans le profil.
+  const [alertes, setAlertes] = useState<Alertes>(AUCUNE_ALERTE);
+  const cleRef = useRef(cle);
+  cleRef.current = cle;
+  const actualiserAlertes = useCallback(() => {
+    compterAlertes(cleRef.current).then(setAlertes);
+  }, []);
+  const ecranNom = ecran.nom;
+  useEffect(() => {
+    if (!pret) return;
+    rafraichirNotifications();
+    actualiserAlertes();
+    const abo = AppState.addEventListener('change', (e) => {
+      if (e === 'active') actualiserAlertes();
+    });
+    const arreter = surToucheNotification(() => {
+      setEcran({ nom: 'profil', retour: 'accueil' });
+    });
+    return () => {
+      abo.remove();
+      arreter();
+    };
+  }, [pret, actualiserAlertes]);
+  // On met à jour la pastille en revenant à l'accueil (après avoir répondu à une demande, par exemple).
+  useEffect(() => {
+    if (pret && ecranNom === 'accueil') actualiserAlertes();
+  }, [pret, ecranNom, actualiserAlertes]);
 
   // L'état du jour n'est valable que pour la date courante.
   const jourCourant = jour && jour.cle === cle ? jour : null;
@@ -417,6 +447,7 @@ function Application() {
           onJouerDuJour={() => setEcran({ nom: 'jour' })}
           onPreferences={() => setEcran({ nom: 'preferences' })}
           onProfil={() => setEcran({ nom: 'profil', retour: 'accueil' })}
+          alertes={alertes.amis + alertes.defis}
           onAmis={() => setAmisOuvert(true)}
           pieces={stats.pieces}
           onBoutique={() => setEcran({ nom: 'boutique' })}
@@ -450,6 +481,8 @@ function Application() {
           jour={cle}
           resultatDuJour={jourCourant?.terminee ? { essais: jourCourant.propositions.length, gagne: jourCourant.gagnee } : null}
           onRelever={relever}
+          alertes={alertes}
+          onAlertes={actualiserAlertes}
         />
       )}
 

@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AUCUNE_ALERTE, Alertes } from '../game/alertes';
+import { EtatNotifs, activerNotifications, couperNotifications, etatNotifications } from '../game/notifications';
 import { DefiEnLigne, ErreurPseudo, ProfilServeur, envoyerResultat, lireProfil, proposerPseudo, supprimerProfil } from '../game/serveur';
 import { tr } from '../i18n';
 import { couleurs, rayon } from '../theme';
@@ -28,6 +30,10 @@ interface Props {
   resultatDuJour: { essais: number; gagne: boolean } | null;
   /** Lance un défi reçu ; renvoie `false` si le mystère est inconnu de cette version. */
   onRelever: (defi: DefiEnLigne) => boolean;
+  /** Demandes d'amis et défis en attente. */
+  alertes?: Alertes;
+  /** À appeler quand une demande ou un défi a été traité, pour rafraîchir la pastille de l'accueil. */
+  onAlertes?: () => void;
 }
 
 const MESSAGES_ERREUR: Record<ErreurPseudo, () => string> = {
@@ -44,8 +50,12 @@ const MESSAGES_ERREUR: Record<ErreurPseudo, () => string> = {
   inconnue: () => tr('Une erreur est survenue. Réessayez plus tard.', 'Something went wrong. Please try again later.'),
 };
 
-export default function ProfilEcran({ onRetour, jour, resultatDuJour, onRelever }: Props) {
-  const [onglet, setOnglet] = useState<'amis' | 'groupes' | 'defis'>('amis');
+export default function ProfilEcran({ onRetour, jour, resultatDuJour, onRelever, alertes = AUCUNE_ALERTE, onAlertes }: Props) {
+  const [onglet, setOnglet] = useState<'amis' | 'groupes' | 'defis'>(alertes.amis === 0 && alertes.defis > 0 ? 'defis' : 'amis');
+  const [notifs, setNotifs] = useState<EtatNotifs>('jamais');
+  useEffect(() => {
+    etatNotifications().then(setNotifs);
+  }, []);
   const [chargement, setChargement] = useState(true);
   const [horsLigne, setHorsLigne] = useState(false);
   const [profil, setProfil] = useState<ProfilServeur | null>(null);
@@ -92,6 +102,8 @@ export default function ProfilEcran({ onRetour, jour, resultatDuJour, onRelever 
     setEdition(false);
     setSaisie('');
     await charger();
+    // Une fois le pseudo choisi, on propose d'être prévenu des demandes d'amis et des défis.
+    if ((await etatNotifications()) === 'jamais') setNotifs(await activerNotifications());
   }
 
   function supprimer() {
@@ -218,15 +230,61 @@ export default function ProfilEcran({ onRetour, jour, resultatDuJour, onRelever 
 
             {erreur && !peutSaisir && <Text style={styles.erreur}>{erreur}</Text>}
 
+            {profil && (alertes.amis > 0 || alertes.defis > 0) && (
+              <TouchableOpacity
+                style={styles.bandeau}
+                onPress={() => setOnglet(alertes.amis > 0 ? 'amis' : 'defis')}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+              >
+                <Text style={styles.bandeauTexte}>
+                  {'🔔 '}
+                  {[
+                    alertes.amis > 0 ? tr('{n} demande(s) d’ami', '{n} friend request(s)', { n: alertes.amis }) : null,
+                    alertes.defis > 0 ? tr('{n} défi(s) à relever', '{n} challenge(s) to take', { n: alertes.defis }) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {profil && <StatsBloc jour={jour} />}
+
+            {profil && (
+              <TouchableOpacity
+                style={styles.ligneNotifs}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                onPress={async () => {
+                  if (notifs === 'actives') {
+                    await couperNotifications();
+                    setNotifs('coupees');
+                  } else if (notifs === 'refusees') {
+                    Alert.alert(
+                      tr('Notifications désactivées', 'Notifications are off'),
+                      tr('Autorisez les notifications pour Quizzle dans les réglages de votre téléphone.', 'Allow notifications for Quizzle in your phone settings.'),
+                    );
+                  } else {
+                    setNotifs(await activerNotifications());
+                  }
+                }}
+              >
+                <Text style={styles.notifsTexte}>
+                  {notifs === 'actives'
+                    ? tr('🔔 Notifications activées (touchez pour couper)', '🔔 Notifications on (tap to turn off)')
+                    : tr('🔕 Être prévenu des demandes d’amis et des défis', '🔕 Get notified of friend requests and challenges')}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {profil && (
               <View style={styles.onglets}>
                 {(
                   [
-                    ['amis', tr('Amis', 'Friends')],
+                    ['amis', tr('Amis', 'Friends') + (alertes.amis > 0 ? ` (${alertes.amis})` : '')],
                     ['groupes', tr('Groupes', 'Groups')],
-                    ['defis', tr('Défis', 'Challenges')],
+                    ['defis', tr('Défis', 'Challenges') + (alertes.defis > 0 ? ` (${alertes.defis})` : '')],
                   ] as const
                 ).map(([id, libelle]) => (
                   <TouchableOpacity key={id} style={[styles.onglet, onglet === id && styles.ongletActif]} onPress={() => setOnglet(id)} accessibilityRole="button">
@@ -235,9 +293,9 @@ export default function ProfilEcran({ onRetour, jour, resultatDuJour, onRelever 
                 ))}
               </View>
             )}
-            {profil && onglet === 'amis' && <AmisBloc codeAmi={profil.codeAmi} jour={jour} />}
+            {profil && onglet === 'amis' && <AmisBloc codeAmi={profil.codeAmi} jour={jour} onChange={onAlertes} />}
             {profil && onglet === 'groupes' && <GroupesBloc jour={jour} />}
-            {profil && onglet === 'defis' && <DefisBloc onRelever={onRelever} />}
+            {profil && onglet === 'defis' && <DefisBloc onRelever={onRelever} onChange={onAlertes} />}
 
             {profil && (
               <TouchableOpacity onPress={supprimer} style={styles.supprimer} activeOpacity={0.8} accessibilityRole="button">
@@ -282,6 +340,10 @@ const styles = StyleSheet.create({
   pseudo: { color: couleurs.texte, fontSize: 24, fontWeight: '800', marginBottom: 8 },
   texte: { color: couleurs.texteSecondaire, fontSize: 14, lineHeight: 20 },
   note: { color: couleurs.texteSecondaire, fontSize: 12, lineHeight: 17, marginTop: 8 },
+  bandeau: { backgroundColor: couleurs.accent, borderRadius: rayon, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 14 },
+  bandeauTexte: { color: '#1B1B1B', fontSize: 15, fontWeight: '800', textAlign: 'center' },
+  ligneNotifs: { borderRadius: rayon, borderWidth: 1, borderColor: couleurs.bordure, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 14 },
+  notifsTexte: { color: couleurs.texteSecondaire, fontSize: 13, textAlign: 'center' },
   erreur: { color: couleurs.erreur, fontSize: 14, marginTop: 10 },
   champ: {
     backgroundColor: couleurs.carteClaire,

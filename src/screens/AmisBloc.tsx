@@ -20,6 +20,7 @@ import { couleurs, rayon } from '../theme';
 interface Props {
   codeAmi: string;
   jour: string;
+  onChange?: () => void;
 }
 
 const MESSAGES: Record<ErreurAmi, () => string> = {
@@ -33,14 +34,14 @@ const MESSAGES: Record<ErreurAmi, () => string> = {
 };
 
 function libelleResultat(a: Ami): string {
-  if (!a.resultat) return tr('pas encore joué', 'not played yet');
-  if (a.resultat.score === 0) return tr('❌ pas trouvé', '❌ not found');
+  if (!a.resultat) return tr("⏳ N'a pas encore joué au mystère du jour", "⏳ Hasn't played today's mystery yet");
+  if (a.resultat.score === 0) return tr("❌ N'a pas trouvé le mystère du jour", "❌ Didn't find today's mystery");
   return a.resultat.essais === 1
-    ? tr('✅ trouvé en 1 essai', '✅ found in 1 try')
-    : tr('✅ trouvé en {n} essais', '✅ found in {n} tries', { n: a.resultat.essais });
+    ? tr('✅ A trouvé le mystère du jour en 1 essai', "✅ Found today's mystery in 1 try")
+    : tr('✅ A trouvé le mystère du jour en {n} essais', "✅ Found today's mystery in {n} tries", { n: a.resultat.essais });
 }
 
-export default function AmisBloc({ codeAmi, jour }: Props) {
+export default function AmisBloc({ codeAmi, jour, onChange }: Props) {
   const [liste, setListe] = useState<ListeAmis | null>(null);
   const [chargement, setChargement] = useState(true);
   const [horsLigne, setHorsLigne] = useState(false);
@@ -51,12 +52,13 @@ export default function AmisBloc({ codeAmi, jour }: Props) {
   const charger = useCallback(async () => {
     try {
       setListe(await lireAmis(jour));
+      onChange?.();
       setHorsLigne(false);
     } catch {
       setHorsLigne(true);
     }
     setChargement(false);
-  }, [jour]);
+  }, [jour, onChange]);
 
   useEffect(() => {
     charger();
@@ -190,7 +192,8 @@ export default function AmisBloc({ codeAmi, jour }: Props) {
           <>
             {liste.recues.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitre}>{tr('Demandes reçues', 'Requests received')}</Text>
+                <Text style={styles.sectionTitre}>{tr('🆕 Demandes d’amis reçues', '🆕 Friend requests received')}</Text>
+                <Text style={styles.note}>{tr('Ces joueurs veulent devenir vos amis. Acceptez pour voir leurs résultats et jouer ensemble.', 'These players want to be your friends. Accept to see their results and play together.')}</Text>
                 {liste.recues.map((d) => (
                   <View key={d.id} style={styles.ligne}>
                     <Text style={[styles.nom, { flex: 1 }]} numberOfLines={1}>{d.nom}</Text>
@@ -220,14 +223,25 @@ export default function AmisBloc({ codeAmi, jour }: Props) {
                       <View style={{ flex: 1 }}>
                         <Text style={styles.nom} numberOfLines={1}>
                           {a.nom}
-                          {a.reaction_recue ? `  ${a.reaction_recue}` : ''}
                         </Text>
                         <Text style={styles.detail}>{libelleResultat(a)}</Text>
+                        {a.reaction_recue ? (
+                          <Text style={styles.recue}>
+                            {tr('💌 {nom} vous a envoyé {e}', '💌 {nom} sent you {e}', { nom: a.nom, e: a.reaction_recue })}
+                          </Text>
+                        ) : null}
                       </View>
                       <TouchableOpacity onPress={() => menuAmi(a)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityRole="button" accessibilityLabel={tr('Options', 'Options')}>
                         <Text style={styles.menu}>⋯</Text>
                       </TouchableOpacity>
                     </View>
+                    {a.resultat && (
+                      <Text style={styles.consigne}>
+                        {a.ma_reaction
+                          ? tr('✓ {e} envoyé à {nom}. Touchez-le à nouveau pour l’annuler.', '✓ {e} sent to {nom}. Tap it again to cancel.', { e: a.ma_reaction, nom: a.nom })
+                          : tr('Envoyer une réaction à {nom} :', 'Send a reaction to {nom}:', { nom: a.nom })}
+                      </Text>
+                    )}
                     {a.resultat && (
                       <View style={styles.reactions}>
                         {REACTIONS.map((e) => (
@@ -236,7 +250,7 @@ export default function AmisBloc({ codeAmi, jour }: Props) {
                             style={[styles.reaction, a.ma_reaction === e && styles.reactionChoisie]}
                             onPress={() => reaction(a, e)}
                             accessibilityRole="button"
-                            accessibilityLabel={tr('Réagir', 'React') + ' ' + e}
+                            accessibilityLabel={tr('Envoyer {e} à {nom}', 'Send {e} to {nom}', { e, nom: a.nom })}
                           >
                             <Text style={styles.reactionEmoji}>{e}</Text>
                           </TouchableOpacity>
@@ -283,6 +297,8 @@ const styles = StyleSheet.create({
   boutonSecondaire: { borderRadius: rayon, borderWidth: 1, borderColor: couleurs.accent, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
   boutonSecondaireTexte: { color: couleurs.accent, fontSize: 15, fontWeight: '700' },
   blocAmi: { borderBottomWidth: 1, borderBottomColor: couleurs.bordure, paddingBottom: 8 },
+  consigne: { color: couleurs.texteSecondaire, fontSize: 13, marginBottom: 6 },
+  recue: { color: couleurs.accent, fontSize: 13, marginTop: 2 },
   reactions: { flexDirection: 'row', gap: 6 },
   reaction: { borderRadius: 14, borderWidth: 1, borderColor: couleurs.bordure, paddingVertical: 4, paddingHorizontal: 9 },
   reactionChoisie: { borderColor: couleurs.accent, backgroundColor: couleurs.carteClaire },
