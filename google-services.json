@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "948506147269",
+    "project_id": "quizzle-d6b8d",
+    "storage_bucket": "quizzle-d6b8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948506147269:android:ffa0e410940d9f0329f3ac",
+        "android_client_info": {
+          "package_name": "com.occitangames.quizzle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCilWy1YAGgtOJBk76T7XwY980LA6ene68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
