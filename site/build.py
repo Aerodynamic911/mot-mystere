@@ -317,13 +317,13 @@ def svg_evenement(titre):
 
 PRIVACY = {
     'fr': dict(
-        titre='Politique de confidentialité — Quizzle', desc='Comment Quizzle traite vos données : elles restent sur votre appareil.',
-        h1='Politique de confidentialité', maj='Dernière mise à jour : 14 octobre 2026',
-        corps=f'''
+        titre='Politique de confidentialité — Quizzle', desc='Comment Quizzle traite vos données : sur votre appareil, et sur nos serveurs uniquement si vous créez un profil en ligne.',
+        h1='Politique de confidentialité', maj='Dernière mise à jour : 10 novembre 2026',
+        corps="""
 <p>Quizzle est un jeu mobile édité par Occitan Games. Cette page explique, simplement, ce que l’application fait de vos données.</p>
 
 <h2>En résumé</h2>
-<p>Quizzle ne vous demande aucun compte, ne collecte aucune donnée personnelle et n’envoie rien à un serveur. Votre progression reste sur votre téléphone.</p>
+<p>Vous pouvez jouer à Quizzle sans compte : dans ce cas, rien n’est envoyé à un serveur et votre progression reste sur votre téléphone. Si vous choisissez un pseudo pour jouer avec des amis, un profil en ligne anonyme est créé et certaines données sont alors enregistrées sur nos serveurs, comme décrit ci-dessous. Il n’y a ni publicité, ni suivi publicitaire, ni vente de données.</p>
 
 <h2>Ce qui est enregistré sur votre appareil</h2>
 <ul>
@@ -331,13 +331,36 @@ PRIVACY = {
 <li>vos statistiques de jeu (parties, victoires, séries) ;</li>
 <li>vos préférences (langue, difficulté, tranche d’âge).</li>
 </ul>
-<p>Ces informations sont stockées uniquement dans la mémoire de l’application, sur votre téléphone. L’éditeur n’y a pas accès. Elles disparaissent si vous désinstallez l’application ou effacez ses données.</p>
+<p>Ces informations sont stockées dans la mémoire de l’application, sur votre téléphone. Elles disparaissent si vous désinstallez l’application ou effacez ses données.</p>
+
+<h2>Le profil en ligne (facultatif)</h2>
+<p>Le profil en ligne est créé uniquement lorsque vous choisissez un pseudo dans l’écran « Mon profil ». Il n’y a ni adresse e-mail, ni numéro de téléphone, ni nom réel : un identifiant aléatoire est généré sur votre téléphone. Le serveur ne conserve de votre code secret qu’une empreinte (hachage). Sont alors enregistrés :</p>
+<ul>
+<li>votre pseudo, et un code ami à partager si vous le souhaitez ;</li>
+<li>votre résultat au mystère du jour (nombre d’essais, réussite, score), visible de vos amis et des membres de vos groupes ;</li>
+<li>vos demandes d’amis, vos amis, vos groupes, vos défis et vos réactions, ainsi que les personnes que vous bloquez ou signalez ;</li>
+<li>si vous activez les notifications : un jeton de notification propre à votre téléphone et votre langue.</li>
+</ul>
+<p>Ces données servent uniquement à faire fonctionner ces fonctionnalités (voir vos amis, les défis, les classements, les notifications) et à modérer les pseudos : les pseudos peuvent être vérifiés par l’éditeur, et un pseudo signalé par plusieurs joueurs est masqué. Elles sont conservées tant que votre profil existe.</p>
+
+<h2>Notifications</h2>
+<p>Les notifications (demande d’ami reçue, demande acceptée, défi reçu) sont facultatives : l’application demande votre autorisation et vous pouvez les couper à tout moment depuis « Mon profil » ou depuis les réglages de votre téléphone. Elles sont acheminées par le service de notifications d’Expo puis par les services de notification d’Apple (iPhone) ou de Google (Android).</p>
+
+<h2>Supprimer vos données en ligne</h2>
+<p>Le bouton « Supprimer mes données en ligne » de l’écran « Mon profil » efface immédiatement votre profil et toutes les données associées sur nos serveurs (pseudo, résultats, amis, groupes, défis, réactions, jeton de notification). Vous pouvez aussi écrire à <a href="mailto:contact@occitangames.com">contact@occitangames.com</a>.</p>
+
+<h2>Prestataires techniques</h2>
+<ul>
+<li>Cloudflare (hébergement du serveur et de la base de données, et de ce site) : comme tout hébergeur, il traite techniquement les adresses IP des connexions ;</li>
+<li>Expo, Apple et Google, uniquement pour l’acheminement des notifications.</li>
+</ul>
+<p>Aucune donnée n’est vendue ni utilisée à des fins publicitaires.</p>
 
 <h2>Ce que nous ne faisons pas</h2>
 <ul>
-<li>aucun compte ni identifiant utilisateur ;</li>
-<li>aucun outil de mesure d’audience ni de suivi publicitaire dans la version actuelle ;</li>
-<li>aucune vente ni transmission de données à des tiers.</li>
+<li>aucune publicité et aucun suivi publicitaire ;</li>
+<li>aucun outil de mesure d’audience dans l’application ;</li>
+<li>aucune lecture de votre carnet d’adresses, de votre position ou de vos photos.</li>
 </ul>
 
 <h2>Partage et notation</h2>
@@ -353,19 +376,19 @@ PRIVACY = {
 <p>Ce site n’utilise aucun cookie de suivi ni outil de mesure d’audience. Les polices de caractères sont hébergées sur le site lui-même.</p>
 
 <h2>Vos droits</h2>
-<p>L’éditeur ne détenant aucune donnée personnelle vous concernant, il n’y a rien à consulter ni à supprimer chez lui : vous gardez le contrôle en effaçant les données de l’application sur votre téléphone. Pour toute question, écrivez à <a href="mailto:{CONTACT}">{CONTACT}</a>. Vous pouvez aussi saisir la CNIL (<a href="https://www.cnil.fr">cnil.fr</a>).</p>
+<p>Vous pouvez accéder à vos données, les corriger ou les supprimer : le pseudo se modifie dans l’application, et la suppression se fait depuis « Mon profil » ou en écrivant à <a href="mailto:contact@occitangames.com">contact@occitangames.com</a>. Vous pouvez aussi saisir la CNIL (<a href="https://www.cnil.fr">cnil.fr</a>).</p>
 
 <h2>Modifications</h2>
 <p>Cette politique peut évoluer avec l’application. La date de mise à jour figure en haut de cette page.</p>
-'''),
+"""),
     'en': dict(
-        titre='Privacy policy — Quizzle', desc='How Quizzle handles your data: it stays on your device.',
-        h1='Privacy policy', maj='Last updated: 14 October 2026',
-        corps=f'''
+        titre='Privacy policy — Quizzle', desc='How Quizzle handles your data: on your device, and on our servers only if you create an online profile.',
+        h1='Privacy policy', maj='Last updated: 10 November 2026',
+        corps="""
 <p>Quizzle is a mobile game published by Occitan Games. This page explains, simply, what the app does with your data.</p>
 
 <h2>In short</h2>
-<p>Quizzle asks for no account, collects no personal data and sends nothing to a server. Your progress stays on your phone.</p>
+<p>You can play Quizzle without an account: in that case nothing is sent to a server and your progress stays on your phone. If you choose a nickname to play with friends, an anonymous online profile is created and some data is then stored on our servers, as described below. There are no ads, no advertising tracking and no sale of data.</p>
 
 <h2>What is stored on your device</h2>
 <ul>
@@ -373,13 +396,36 @@ PRIVACY = {
 <li>your game statistics (games, wins, streaks);</li>
 <li>your preferences (language, difficulty, age group).</li>
 </ul>
-<p>This information is stored only in the app’s storage, on your phone. The publisher has no access to it. It disappears if you uninstall the app or clear its data.</p>
+<p>This information is stored in the app’s storage, on your phone. It disappears if you uninstall the app or clear its data.</p>
+
+<h2>The online profile (optional)</h2>
+<p>The online profile is created only when you choose a nickname in the “My profile” screen. There is no e-mail address, phone number or real name: a random identifier is generated on your phone. The server keeps only a hash of your secret code. The following is then stored:</p>
+<ul>
+<li>your nickname, and a friend code you may share;</li>
+<li>your result for the daily mystery (number of tries, success, score), visible to your friends and to the members of your groups;</li>
+<li>your friend requests, friends, groups, challenges and reactions, and the players you block or report;</li>
+<li>if you turn on notifications: a notification token specific to your phone, and your language.</li>
+</ul>
+<p>This data is used only to make these features work (seeing your friends, challenges, leaderboards, notifications) and to moderate nicknames: nicknames may be reviewed by the publisher, and a nickname reported by several players is hidden. It is kept as long as your profile exists.</p>
+
+<h2>Notifications</h2>
+<p>Notifications (friend request received, request accepted, challenge received) are optional: the app asks for your permission and you can turn them off at any time from “My profile” or from your phone’s settings. They are delivered through Expo’s notification service and then through Apple’s (iPhone) or Google’s (Android) notification services.</p>
+
+<h2>Deleting your online data</h2>
+<p>The “Delete my online data” button in the “My profile” screen immediately erases your profile and all associated data on our servers (nickname, results, friends, groups, challenges, reactions, notification token). You can also write to <a href="mailto:contact@occitangames.com">contact@occitangames.com</a>.</p>
+
+<h2>Technical providers</h2>
+<ul>
+<li>Cloudflare (hosting of the server, the database and this website): like any host, it technically processes connection IP addresses;</li>
+<li>Expo, Apple and Google, only to deliver notifications.</li>
+</ul>
+<p>No data is sold or used for advertising.</p>
 
 <h2>What we do not do</h2>
 <ul>
-<li>no account or user identifier;</li>
-<li>no analytics or advertising tracking in the current version;</li>
-<li>no sale or transfer of data to third parties.</li>
+<li>no ads and no advertising tracking;</li>
+<li>no analytics tool in the app;</li>
+<li>no reading of your address book, your location or your photos.</li>
 </ul>
 
 <h2>Sharing and rating</h2>
@@ -395,11 +441,11 @@ PRIVACY = {
 <p>This website uses no tracking cookies and no analytics. Fonts are hosted on the site itself.</p>
 
 <h2>Your rights</h2>
-<p>Because the publisher holds no personal data about you, there is nothing to access or delete on its side: you stay in control by clearing the app’s data on your phone. For any question, write to <a href="mailto:{CONTACT}">{CONTACT}</a>. You may also contact the French data protection authority, the CNIL (<a href="https://www.cnil.fr/en">cnil.fr</a>).</p>
+<p>You can access, correct or delete your data: the nickname can be changed in the app, and deletion is done from “My profile” or by writing to <a href="mailto:contact@occitangames.com">contact@occitangames.com</a>. You may also contact the French data protection authority, the CNIL (<a href="https://www.cnil.fr/en">cnil.fr</a>).</p>
 
 <h2>Changes</h2>
 <p>This policy may change as the app evolves. The update date is shown at the top of this page.</p>
-'''),
+"""),
 }
 
 LEGAL = {
