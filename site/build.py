@@ -10,7 +10,7 @@ import os
 
 # ── À renseigner à la publication ────────────────────────────────────────────
 LIEN_APP_STORE = 'https://apps.apple.com/fr/app/quizzle/id6826238020'
-LIEN_GOOGLE_PLAY = ''    # ex. https://play.google.com/store/apps/details?id=com.occitangames.quizzle
+LIEN_GOOGLE_PLAY = 'https://play.google.com/store/apps/details?id=com.occitangames.quizzle'    # ex. https://play.google.com/store/apps/details?id=com.occitangames.quizzle
 SITE = 'https://occitangames.com'
 CONTACT = 'contact@occitangames.com'
 # ─────────────────────────────────────────────────────────────────────────────
@@ -64,22 +64,27 @@ TEXTES = {
     'fr': dict(
         lang='fr', racine='', autre_lang='en/', autre_nom='EN', autre_label='English version',
         titre='Quizzle, le jeu des mystères : devinez à partir d’indices',
-        description='Quizzle : six indices, une réponse. Un mystère par jour, une aventure sans fin, des événements mensuels et plus de 200 énigmes pour tous les âges. Gratuit sur iPhone, bientôt sur Android.',
+        description='Quizzle : six indices, une réponse. Un mystère par jour, une aventure sans fin, des événements mensuels, un mode Image, un Sprint et plus de 300 énigmes pour tous les âges. Gratuit sur iPhone et Android.',
         aller='Aller au contenu', nav_jouer='Essayer', nav_modes='Modes de jeu', nav_dl='Télécharger',
         h1='Six indices. Une seule réponse.',
-        chapeau='Chaque énigme commence vague et devient de plus en plus précise. Moins vous demandez d’indices, plus votre score monte. Un mystère par jour, une aventure sans fin et plus de 200 énigmes.',
+        chapeau='Chaque énigme commence vague et devient de plus en plus précise. Moins vous demandez d’indices, plus votre score monte. Un mystère par jour, une aventure sans fin et plus de 300 énigmes.',
         bientot='Bientôt', dispo_ios='Télécharger sur l’', dispo_android='Disponible sur',
         note_bientot='Quizzle arrive bientôt sur iPhone et Android. Les liens de téléchargement apparaîtront ici dès la publication.',
-        note_dispo='Gratuit à télécharger. La version Android arrive bientôt.',
+        note_dispo='Gratuit à télécharger sur iPhone et Android.',
         essai_intro='Une vraie énigme du jeu. Tapez votre réponse, ou demandez un indice.',
-        modes_h='Trois façons de jouer',
-        modes_p='Quelques minutes suffisent. Revenez chaque jour, ou enchaînez les niveaux.',
+        modes_h='Trois façons de jouer… et plus encore',
+        modes_p='Quelques minutes suffisent. Revenez chaque jour, ou enchaînez les niveaux. Il y a aussi le mode Image, le Sprint, Vrai ou Faux et les parties entre amis.',
         m1_h='Le mystère du jour', m1_p='Un mystère par jour, le même pour tout le monde. Trouvez-le trois jours de suite pour gagner un joker, puis la série continue de grandir.',
         m1_visuel='Mystère du jour', m1_n='n°',
         m2_h='L’aventure', m2_p='Une carte au trésor, huit décors et des niveaux sans fin. Tous les 30 niveaux, vous gagnez un nouveau titre.', m2_t='Nouveau titre',
         m3_h='Les événements', m3_p='Chaque mois, une aventure à thème en 20 étapes, avec une carte à collectionner à la clé.', m3_t='20 étapes',
         ages_h='Des énigmes pour chaque génération',
-        ages_p='Plus de 200 énigmes, de la tour Eiffel à Minecraft. Choisissez votre tranche d’âge dans les préférences : vous recevez les énigmes que tout le monde connaît, plus celles qui parlent à votre époque.',
+        nouv_h='Nouveau dans la version 1.2', nouv_p='Plus de mystères, plus de façons de jouer et de quoi personnaliser votre mascotte.',
+        n1_t='Boutique de costumes', n1_p='Habillez votre mascotte : Reine du Nil, Roi-Soleil, Pirate, Astronaute… ou changez simplement sa couleur. Un aperçu agrandi avant l’achat, avec confirmation.',
+        n2_t='Tenues d’événement', n2_p='Deux nouvelles tenues à gagner : l’Explorateur (Merveilles du monde) et l’Empereur (Histoire).',
+        n3_t='Deux nouveaux jokers', n3_p='+10 secondes pour le Sprint, et « Passer » pour changer d’énigme quand on sèche.',
+        n4_t='Beaucoup plus de contenu', n4_p='De nombreux nouveaux mystères et de nouvelles photos pour le mode Image.',
+        ages_p='Plus de 300 énigmes, de la tour Eiffel à Minecraft. Choisissez votre tranche d’âge dans les préférences : vous recevez les énigmes que tout le monde connaît, plus celles qui parlent à votre époque.',
         ages=[
             ('Tous publics', ['Tour Eiffel', 'Panda', 'Imprimerie', 'Cléopâtre']),
             ('Ados, 13 à 17 ans', ['Minecraft', 'Pokémon', 'Naruto', 'Usain Bolt']),
@@ -95,7 +100,7 @@ TEXTES = {
         p2_t='Des jokers', p2_p='Un indice offert, sans compter comme un essai.',
         p3_t='Des glaçons', p3_p='Ils gardent votre série au frais si vous manquez un jour.',
         p4_t='Des cartes à collectionner', p4_p='Elles récompensent votre progression.',
-        fin_h='Prêt à deviner ?', fin_p='Quizzle est disponible sur iPhone, et arrive bientôt sur Android. Vos données restent sur votre téléphone : aucun compte à créer.',
+        fin_h='Prêt à deviner ?', fin_p='Quizzle est disponible sur iPhone et sur Android. Vos données restent sur votre téléphone : aucun compte à créer.',
         pied_pub='Quizzle est un jeu édité par Occitan Games.', conf='Confidentialité', ment='Mentions légales', contact='Contact',
         url_conf='confidentialite.html', url_ment='mentions-legales.html', url_home='',
         indice='Indice',
@@ -103,22 +108,27 @@ TEXTES = {
     'en': dict(
         lang='en', racine='../', autre_lang='../', autre_nom='FR', autre_label='Version française',
         titre='Quizzle, the mystery game: guess from the clues',
-        description='Quizzle: six clues, one answer. A daily mystery, an endless adventure, monthly events and over 200 riddles for every age. Free on iPhone, coming soon to Android.',
+        description='Quizzle: six clues, one answer. A daily mystery, an endless adventure, monthly events, a Picture mode, a Sprint and over 300 riddles for every age. Free on iPhone and Android.',
         aller='Skip to content', nav_jouer='Try it', nav_modes='Ways to play', nav_dl='Download',
         h1='Six clues. One answer.',
-        chapeau='Every riddle starts vague and gets sharper with each clue. The fewer clues you ask for, the higher your score. A mystery every day, an endless adventure and over 200 riddles.',
+        chapeau='Every riddle starts vague and gets sharper with each clue. The fewer clues you ask for, the higher your score. A mystery every day, an endless adventure and over 300 riddles.',
         bientot='Coming soon', dispo_ios='Download on the ', dispo_android='Get it on',
         note_bientot='Quizzle is coming soon to iPhone and Android. Download links will appear here as soon as it is published.',
-        note_dispo='Free to download. The Android version is coming soon.',
+        note_dispo='Free to download on iPhone and Android.',
         essai_intro='A real riddle from the game. Type your answer, or ask for a clue.',
-        modes_h='Three ways to play',
-        modes_p='A few minutes is all it takes. Come back every day, or chain levels together.',
+        modes_h='Three ways to play… and more',
+        modes_p='A few minutes is all it takes. Come back every day, or chain levels together. There is also Picture mode, Sprint, True or False and games with friends.',
         m1_h='The daily mystery', m1_p='One mystery a day, the same for everyone. Solve it three days in a row to earn a joker, then your streak keeps growing.',
         m1_visuel='Daily mystery', m1_n='No.',
         m2_h='The adventure', m2_p='A treasure map, eight settings and endless levels. Every 30 levels, you earn a new title.', m2_t='New title',
         m3_h='The events', m3_p='Every month, a themed adventure in 20 steps, with a collectible card at the end.', m3_t='20 steps',
         ages_h='Riddles for every generation',
-        ages_p='Over 200 riddles, from the Eiffel Tower to Minecraft. Pick your age group in the settings: you get the riddles everyone knows, plus the ones that speak to your era.',
+        nouv_h='New in version 1.2', nouv_p='More mysteries, more ways to play, and more ways to dress up your mascot.',
+        n1_t='Costume shop', n1_p='Dress up your mascot: Queen of the Nile, Sun King, Pirate, Astronaut… or just change its colour. A bigger preview before you buy, with a confirmation step.',
+        n2_t='Event outfits', n2_p='Two new outfits to earn: the Explorer (Wonders of the World) and the Emperor (History).',
+        n3_t='Two new jokers', n3_p='+10 seconds for Sprint, and “Skip” to switch riddles when you are stuck.',
+        n4_t='Much more content', n4_p='Many new mysteries and new pictures for the Picture mode.',
+        ages_p='Over 300 riddles, from the Eiffel Tower to Minecraft. Pick your age group in the settings: you get the riddles everyone knows, plus the ones that speak to your era.',
         ages=[
             ('All ages', ['Eiffel Tower', 'Panda', 'Printing press', 'Cleopatra']),
             ('Teens, 13 to 17', ['Minecraft', 'Pokémon', 'Naruto', 'Usain Bolt']),
@@ -134,7 +144,7 @@ TEXTES = {
         p2_t='Jokers', p2_p='A free clue that does not count as an attempt.',
         p3_t='Ice cubes', p3_p='They keep your streak on ice if you miss a day.',
         p4_t='Collectible cards', p4_p='They reward your progress.',
-        fin_h='Ready to guess?', fin_p='Quizzle is available on iPhone and coming soon to Android. Your data stays on your phone: no account to create.',
+        fin_h='Ready to guess?', fin_p='Quizzle is available on iPhone and Android. Your data stays on your phone: no account to create.',
         pied_pub='Quizzle is a game published by Occitan Games.', conf='Privacy', ment='Legal notice', contact='Contact',
         url_conf='privacy.html', url_ment='legal.html', url_home='',
         indice='Clue',
@@ -248,6 +258,16 @@ def page_accueil(t):
 <div class="visuel">{svg_evenement(t['m3_t'])}</div>
 <h3>{t['m3_h']}</h3><p>{t['m3_p']}</p>
 </article>
+</div>
+</div></section>
+
+<section id="nouveautes"><div class="conteneur">
+<div class="intro-section"><h2>{t['nouv_h']}</h2><p>{t['nouv_p']}</p></div>
+<div class="petits">
+<div class="petit"><span class="emoji" aria-hidden="true">👑</span><div><strong>{t['n1_t']}</strong><span>{t['n1_p']}</span></div></div>
+<div class="petit"><span class="emoji" aria-hidden="true">🧭</span><div><strong>{t['n2_t']}</strong><span>{t['n2_p']}</span></div></div>
+<div class="petit"><span class="emoji" aria-hidden="true">⏱️</span><div><strong>{t['n3_t']}</strong><span>{t['n3_p']}</span></div></div>
+<div class="petit"><span class="emoji" aria-hidden="true">📸</span><div><strong>{t['n4_t']}</strong><span>{t['n4_p']}</span></div></div>
 </div>
 </div></section>
 
@@ -509,7 +529,7 @@ def page_lien():
     t = dict(TEXTES['fr'], racine='../', url_conf='../confidentialite.html', url_ment='../mentions-legales.html')
     t_en = TEXTES['en']
     titre = 'Quizzle : télécharge le jeu des mystères, gratuit'
-    desc = 'Six indices, une seule réponse. Quizzle est gratuit, sans pub, et créé en famille. Télécharge-le sur iPhone (Android bientôt).'
+    desc = 'Six indices, une seule réponse. Quizzle est gratuit, sans pub, et créé en famille. Télécharge-le sur iPhone et Android.'
     html = ouverture_page(t, titre, desc, 'en/', 'quizzle')
     html += entete(t, '../en/', accueil=False)
     html += f'''<main id="contenu" class="page lien"><div class="conteneur" style="text-align:center">
